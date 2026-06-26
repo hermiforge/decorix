@@ -1,0 +1,40 @@
+{
+  "name": "@decorix/vue-formkit",
+  "version": "0.1.0",
+  "description": "FormKit adapter for Decorix metadata.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup --config ../../tsup.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@decorix/core": "workspace:0.1.0"
+  },
+  "peerDependencies": {
+    "@formkit/vue": "2.1.0",
+    "vue": "3.5.39"
+  },
+  "peerDependenciesMeta": {
+    "@formkit/vue": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  }
+}

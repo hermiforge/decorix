@@ -1,0 +1,50 @@
+import {describe, expect, it} from 'vitest';
+import {Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {registerZodValidator} from '@decorix/zod';
+import {toVeeValidate, useVeeDecorix} from '../src/index';
+
+describe('@decorix/vue-vee-validate', () => {
+    it('creates VeeValidate config from decorators', () => {
+        registerZodValidator({name: 'zod-vee-class'});
+
+        @Model('SignupDto')
+        class SignupDto {
+            @Required()
+            @MinLength(2, 'Name too short')
+            name!: string;
+
+            @Required()
+            @Email('Invalid email')
+            email!: string;
+        }
+
+        const config = toVeeValidate(SignupDto, {initialValues: {name: 'Ada'}});
+
+        expect(config.initialValues.name).toBe('Ada');
+        expect(config.validate({name: 'A', email: 'bad'})).toMatchObject({success: false});
+    });
+
+    it('creates VeeValidate config from builder metadata', () => {
+        registerZodValidator({name: 'zod-vee-builder'});
+        const user = model('SignupDto', {
+            name: stringField().required().minLength(2, 'Name too short'),
+            email: stringField().required().email('Invalid email'),
+            age: numberField().min(18, 'Too young').optional()
+        });
+
+        const config = useVeeDecorix(user);
+
+        expect(config.validationSchema.validate({name: 'Ada', email: 'ada@example.com'})).toMatchObject({success: true});
+    });
+
+    it('throws when no validator can be resolved', () => {
+        const user = model('SignupDto', {
+            name: stringField().required()
+        });
+
+        expect(() => toVeeValidate(user, {validator: 'missing-vee-validator'})).toThrow(
+            'No Decorix validator adapter registered'
+        );
+    });
+});
+

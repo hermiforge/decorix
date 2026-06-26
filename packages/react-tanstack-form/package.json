@@ -1,0 +1,40 @@
+{
+  "name": "@decorix/react-tanstack-form",
+  "version": "0.1.0",
+  "description": "TanStack Form adapter for Decorix metadata.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup --config ../../tsup.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@decorix/core": "workspace:0.1.0"
+  },
+  "peerDependencies": {
+    "@tanstack/react-form": "1.33.0",
+    "react": "19.2.7"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-form": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
+}
