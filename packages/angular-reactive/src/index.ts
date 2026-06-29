@@ -1,7 +1,9 @@
 export type {
     DecorixAngularReactiveFormOptions,
+    DecorixAngularReactiveValidationMode,
     DecorixReactiveFieldConfig,
     DecorixReactiveFieldValidator,
+    DecorixReactiveFieldValidatorDescriptor,
     DecorixReactiveFormConfig,
     DecorixReactiveFormModel,
     DecorixReactiveInitialValue

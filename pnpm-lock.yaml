@@ -29,15 +29,16 @@ importers:
 
   packages/angular-reactive:
     dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../core
+    devDependencies:
       '@angular/core':
         specifier: 22.0.3
         version: 22.0.3(rxjs@7.8.2)
       '@angular/forms':
         specifier: 22.0.3
         version: 22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2))(@angular/platform-browser@22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2)))(rxjs@7.8.2)
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
 
   packages/angular-signal:
     dependencies:
