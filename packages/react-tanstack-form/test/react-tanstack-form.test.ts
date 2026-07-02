@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toTanStackForm, useTanStackDecorix} from '../src/index';
 
@@ -69,6 +69,21 @@ describe('@decorix/react-tanstack-form', () => {
         expect(toTanStackForm(metadata).validators.onSubmit({password: 'a', confirmPassword: 'b'})).toEqual({
             confirmPassword: ['Passwords must match']
         });
+    });
+
+    it('resolves async constraints through onSubmitAsync', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'tanstackAsyncAvailable',
+            validate: async (value) => value !== 'taken',
+            message: 'Already taken'
+        });
+        const metadata = model('TanStackAsyncDto', {
+            username: stringField().required().constraint('tanstackAsyncAvailable')
+        });
+
+        const config = toTanStackForm(metadata);
+        await expect(config.validators.onSubmitAsync({username: 'free'})).resolves.toBeUndefined();
+        await expect(config.validators.onSubmitAsync({username: 'taken'})).resolves.toEqual({username: ['Already taken']});
     });});
 
 

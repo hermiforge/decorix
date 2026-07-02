@@ -35,33 +35,43 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## TODO
 
+- No open roadmap items. New work should be appended here before implementation.
+
+## DONE
+
 ### V5 Async, Zod, Angular, CLI
 
-Async validation:
+Async foundation:
 
-- Add richer async adapter integration. Core `validateAsync` exists, but framework adapters still mostly use sync facades.
-- Async constraints receive same `ValidationContext`, including `services`.
+- Added optional `ValidatorSchema.validateAsync`; `createCoreValidatorAdapter` now exposes it, and `runSchemaAsync(schema, value, options)` + `hasAsyncConstraints(metadata, registry?)` are exported from core.
+- Every runtime adapter reaches async validation: react-hook-form resolver awaits `runSchemaAsync`; vue-vee-validate and vue-formkit gain `validateAsync`; react-tanstack-form gains `onSubmitAsync`; nest `transform` returns an awaited Promise for async models. Async constraints receive the full `ValidationContext` including `services`.
 
 Zod:
 
-- Generate fuller Zod schemas for native field constraints.
-- Use `superRefine` for cross-field/object constraints once V2 exists.
-- Use async `safeParseAsync` only when async constraints are present.
-- Fallback to core validation for rules Zod cannot express cleanly.
+- Async-aware adapter: `validateAsync` parses through `safeParseAsync`, `superRefine` callbacks await async definitions, and sync `validate` rejects async models (mirroring core). Runtime `group`/`locale`/`services` are threaded into custom-constraint contexts via a per-schema options ref. Added `notOneOf` native mapping; the rich native mapping and `superRefine` object/cross-field handling remain.
 
 Angular:
 
-- Reactive Forms: async validators for async constraints.
-- Signal Forms: equivalent metadata and validation hooks.
-- Delegate complex object-level constraints to core validation.
+- Reactive Forms: async constraints emitted as `asyncValidators: AsyncValidatorFn[]`; form config exposes `validateAsync`; a core-backed schema is created when cross-field or async constraints are present.
+- Signal Forms: added `validAsync`/`errorsAsync`/`submitAsync` and per-field `errorsAsync`/`validAsync`; object-level and complex constraints stay delegated to core validation.
 
 CLI:
 
-- Add `@decorix/cli`.
-- Commands: `decorix scan`, `decorix json-schema`, `decorix zod`, `decorix angular-validators`.
-- CLI reads DTO entrypoints, loads metadata, and writes artifacts without app runtime bootstrapping.
+- Added `@decorix/cli` with `bin` `decorix` and commands `scan`, `json-schema`, `zod`, `angular-validators`. Loads TS/JS DTO entries via tsx (esbuild — supports `experimentalDecorators` and definite-assignment fields), discovers `@Model` classes and builder metadata, and emits JSON Schema or thin re-export modules (`toZod` / `toReactiveFormConfig`) so constraint functions are never serialized.
 
-## DONE
+Files added:
+
+- `packages/cli/**` (package, `src/{index,cli,loader,generators}.ts`, `bin/decorix.mjs`, tests, README)
+
+Key files modified:
+
+- `packages/core/src/validation/{types,engine,core-adapter}.ts`, `packages/core/src/index.ts`
+- `packages/zod/src/adapter.ts`
+- `packages/{react-hook-form,vue-vee-validate,vue-formkit,react-tanstack-form,nest}/src/{adapter,types}.ts`
+- `packages/angular-reactive/src/{adapter,types}.ts`, `packages/angular-signal/src/{adapter,types}.ts`
+- `tsconfig.base.json`, `vitest.config.ts` (CLI alias)
+
+Verification: `pnpm lint` clean, `pnpm -r typecheck` passed (11 packages), `examples:typecheck` passed, `vitest run` passed (11 files, 167 tests), `pnpm build` succeeded.
 
 ### Quality Gate Tooling
 

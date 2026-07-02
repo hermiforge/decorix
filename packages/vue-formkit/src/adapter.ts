@@ -1,4 +1,4 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
 import {formKitType, formKitValidation} from './validation';
 import type {DecorixFormKitConfig, DecorixFormKitModel, DecorixFormKitOptions} from './types';
 import type {FieldMetadata, ModelMetadata} from '@decorix/core';
@@ -21,7 +21,8 @@ export function toFormKit(
         metadata,
         initialValues: defaults(metadata, options.initialValues),
         schema: metadata.fields.map(toFieldSchema),
-        validate: (value: unknown) => validatorSchema.validate(value)
+        validate: (value: unknown) => validatorSchema.validate(value),
+        validateAsync: (value: unknown) => runSchemaAsync(validatorSchema, value)
     };
 }
 

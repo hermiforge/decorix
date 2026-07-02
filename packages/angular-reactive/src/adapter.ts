@@ -1,6 +1,6 @@
-import {createCoreValidatorAdapter, getConstraint, getModelMetadata, resolveValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getConstraint, getModelMetadata, hasAsyncConstraints, resolveValidatorAdapter, runSchemaAsync} from '@decorix/core';
 import type {ConstraintDefinition, ConstraintMetadata, FieldMetadata, ValidationContext, ValidationIssue, ValidationIssueInput} from '@decorix/core';
-import type {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
+import type {AbstractControl, AsyncValidatorFn, ValidationErrors, ValidatorFn} from '@angular/forms';
 import type {
     DecorixAngularReactiveFormOptions,
     DecorixAngularReactiveValidationMode,
@@ -33,14 +33,16 @@ export function toReactiveFormConfig(
     options: DecorixAngularReactiveFormOptions<DecorixAngularReactiveValidationMode> = {}
 ): DecorixReactiveFormConfig<DecorixAngularReactiveValidationMode> {
     const metadata = getModelMetadata(modelOrMetadata);
-    const adapter = options.validator === undefined && hasV2Constraints(metadata) ? createCoreValidatorAdapter() : resolveValidatorAdapter(options.validator);
+    // A core-backed schema powers form-level validation when cross-field or async constraints are present.
+    const needsCoreSchema = hasV2Constraints(metadata) || hasAsyncConstraints(metadata);
+    const adapter = options.validator === undefined && needsCoreSchema ? createCoreValidatorAdapter() : resolveValidatorAdapter(options.validator);
     const schema = adapter?.createSchema(metadata);
     const validationMode = options.validationMode ?? 'angular';
 
     return {
         metadata,
         fields: metadata.fields.map((field) => toFieldConfig(field, options.initialValue?.[field.name], validationMode)),
-        ...(schema ? {validate: (value: unknown) => schema.validate(value)} : {})
+        ...(schema ? {validate: (value: unknown) => schema.validate(value), validateAsync: (value: unknown) => runSchemaAsync(schema, value)} : {})
     };
 }
 
@@ -56,9 +58,17 @@ function toFieldConfig(
 
     if (validationMode === 'descriptors') return {...base, validators: validatorDescriptors};
 
-    const validators = constraints.map((constraint) => toAngularValidator(constraint, field));
-    if (validationMode === 'both') return {...base, validators, validatorDescriptors};
-    return {...base, validators};
+    // Async constraints cannot run inside Angular's synchronous ValidatorFn, so they become AsyncValidatorFns.
+    const validators = constraints.filter((constraint) => !isAsyncConstraint(constraint)).map((constraint) => toAngularValidator(constraint, field));
+    const asyncValidators = constraints.filter(isAsyncConstraint).map((constraint) => toAngularAsyncValidator(constraint, field));
+    const asyncPart = asyncValidators.length ? {asyncValidators} : {};
+    if (validationMode === 'both') return {...base, validators, ...asyncPart, validatorDescriptors};
+    return {...base, validators, ...asyncPart};
+}
+
+/** Returns whether a registered constraint requires asynchronous validation. */
+function isAsyncConstraint(constraint: ConstraintMetadata): boolean {
+    return getConstraint(constraint.name)?.async === true;
 }
 
 /** Adds implicit required metadata so Angular ValidatorFn output matches Decorix core semantics. */
@@ -106,6 +116,18 @@ function decorixConstraintValidator(constraint: ConstraintMetadata, field: Field
         }
         const issue = normalizeIssue(result, definition, constraint, context);
         return issue ? validationError(issue.constraint, issue.params ?? true, issue.message) : null;
+    };
+}
+
+/** Wraps an async Decorix constraint in Angular's AsyncValidatorFn contract. */
+function toAngularAsyncValidator(constraint: ConstraintMetadata, field: FieldMetadata): AsyncValidatorFn {
+    const definition = getRequiredDefinition(constraint);
+    return (control: AbstractControl): Promise<ValidationErrors | null> => {
+        const context = contextFor(control.value, field.name);
+        return Promise.resolve(definition.validate(control.value, constraint.options, context)).then((result) => {
+            const issue = normalizeIssue(result, definition, constraint, context);
+            return issue ? validationError(issue.constraint, issue.params ?? true, issue.message) : null;
+        });
     };
 }
 

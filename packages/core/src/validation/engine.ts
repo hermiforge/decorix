@@ -62,6 +62,22 @@ export async function validateAsync<TValue = unknown>(
     return issues.length ? {success: false, issues} : {success: true, data: value};
 }
 
+/**
+ * Returns whether any field or object constraint in the model is asynchronous.
+ *
+ * Adapters use this to decide between the synchronous and asynchronous
+ * validation paths without attempting a sync run that would throw.
+ *
+ * @param metadata - Model metadata to inspect.
+ * @param registry - Registry resolving constraint definitions. Defaults to the process-wide registry.
+ */
+export function hasAsyncConstraints(metadata: ModelMetadata, registry: ConstraintRegistry = defaultConstraintRegistry): boolean {
+    for (const field of walkFields(metadata.fields)) {
+        if (field.constraints.some((constraint) => registry.hasAsync(constraint.name))) return true;
+    }
+    return (metadata.objectConstraints ?? []).some((constraint) => registry.hasAsync(constraint.name));
+}
+
 function assertNoAsyncConstraints(metadata: ModelMetadata, registry: ConstraintRegistry): void {
     for (const field of walkFields(metadata.fields)) {
         for (const constraint of field.constraints) {

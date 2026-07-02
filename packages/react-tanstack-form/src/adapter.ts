@@ -1,4 +1,4 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
 import {collectErrors} from './errors';
 import type {DecorixTanStackFormConfig, DecorixTanStackFormModel, DecorixTanStackFormOptions} from './types';
 import type {ModelMetadata} from '@decorix/core';
@@ -23,6 +23,11 @@ export function toTanStackForm(
         validators: {
             onSubmit(value) {
                 const result = schema.validate(value);
+                return result.success ? undefined : collectErrors(result.issues);
+            },
+            async onSubmitAsync(value) {
+                // The async submit path resolves async constraints before reporting errors.
+                const result = await runSchemaAsync(schema, value);
                 return result.success ? undefined : collectErrors(result.issues);
             }
         }

@@ -22,6 +22,7 @@
     "paths": {
       "@decorix/angular-reactive": ["packages/angular-reactive/src/index.ts"],
       "@decorix/angular-signal": ["packages/angular-signal/src/index.ts"],
+      "@decorix/cli": ["packages/cli/src/index.ts"],
       "@decorix/core": ["packages/core/src/index.ts"],
       "@decorix/json-schema": ["packages/json-schema/src/index.ts"],
       "@decorix/nest": ["packages/nest/src/index.ts"],

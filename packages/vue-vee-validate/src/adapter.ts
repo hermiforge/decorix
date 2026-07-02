@@ -1,4 +1,4 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
 import type {DecorixVeeValidateConfig, DecorixVeeValidateModel, DecorixVeeValidateOptions} from './types';
 import type {ModelMetadata} from '@decorix/core';
 
@@ -21,7 +21,8 @@ export function toVeeValidate(
         initialValues: defaults(metadata, options.initialValues),
         validationSchema,
         fields: metadata.fields,
-        validate: (value) => validationSchema.validate(value)
+        validate: (value) => validationSchema.validate(value),
+        validateAsync: (value) => runSchemaAsync(validationSchema, value)
     };
 }
 

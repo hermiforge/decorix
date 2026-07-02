@@ -17,6 +17,8 @@ export type DecorixVeeValidateConfig = {
     validationSchema: ValidatorSchema;
     fields: FieldMetadata[];
     validate(value: unknown): ValidationResult;
+    /** Async validation entry resolving async constraints; falls back to the sync result otherwise. */
+    validateAsync(value: unknown): Promise<ValidationResult>;
 };
 
 /**

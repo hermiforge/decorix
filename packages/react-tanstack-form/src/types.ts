@@ -16,6 +16,8 @@ export type DecorixTanStackFormConfig = {
     defaultValues: Record<string, unknown>;
     validators: {
         onSubmit(value: unknown): undefined | Record<string, string[]>;
+        /** Async submit validator resolving async constraints; falls back to the sync result otherwise. */
+        onSubmitAsync(value: unknown): Promise<undefined | Record<string, string[]>>;
     };
 };
 

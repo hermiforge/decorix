@@ -14,8 +14,11 @@ import {
     RequiredIf,
     dateField,
     createAsyncConstraint,
+    createCoreValidatorAdapter,
     createObjectConstraint,
     Email,
+    hasAsyncConstraints,
+    runSchemaAsync,
     getDefaultValidatorAdapter,
     getModelMetadata,
     getValidatorAdapter,
@@ -551,4 +554,30 @@ describe('@decorix/core', () => {
 
         // The generic Constraint decorator attaches the same registered name.
         expect(typeof Constraint('coreTestDefineAsync')).toBe('function');
+    });
+
+    it('exposes async validation through the core validator adapter and helpers', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'coreAdapterAsyncCheck',
+            validate: async (value) => value !== 'taken',
+            message: 'Value already taken.'
+        });
+
+        const asyncMetadata = model('CoreAdapterAsyncDto', {value: stringField().optional().constraint('coreAdapterAsyncCheck')});
+        const syncMetadata = model('CoreAdapterSyncDto', {value: stringField().optional().minLength(2)});
+
+        expect(hasAsyncConstraints(asyncMetadata)).toBe(true);
+        expect(hasAsyncConstraints(syncMetadata)).toBe(false);
+
+        const schema = createCoreValidatorAdapter().createSchema(asyncMetadata);
+        // The sync path still rejects async constraints; the async path resolves them.
+        expect(() => schema.validate({value: 'free'})).toThrow('Use validateAsync instead');
+        await expect(schema.validateAsync!({value: 'taken'})).resolves.toMatchObject({
+            success: false,
+            issues: [{constraint: 'coreAdapterAsyncCheck', message: 'Value already taken.'}]
+        });
+
+        // runSchemaAsync prefers validateAsync but falls back to a wrapped sync result.
+        const syncSchema = createCoreValidatorAdapter().createSchema(syncMetadata);
+        await expect(runSchemaAsync(syncSchema, {value: 'ok'})).resolves.toMatchObject({success: true});
     });});

@@ -1,4 +1,4 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
 import {collectErrors, fieldErrors, issues} from './errors';
 import type {DecorixAngularSignalFormOptions, DecorixInitialValue, DecorixSignalField, DecorixSignalForm, DecorixSignalFormModel} from './types';
 
@@ -30,7 +30,9 @@ export function toSignalForm(
                 values[field.name] = value;
             },
             errors: () => fieldErrors(schema.validate(values), field.name),
-            valid: () => fieldErrors(schema.validate(values), field.name).length === 0
+            valid: () => fieldErrors(schema.validate(values), field.name).length === 0,
+            errorsAsync: () => runSchemaAsync(schema, values).then((result) => fieldErrors(result, field.name)),
+            validAsync: () => runSchemaAsync(schema, values).then((result) => fieldErrors(result, field.name).length === 0)
         };
     }
 
@@ -45,7 +47,12 @@ export function toSignalForm(
             return result.success
                 ? {success: true, data: result.data}
                 : {success: false, errors: collectErrors(result), issues: issues(result)};
-        }
+        },
+        validAsync: () => runSchemaAsync(schema, values).then((result) => result.success),
+        errorsAsync: () => runSchemaAsync(schema, values).then((result) => collectErrors(result)),
+        submitAsync: () => runSchemaAsync(schema, values).then((result) => result.success
+            ? {success: true, data: result.data}
+            : {success: false, errors: collectErrors(result), issues: issues(result)})
     } as DecorixSignalForm;
 }
 

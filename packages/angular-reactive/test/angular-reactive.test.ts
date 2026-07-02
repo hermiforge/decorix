@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, EqualsField, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, Email, EqualsField, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toReactiveFormConfig} from '../src/index';
 import type {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
@@ -249,5 +249,29 @@ describe('@decorix/angular-reactive', () => {
         });
         expect(confirmPassword?.validators).toEqual([]);
         expect(confirmPassword?.validatorDescriptors).toEqual([]);
+    });
+
+    it('emits async validators for async constraints and a form-level validateAsync', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'reactiveAsyncAvailable',
+            validate: async (value) => value !== 'taken',
+            message: 'Already taken'
+        });
+        const metadata = model('ReactiveAsyncDto', {
+            username: stringField().required().constraint('reactiveAsyncAvailable')
+        });
+
+        const config = toReactiveFormConfig(metadata);
+        const username = config.fields.find((field) => field.name === 'username');
+        expect(username?.asyncValidators).toHaveLength(1);
+
+        // The generated AsyncValidatorFn resolves to Angular errors or null.
+        await expect(username?.asyncValidators?.[0](control('taken'))).resolves.toMatchObject({reactiveAsyncAvailable: {message: 'Already taken'}});
+        await expect(username?.asyncValidators?.[0](control('free'))).resolves.toBeNull();
+
+        await expect(config.validateAsync?.({username: 'taken'})).resolves.toMatchObject({
+            success: false,
+            issues: [{constraint: 'reactiveAsyncAvailable', message: 'Already taken'}]
+        });
     });});
 

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toSignalForm} from '../src/index';
 
@@ -62,6 +62,25 @@ describe('@decorix/angular-signal', () => {
 
         expect(form.slug.errors()).toEqual(['Invalid slug']);
         expect(form.submit()).toMatchObject({success: false});
+    });
+
+    it('resolves async constraints through async form hooks', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'signalAsyncAvailable',
+            validate: async (value) => value !== 'taken',
+            message: 'Already taken'
+        });
+        const metadata = model('SignalAsyncDto', {
+            username: stringField().required().constraint('signalAsyncAvailable')
+        });
+
+        const form = toSignalForm(metadata, {initialValue: {username: 'taken'}});
+        await expect(form.username.errorsAsync()).resolves.toEqual(['Already taken']);
+        await expect(form.submitAsync()).resolves.toMatchObject({success: false});
+
+        form.username.set('free');
+        await expect(form.validAsync()).resolves.toBe(true);
+        await expect(form.submitAsync()).resolves.toMatchObject({success: true});
     });
 });
 

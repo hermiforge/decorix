@@ -1,4 +1,4 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
 import {hookFormErrors} from './errors';
 import type {
     DecorixReactHookFormConfig,
@@ -30,7 +30,8 @@ export function toReactHookForm(
             metadata: field
         })),
         async resolver(values) {
-            const result = schema.validate(values);
+            // The resolver awaits the schema's async path so async constraints resolve before submit.
+            const result = await runSchemaAsync(schema, values);
             if (result.success) {
                 return {values: result.data, errors: {}};
             }

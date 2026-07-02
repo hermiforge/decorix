@@ -91,6 +91,19 @@ bothConfig.fields[0]?.validators; // ValidatorFn[]
 bothConfig.fields[0]?.validatorDescriptors; // {kind, value?, message?}[]
 ```
 
+## Async Validators
+
+Async constraints cannot run inside Angular's synchronous `ValidatorFn`, so they
+are emitted as `asyncValidators: AsyncValidatorFn[]` on the field config. The form
+config also exposes `validateAsync` for full model validation resolving async and
+cross-field constraints.
+
+```ts
+const config = toReactiveFormConfig(SignupDto);
+config.fields[0]?.asyncValidators; // AsyncValidatorFn[] for async constraints
+await config.validateAsync?.({name: 'Ada', email: 'ada@example.com'});
+```
+
 ## Runtime Validation
 
-Angular validators do not require a Decorix `ValidatorAdapter`. `options.validator` and `registerZodValidator()` only control the optional `config.validate` function, which performs full model validation through the selected runtime validator adapter.
+Angular validators do not require a Decorix `ValidatorAdapter`. `options.validator` and `registerZodValidator()` only control the optional `config.validate`/`config.validateAsync` functions, which perform full model validation through the selected runtime validator adapter.

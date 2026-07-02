@@ -22,6 +22,10 @@ export type DecorixSignalField<TValue = unknown> = {
     set(value: TValue): void;
     errors(): string[];
     valid(): boolean;
+    /** Async field errors resolving async constraints; use when the model declares async rules. */
+    errorsAsync(): Promise<string[]>;
+    /** Async field validity resolving async constraints. */
+    validAsync(): Promise<boolean>;
 };
 
 /**
@@ -42,6 +46,12 @@ export type DecorixSignalForm = Record<string, DecorixSignalField> & {
     errors(): Record<string, string[]>;
     value(): DecorixInitialValue;
     submit(): { success: true; data: unknown } | DecorixSignalFormSubmitFailure;
+    /** Async form validity resolving async constraints. */
+    validAsync(): Promise<boolean>;
+    /** Async form errors keyed by field, resolving async constraints. */
+    errorsAsync(): Promise<Record<string, string[]>>;
+    /** Async submit resolving async constraints before returning parsed data or failures. */
+    submitAsync(): Promise<{ success: true; data: unknown } | DecorixSignalFormSubmitFailure>;
 };
 
 /**

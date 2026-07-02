@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {DecorixPipe, DecorixValidationException} from '../src/index';
 
@@ -73,6 +73,21 @@ describe('@decorix/nest', () => {
         });
 
         expect(() => DecorixPipe(metadata).transform({password: 'a', confirmPassword: 'b'})).toThrow(DecorixValidationException);
+    });
+
+    it('validates async constraints through an awaited transform', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'nestAsyncAvailable',
+            validate: async (value) => value !== 'taken',
+            message: 'Already taken'
+        });
+        const metadata = model('NestAsyncDto', {
+            username: stringField().required().constraint('nestAsyncAvailable')
+        });
+        const pipe = DecorixPipe(metadata);
+
+        await expect(pipe.transform({username: 'free'})).resolves.toMatchObject({username: 'free'});
+        await expect(pipe.transform({username: 'taken'})).rejects.toBeInstanceOf(DecorixValidationException);
     });});
 
 

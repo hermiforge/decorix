@@ -56,6 +56,19 @@ const form = toSignalForm(SignupDto, {
 });
 ```
 
+## Async Validation
+
+For models with async constraints, use the async form hooks — `validAsync()`,
+`errorsAsync()`, `submitAsync()`, and per-field `errorsAsync()`/`validAsync()` —
+which resolve async constraints. The synchronous hooks still throw on async
+models, matching core validation semantics.
+
+```ts
+const form = toSignalForm(SignupDto, {initialValue: {name: 'Ada'}});
+await form.username.errorsAsync();
+const result = await form.submitAsync();
+```
+
 ## Validator Notes
 
 `toSignalForm` performs runtime validation and requires a `ValidatorAdapter`. Call `registerZodValidator()` once before creating forms, or pass a concrete adapter through `options.validator`.

@@ -20,9 +20,12 @@ export type DecorixHttpValidationError = {
 
 /**
  * Minimal Nest-compatible pipe transform interface.
+ *
+ * `transform` returns a Promise when the validated model declares async
+ * constraints; Nest awaits pipe results, so both shapes are supported.
  */
 export type DecorixPipeTransform = {
-    transform(value: unknown): unknown;
+    transform(value: unknown): unknown | Promise<unknown>;
 };
 
 /**

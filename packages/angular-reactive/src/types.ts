@@ -1,5 +1,5 @@
 import type {ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef} from '@decorix/core';
-import type {ValidatorFn} from '@angular/forms';
+import type {AsyncValidatorFn, ValidatorFn} from '@angular/forms';
 
 /**
  * Initial values passed to generated reactive form config.
@@ -52,10 +52,12 @@ export type DecorixReactiveFieldConfig<
     : TValidationMode extends 'both'
       ? DecorixReactiveFieldConfigBase & {
             validators: ValidatorFn[];
+            asyncValidators?: AsyncValidatorFn[];
             validatorDescriptors: DecorixReactiveFieldValidatorDescriptor[];
         }
       : DecorixReactiveFieldConfigBase & {
             validators: ValidatorFn[];
+            asyncValidators?: AsyncValidatorFn[];
             validatorDescriptors?: never;
         };
 
@@ -68,6 +70,8 @@ export type DecorixReactiveFormConfig<
     metadata: ModelMetadata;
     fields: DecorixReactiveFieldConfig<TValidationMode>[];
     validate?: (value: unknown) => ValidationResult;
+    /** Form-level async validation resolving async and cross-field constraints via core validation. */
+    validateAsync?: (value: unknown) => Promise<ValidationResult>;
 };
 
 /**

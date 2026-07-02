@@ -45,6 +45,19 @@ const SignupDto = model('SignupDto', {
 const schema = toZod(SignupDto);
 ```
 
+## Async Validation
+
+The Zod validator schema exposes `validateAsync`, which parses through
+`safeParseAsync` and resolves async constraints. Models that declare async
+constraints reject the synchronous `validate` (use `validateAsync` instead), and
+custom constraints receive the runtime `group`, `locale`, and `services` from the
+validation options.
+
+```ts
+const schema = createZodValidatorAdapter().createSchema(getModelMetadata(SignupDto));
+const result = await schema.validateAsync!({name: 'Ada', email: 'ada@example.com'}, {services});
+```
+
 ## Validator Notes
 
 Call `registerZodValidator()` once to make Zod the default Decorix validator for runtime adapters, or pass `createZodValidatorAdapter()` through `options.validator`.

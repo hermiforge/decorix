@@ -76,6 +76,24 @@ pass a custom `ConstraintRegistry` as the second argument to `defineConstraint`
 plus `validate(value, model, { registry })` to keep constraints isolated from
 the default global registry.
 
+## Async Validation
+
+`validateAsync` resolves async constraints (registered via `defineAsyncConstraint`
+/ `createAsyncConstraint`), while the synchronous `validate` rejects them. The core
+validator adapter exposes both `validate` and `validateAsync`; adapters can detect
+async models with `hasAsyncConstraints(metadata)` and run the right path with
+`runSchemaAsync(schema, value, options)` (prefers `validateAsync`, falls back to a
+wrapped sync result).
+
+```ts
+import {createCoreValidatorAdapter, hasAsyncConstraints, runSchemaAsync} from '@decorix/core';
+
+const schema = createCoreValidatorAdapter().createSchema(metadata);
+const result = hasAsyncConstraints(metadata)
+  ? await runSchemaAsync(schema, value)
+  : schema.validate(value);
+```
+
 ## Validator Notes
 
 `@decorix/core` only defines the `ValidatorAdapter` contract and global registry. Register a custom adapter with `registerValidatorAdapter`, or use `registerZodValidator()` from `@decorix/zod` before calling adapters that require runtime validation.

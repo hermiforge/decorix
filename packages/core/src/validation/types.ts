@@ -27,9 +27,22 @@ export interface ValidatorSchema<TValue = unknown> {
      * Validates input data and returns normalized Decorix validation output.
      *
      * @param value - Unknown input to validate.
+     * @param options - Optional group, locale, service, and registry controls.
      * @returns Successful parsed data or normalized validation issues.
      */
     validate(value: unknown, options?: ValidationOptions): ValidationResult<TValue>;
+
+    /**
+     * Validates input data asynchronously, resolving async constraints.
+     *
+     * Optional: adapters that cannot run async validation omit it, and callers
+     * should fall back to {@link ValidatorSchema.validate} (see `runSchemaAsync`).
+     *
+     * @param value - Unknown input to validate.
+     * @param options - Optional group, locale, service, and registry controls.
+     * @returns Promise of successful parsed data or normalized validation issues.
+     */
+    validateAsync?(value: unknown, options?: ValidationOptions): Promise<ValidationResult<TValue>>;
 }
 
 /**

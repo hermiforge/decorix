@@ -102,9 +102,9 @@ export {
     stringField
 } from './builder/field-builders';
 export type {ValidationIssue, ValidationOptions, ValidationResult, ValidatorAdapter, ValidatorAdapterRef, ValidatorSchema} from './validation/types';
-export {validate, validateAsync} from './validation/engine';
+export {validate, validateAsync, hasAsyncConstraints} from './validation/engine';
 export {defineConstraint, defineAsyncConstraint, type ReusableConstraint} from './validation/define-constraint';
-export {createCoreValidatorAdapter, type CoreValidatorSchema} from './validation/core-adapter';
+export {createCoreValidatorAdapter, runSchemaAsync, type CoreValidatorSchema} from './validation/core-adapter';
 export {
     ConstraintRegistry,
     createAsyncConstraint,

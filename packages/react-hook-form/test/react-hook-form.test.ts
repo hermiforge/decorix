@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toReactHookForm, useReactHookDecorix} from '../src/index';
 
@@ -103,6 +103,21 @@ describe('@decorix/react-hook-form', () => {
         const result = await toReactHookForm(metadata).resolver({password: 'a', confirmPassword: 'b'});
 
         expect(result.errors).toMatchObject({confirmPassword: {message: 'Passwords must match'}});
+    });
+
+    it('resolves async constraints through the async resolver', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'hookAsyncAvailable',
+            validate: async (value) => value !== 'taken',
+            message: 'Already taken'
+        });
+        const metadata = model('HookAsyncDto', {
+            username: stringField().required().constraint('hookAsyncAvailable')
+        });
+
+        const config = toReactHookForm(metadata);
+        expect((await config.resolver({username: 'free'})).errors).toMatchObject({});
+        expect((await config.resolver({username: 'taken'})).errors).toMatchObject({username: {message: 'Already taken'}});
     });});
 
 

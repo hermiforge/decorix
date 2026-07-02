@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, Label, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, Email, Label, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toFormKit, useFormKitDecorix} from '../src/index';
 
@@ -95,6 +95,24 @@ describe('@decorix/vue-formkit', () => {
         expect(toFormKit(metadata).validate?.({password: 'a', confirmPassword: 'b'})).toMatchObject({
             success: false,
             issues: [{path: ['confirmPassword'], message: 'Passwords must match'}]
+        });
+    });
+
+    it('resolves async constraints through validateAsync', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'formkitAsyncAvailable',
+            validate: async (value) => value !== 'taken',
+            message: 'Already taken'
+        });
+        const metadata = model('FormKitAsyncDto', {
+            username: stringField().required().constraint('formkitAsyncAvailable')
+        });
+
+        const config = toFormKit(metadata);
+        await expect(config.validateAsync?.({username: 'free'})).resolves.toMatchObject({success: true});
+        await expect(config.validateAsync?.({username: 'taken'})).resolves.toMatchObject({
+            success: false,
+            issues: [{message: 'Already taken'}]
         });
     });});
 

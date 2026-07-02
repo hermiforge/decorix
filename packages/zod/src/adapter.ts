@@ -7,9 +7,10 @@ import type {
     ValidationContext,
     ValidationIssue,
     ValidationIssueInput,
+    ValidationOptions,
     ValidatorAdapter
 } from '@decorix/core';
-import {getConstraint, getModelMetadata, registerValidatorAdapter, setDefaultValidatorAdapter} from '@decorix/core';
+import {getConstraint, getModelMetadata, hasAsyncConstraints, registerValidatorAdapter, setDefaultValidatorAdapter} from '@decorix/core';
 import {z} from 'zod';
 import type {
     DecorixZodRegistrationOptions,
@@ -18,27 +19,32 @@ import type {
     DecorixZodValidatorSchema
 } from './types';
 
+/** Mutable holder threading per-validation options into schema refinements built ahead of time. */
+type OptionsRef = {current?: ValidationOptions};
+
+/** Fixed empty options used when a Zod schema is built outside the validator adapter. */
+const STATIC_OPTIONS: OptionsRef = {};
+
 /**
  * Converts Decorix metadata or a registered model class into a Zod object schema.
  */
 export function toZod(modelOrMetadata: ModelTarget | ModelMetadata): DecorixZodSchema {
-    const metadata = getModelMetadata(modelOrMetadata);
-    const shape: Record<string, z.ZodTypeAny> = {};
-    for (const field of metadata.fields) {
-        shape[field.name] = buildFieldSchema(field);
-    }
-    return applyObjectConstraints(z.object(shape), metadata) as DecorixZodSchema;
+    return buildZodSchema(getModelMetadata(modelOrMetadata), STATIC_OPTIONS);
 }
 
 /**
  * Converts a single Decorix field into a Zod schema.
  */
 export function toZodField(field: FieldMetadata): z.ZodTypeAny {
-    return buildFieldSchema(field);
+    return buildFieldSchema(field, STATIC_OPTIONS);
 }
 
 /**
  * Creates a validator adapter backed by generated Zod schemas.
+ *
+ * The adapter exposes both a synchronous `validate` and an asynchronous
+ * `validateAsync`. Models containing async constraints reject the sync path and
+ * must use `validateAsync`, which parses through Zod's `safeParseAsync`.
  */
 export function createZodValidatorAdapter(
     options: DecorixZodValidatorAdapterOptions = {}
@@ -46,13 +52,24 @@ export function createZodValidatorAdapter(
     return {
         name: options.name ?? 'zod',
         createSchema(metadata) {
-            const zodSchema = toZod(metadata);
+            // A per-schema options ref lets pre-built refinements read the current validation options.
+            const optionsRef: OptionsRef = {};
+            const zodSchema = buildZodSchema(metadata, optionsRef);
+            const isAsync = hasAsyncConstraints(metadata);
             return {
                 zodSchema,
-                validate(value) {
+                validate(value, validateOptions) {
+                    if (isAsync) {
+                        throw new Error(`Decorix model "${metadata.name}" has async constraints. Use validateAsync instead.`);
+                    }
+                    optionsRef.current = validateOptions;
                     const result = zodSchema.safeParse(value);
-                    if (result.success) return {success: true, data: result.data};
-                    return {success: false, issues: result.error.issues.map(toValidationIssue)};
+                    return toValidationResult(result);
+                },
+                async validateAsync(value, validateOptions) {
+                    optionsRef.current = validateOptions;
+                    const result = await zodSchema.safeParseAsync(value);
+                    return toValidationResult(result);
                 }
             };
         }
@@ -70,17 +87,32 @@ export function registerZodValidator(
     return adapter;
 }
 
+/** Normalizes a Zod parse result into the framework-neutral Decorix result shape. */
+function toValidationResult(result: z.ZodSafeParseResult<unknown>) {
+    if (result.success) return {success: true as const, data: result.data};
+    return {success: false as const, issues: result.error.issues.map(toValidationIssue)};
+}
+
+/** Builds a Zod object schema for a model, including object-level constraints. */
+function buildZodSchema(metadata: ModelMetadata, optionsRef: OptionsRef): DecorixZodSchema {
+    const shape: Record<string, z.ZodTypeAny> = {};
+    for (const field of metadata.fields) {
+        shape[field.name] = buildFieldSchema(field, optionsRef);
+    }
+    return applyObjectConstraints(z.object(shape), metadata, optionsRef) as DecorixZodSchema;
+}
+
 /** Builds the Zod schema for one field, including constraints and optionality. */
-function buildFieldSchema(field: FieldMetadata): z.ZodTypeAny {
-    let schema = baseSchema(field);
+function buildFieldSchema(field: FieldMetadata, optionsRef: OptionsRef): z.ZodTypeAny {
+    let schema = baseSchema(field, optionsRef);
     for (const constraint of field.constraints) {
-        schema = applyConstraint(schema, constraint, field.name);
+        schema = applyConstraint(schema, constraint, field.name, optionsRef);
     }
     return field.required && !field.constraints.some((constraint) => constraint.name === 'optional') ? schema : schema.optional();
 }
 
 /** Maps a Decorix field type to its base Zod schema before constraints are applied. */
-function baseSchema(field: FieldMetadata): z.ZodTypeAny {
+function baseSchema(field: FieldMetadata, optionsRef: OptionsRef): z.ZodTypeAny {
     switch (field.type) {
         case 'string': return z.string();
         case 'number': return z.number();
@@ -91,10 +123,10 @@ function baseSchema(field: FieldMetadata): z.ZodTypeAny {
             return z.enum(field.enumValues);
         case 'array':
             if (!field.item) throw new Error(`Array field ${field.name} must declare an item field.`);
-            return z.array(buildFieldSchema({...field.item, required: true}));
+            return z.array(buildFieldSchema({...field.item, required: true}, optionsRef));
         case 'object': {
             const shape: Record<string, z.ZodTypeAny> = {};
-            for (const child of field.fields ?? []) shape[child.name] = buildFieldSchema(child);
+            for (const child of field.fields ?? []) shape[child.name] = buildFieldSchema(child, optionsRef);
             return z.object(shape);
         }
         default: return assertNever(field.type);
@@ -102,7 +134,7 @@ function baseSchema(field: FieldMetadata): z.ZodTypeAny {
 }
 
 /** Applies a native Zod mapping when possible or delegates to Decorix fallback validation. */
-function applyConstraint(schema: z.ZodTypeAny, constraint: ConstraintMetadata, property: string): z.ZodTypeAny {
+function applyConstraint(schema: z.ZodTypeAny, constraint: ConstraintMetadata, property: string, optionsRef: OptionsRef): z.ZodTypeAny {
     switch (constraint.name) {
         case 'required':
         case 'optional':
@@ -158,47 +190,53 @@ function applyConstraint(schema: z.ZodTypeAny, constraint: ConstraintMetadata, p
         case 'enum':
         case 'oneOf':
             return schema.refine((value) => (constraint.options as readonly unknown[]).includes(value), message(constraint));
+        case 'notOneOf':
+            return schema.refine((value) => !(constraint.options as readonly unknown[]).includes(value), message(constraint));
         default:
             // Unsupported native/custom constraints remain enforced through a Zod custom issue.
-            return applyCustomConstraint(schema, constraint, property);
+            return applyCustomConstraint(schema, constraint, property, optionsRef);
     }
 }
 
-/** Enforces non-native sync constraints through Zod superRefine. */
-function applyCustomConstraint(schema: z.ZodTypeAny, constraint: ConstraintMetadata, property: string): z.ZodTypeAny {
+/** Enforces non-native constraints through Zod superRefine, awaiting async definitions. */
+function applyCustomConstraint(schema: z.ZodTypeAny, constraint: ConstraintMetadata, property: string, optionsRef: OptionsRef): z.ZodTypeAny {
     const definition = getRequiredDefinition(constraint);
-    if (definition.async) {
-        throw new Error(`Decorix constraint "${constraint.name}" is async and cannot be emitted by the synchronous Zod adapter.`);
-    }
     return schema.superRefine((value, ctx) => {
-        const context = contextFor(value, property);
+        const context = contextFor(value, property, optionsRef.current);
         const result = definition.validate(value, constraint.options, context);
+        // Async constraint results are awaited; Zod only reaches this branch during safeParseAsync.
         if (result instanceof Promise) {
-            throw new Error(`Decorix constraint "${constraint.name}" returned a Promise and cannot be emitted by the synchronous Zod adapter.`);
+            return result.then((resolved) => reportIssue(ctx, normalizeIssue(resolved, definition, constraint, context, [])));
         }
-        const issue = normalizeIssue(result, definition, constraint, context, []);
-        if (issue) addDecorixIssue(ctx, issue);
+        reportIssue(ctx, normalizeIssue(result, definition, constraint, context, []));
+        return undefined;
     });
 }
 
-/** Enforces model-level constraints through a Zod object refinement. */
-function applyObjectConstraints(schema: z.ZodTypeAny, metadata: ModelMetadata): z.ZodTypeAny {
+/** Enforces model-level constraints through a Zod object refinement, awaiting async definitions. */
+function applyObjectConstraints(schema: z.ZodTypeAny, metadata: ModelMetadata, optionsRef: OptionsRef): z.ZodTypeAny {
     if (!metadata.objectConstraints?.length) return schema;
     return schema.superRefine((value, ctx) => {
+        const pending: Array<Promise<void>> = [];
         for (const constraint of metadata.objectConstraints ?? []) {
             const definition = getRequiredDefinition(constraint);
-            if (definition.async) {
-                throw new Error(`Decorix constraint "${constraint.name}" is async and cannot be emitted by the synchronous Zod adapter.`);
-            }
-            const context = contextFor(value, metadata.name);
+            const context = contextFor(value, metadata.name, optionsRef.current);
             const result = definition.validate(value, constraint.options, context);
             if (result instanceof Promise) {
-                throw new Error(`Decorix constraint "${constraint.name}" returned a Promise and cannot be emitted by the synchronous Zod adapter.`);
+                pending.push(result.then((resolved) => reportIssue(ctx, normalizeIssue(resolved, definition, constraint, context, []))));
+            } else {
+                reportIssue(ctx, normalizeIssue(result, definition, constraint, context, []));
             }
-            const issue = normalizeIssue(result, definition, constraint, context, []);
-            if (issue) addDecorixIssue(ctx, issue);
         }
+        // A single awaited promise keeps every async object constraint on the async parse path.
+        if (pending.length) return Promise.all(pending).then(() => undefined);
+        return undefined;
     });
+}
+
+/** Adds a normalized Decorix issue to the Zod refinement context when validation failed. */
+function reportIssue(ctx: z.RefinementCtx, issue: ValidationIssue | undefined): void {
+    if (issue) addDecorixIssue(ctx, issue);
 }
 
 /** Preserves Decorix issue metadata inside a Zod custom issue. */
@@ -244,8 +282,9 @@ function paramsFor(options: unknown): Record<string, unknown> | undefined {
     return {value: options};
 }
 
-function contextFor(value: unknown, property: string): ValidationContext {
-    return {object: {}, property, value};
+/** Builds the validation context, forwarding runtime group/locale/services to custom constraints. */
+function contextFor(value: unknown, property: string, options?: ValidationOptions): ValidationContext {
+    return {object: {}, property, value, group: options?.group, locale: options?.locale, services: options?.services};
 }
 
 function numberOption(constraint: ConstraintMetadata): number { return Number(constraint.options); }

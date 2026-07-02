@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toVeeValidate, useVeeDecorix} from '../src/index';
 
@@ -66,6 +66,24 @@ describe('@decorix/vue-vee-validate', () => {
         expect(toVeeValidate(metadata).validate({password: 'a', confirmPassword: 'b'})).toMatchObject({
             success: false,
             issues: [{path: ['confirmPassword'], message: 'Passwords must match'}]
+        });
+    });
+
+    it('resolves async constraints through validateAsync', async () => {
+        createAsyncConstraint<unknown, undefined>({
+            name: 'veeAsyncAvailable',
+            validate: async (value) => value !== 'taken',
+            message: 'Already taken'
+        });
+        const metadata = model('VeeAsyncDto', {
+            username: stringField().required().constraint('veeAsyncAvailable')
+        });
+
+        const config = toVeeValidate(metadata);
+        await expect(config.validateAsync({username: 'free'})).resolves.toMatchObject({success: true});
+        await expect(config.validateAsync({username: 'taken'})).resolves.toMatchObject({
+            success: false,
+            issues: [{message: 'Already taken'}]
         });
     });});
 

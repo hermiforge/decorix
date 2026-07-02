@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       '@decorix/angular-reactive': packageAlias('./packages/angular-reactive/src/index.ts'),
       '@decorix/angular-signal': packageAlias('./packages/angular-signal/src/index.ts'),
+      '@decorix/cli': packageAlias('./packages/cli/src/index.ts'),
       '@decorix/core': packageAlias('./packages/core/src/index.ts'),
       '@decorix/json-schema': packageAlias('./packages/json-schema/src/index.ts'),
       '@decorix/nest': packageAlias('./packages/nest/src/index.ts'),
