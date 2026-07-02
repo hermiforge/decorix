@@ -1,6 +1,13 @@
 import {describe, expect, it} from 'vitest';
 import {
     arrayField,
+    BeforeField,
+    EqualsField,
+    ForbiddenIf,
+    GreaterThanField,
+    ObjectConstraint,
+    RequiredIf,
+    dateField,
     createAsyncConstraint,
     createObjectConstraint,
     Email,
@@ -15,6 +22,7 @@ import {
     model,
     Nullable,
     numberField,
+    objectConstraint,
     objectField,
     registerValidatorAdapter,
     Required,
@@ -326,4 +334,116 @@ describe('@decorix/core', () => {
             ]
         });
     });
-});
+
+    it('validates V2 cross-field constraints and preserves metadata parity', () => {
+        @Model('V2DecoratorDto')
+        class V2DecoratorDto {
+            @EqualsField('password', 'Passwords must match')
+            confirmPassword?: string;
+
+            @GreaterThanField('min')
+            max?: number;
+
+            @BeforeField('end')
+            start?: string;
+
+            @RequiredIf<{mode?: string}>((object) => object.mode === 'advanced', 'Token required')
+            token?: string;
+
+            @ForbiddenIf<{locked?: boolean}>((object) => object.locked === true, 'Note forbidden')
+            note?: string;
+        }
+
+        expect(getModelMetadata(V2DecoratorDto).fields.map((field) => [field.name, field.constraints[0]?.name, field.constraints[0]?.options])).toEqual([
+            ['confirmPassword', 'equalsField', {path: 'password'}],
+            ['max', 'greaterThanField', {path: 'min'}],
+            ['start', 'beforeField', {path: 'end'}],
+            ['token', 'requiredIf', {predicate: expect.any(Function)}],
+            ['note', 'forbiddenIf', {predicate: expect.any(Function)}]
+        ]);
+
+        const builderMetadata = model('V2BuilderDto', {
+            confirmPassword: stringField().equalsField('password', 'Passwords must match'),
+            max: numberField().greaterThanField('min'),
+            min: numberField().optional(),
+            start: dateField().beforeField('end'),
+            end: dateField().optional(),
+            token: stringField().optional().requiredIf<{mode?: string}>((object) => object.mode === 'advanced', 'Token required'),
+            note: stringField().forbiddenIf<{locked?: boolean}>((object) => object.locked === true, 'Note forbidden')
+        });
+
+        expect(validate({password: 'a', confirmPassword: 'b', min: 3, max: 2, start: '2026-01-02', end: '2026-01-01', mode: 'advanced', locked: true, note: 'x'}, builderMetadata)).toMatchObject({
+            success: false,
+            issues: [
+                {path: ['confirmPassword'], code: 'decorix.equalsField', message: 'Passwords must match', constraint: 'equalsField', params: {path: 'password'}},
+                {path: ['max'], code: 'decorix.greaterThanField', constraint: 'greaterThanField', params: {path: 'min'}},
+                {path: ['start'], code: 'decorix.beforeField', constraint: 'beforeField', params: {path: 'end'}},
+                {path: ['token'], code: 'decorix.requiredIf', message: 'Token required', constraint: 'requiredIf', params: {predicate: expect.any(Function)}},
+                {path: ['note'], code: 'decorix.forbiddenIf', message: 'Note forbidden', constraint: 'forbiddenIf', params: {predicate: expect.any(Function)}}
+            ]
+        });
+
+        expect(validate({password: 'a'}, model('V2SkipDto', {
+            confirmPassword: stringField().equalsField('password').optional(),
+            max: numberField().greaterThanField('min').optional(),
+            start: dateField().beforeField('end').optional()
+        }))).toMatchObject({success: true});
+    });
+
+    it('validates every V2 native cross-field constraint with grouping and type checks', () => {
+        const cases = [
+            {name: 'equalsField', options: {path: 'other'}, valid: {value: 1, other: 1}, invalid: {value: 1, other: 2}},
+            {name: 'notEqualsField', options: {path: 'other'}, valid: {value: 1, other: 2}, invalid: {value: 1, other: 1}},
+            {name: 'greaterThanField', options: {path: 'other'}, valid: {value: 2, other: 1}, invalid: {value: 1, other: 2}, typeInvalid: {value: '2', other: 1}, expected: 'number'},
+            {name: 'greaterOrEqualField', options: {path: 'other'}, valid: {value: 2, other: 2}, invalid: {value: 1, other: 2}},
+            {name: 'lessThanField', options: {path: 'other'}, valid: {value: 1, other: 2}, invalid: {value: 2, other: 1}},
+            {name: 'lessOrEqualField', options: {path: 'other'}, valid: {value: 2, other: 2}, invalid: {value: 3, other: 2}},
+            {name: 'beforeField', options: {path: 'other'}, valid: {value: '2026-01-01', other: '2026-01-02'}, invalid: {value: '2026-01-02', other: '2026-01-01'}, typeInvalid: {value: 'bad', other: '2026-01-01'}, expected: 'date'},
+            {name: 'afterField', options: {path: 'other'}, valid: {value: '2026-01-02', other: '2026-01-01'}, invalid: {value: '2026-01-01', other: '2026-01-02'}}
+        ];
+
+        for (const testCase of cases) {
+            const metadata = {name: `V2${testCase.name}`, fields: [{name: 'value', type: 'string' as const, required: false, constraints: [{name: testCase.name, options: testCase.options, groups: ['strict']}]}]};
+            expect(validate(testCase.valid, metadata, {group: 'strict'})).toMatchObject({success: true});
+            expect(validate(testCase.invalid, metadata, {group: 'strict'})).toMatchObject({success: false, issues: [{path: ['value'], code: `decorix.${testCase.name}`, constraint: testCase.name, params: testCase.options}]});
+            expect(validate(testCase.invalid, metadata)).toMatchObject({success: true});
+            if (testCase.typeInvalid) {
+                expect(validate(testCase.typeInvalid, metadata, {group: 'strict'})).toMatchObject({success: false, issues: [{code: 'decorix.type', params: {expected: testCase.expected}}]});
+            }
+        }
+    });
+
+    it('validates object constraints from decorators and builder helpers', () => {
+        @ObjectConstraint<{password?: string; confirmPassword?: string}>({
+            path: 'confirmPassword',
+            validator: (object) => object.password === object.confirmPassword,
+            message: 'Passwords must match',
+            groups: ['strict']
+        })
+        @Model('ObjectConstraintDecoratorDto')
+        class ObjectConstraintDecoratorDto {
+            password?: string;
+            confirmPassword?: string;
+        }
+
+        expect(validate({password: 'a', confirmPassword: 'b'}, ObjectConstraintDecoratorDto)).toMatchObject({success: true});
+        expect(validate({password: 'a', confirmPassword: 'b'}, ObjectConstraintDecoratorDto, {group: 'strict'})).toMatchObject({
+            success: false,
+            issues: [{path: ['confirmPassword'], constraint: 'objectConstraint', message: 'Passwords must match'}]
+        });
+
+        const metadata = model('ObjectConstraintBuilderDto', {
+            password: stringField().optional(),
+            confirmPassword: stringField().optional()
+        }, [objectConstraint<Record<string, unknown>, undefined>('builderPasswordMatch', {
+            validate: (value) => value.password === value.confirmPassword || {path: ['nested', 'confirmPassword'], message: 'Nested mismatch'}
+        })]);
+
+        expect(validate({password: 'a', confirmPassword: 'b'}, metadata)).toMatchObject({
+            success: false,
+            issues: [{path: ['nested', 'confirmPassword'], constraint: 'builderPasswordMatch', message: 'Nested mismatch'}]
+        });
+
+        const rootPathMetadata = model('RootObjectConstraintDto', {}, [objectConstraint<Record<string, unknown>, undefined>('rootObjectFailure', {validate: () => false})]);
+        expect(validate({}, rootPathMetadata)).toMatchObject({success: false, issues: [{path: [], constraint: 'rootObjectFailure'}]});
+    });});

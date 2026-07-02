@@ -1,4 +1,4 @@
-import type {ConstraintMetadata, FieldMetadata} from './types';
+import type {ConstraintMetadata, FieldMetadata, ObjectConstraintOptions, ValidationIssueInput} from './types';
 
 /**
  * Optional message and validation groups accepted by Decorix constraints.
@@ -69,4 +69,38 @@ export function constraintName(constraint: ConstraintMetadata): string {
  */
 export function constraintValue<T = unknown>(constraint: ConstraintMetadata<T>): T | undefined {
     return constraint.options;
+}
+/** Options accepted by the public object-constraint decorator/helper APIs. */
+export type ObjectConstraintMetadataOptions<TObject = unknown> = {
+    /** Optional issue path. Defaults to the object root. */
+    path?: string | Array<string | number>;
+    /** Object-level validator. */
+    validator: (object: TObject) => boolean | ValidationIssueInput | Promise<boolean | ValidationIssueInput>;
+    /** Message overriding the native object-constraint default message. */
+    message?: string;
+    /** Validation groups in which this constraint should run. */
+    groups?: string[];
+};
+
+/** Creates metadata for the native inline object-level constraint. */
+export function createInlineObjectConstraintMetadata<TObject = unknown>(
+    options: ObjectConstraintMetadataOptions<TObject>
+): ConstraintMetadata<ObjectConstraintOptions<TObject>> {
+    return createConstraintMetadata(
+        'objectConstraint',
+        {path: normalizeIssuePath(options.path), validator: options.validator as ObjectConstraintOptions<TObject>['validator']},
+        {message: options.message, groups: options.groups}
+    );
+}
+
+/** Creates metadata for a named reusable object-level constraint. */
+export function createNamedObjectConstraintMetadata(
+    name: string,
+    metadata: ConstraintOptions = {}
+): ConstraintMetadata {
+    if (!name) throw new Error('Object constraint name is required.');
+    return createConstraintMetadata(name, undefined, metadata);
+}
+function normalizeIssuePath(path: string | Array<string | number> | undefined): Array<string | number> | undefined {
+    return typeof path === 'string' ? path.split('.').filter(Boolean) : path;
 }

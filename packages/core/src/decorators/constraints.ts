@@ -134,3 +134,23 @@ export function Enum(values: readonly unknown[], options?: OptionsArg): Property
 export function OneOf(values: readonly unknown[], options?: OptionsArg): PropertyDecorator { return add('oneOf', values, options); }
 /** Requires a value not to be one of the supplied forbidden values. */
 export function NotOneOf(values: readonly unknown[], options?: OptionsArg): PropertyDecorator { return add('notOneOf', values, options); }
+/** Requires the field to equal another root object field by dot-path. */
+export function EqualsField(path: string, options?: OptionsArg): PropertyDecorator { return add('equalsField', {path}, options); }
+/** Requires the field not to equal another root object field by dot-path. */
+export function NotEqualsField(path: string, options?: OptionsArg): PropertyDecorator { return add('notEqualsField', {path}, options); }
+/** Requires the number field to be greater than another root object number field. */
+export function GreaterThanField(path: string, options?: OptionsArg): PropertyDecorator { return typed('number', 'greaterThanField', {path}, options); }
+/** Requires the number field to be greater than or equal to another root object number field. */
+export function GreaterOrEqualField(path: string, options?: OptionsArg): PropertyDecorator { return typed('number', 'greaterOrEqualField', {path}, options); }
+/** Requires the number field to be less than another root object number field. */
+export function LessThanField(path: string, options?: OptionsArg): PropertyDecorator { return typed('number', 'lessThanField', {path}, options); }
+/** Requires the number field to be less than or equal to another root object number field. */
+export function LessOrEqualField(path: string, options?: OptionsArg): PropertyDecorator { return typed('number', 'lessOrEqualField', {path}, options); }
+/** Requires the date-like field to be before another root object date-like field. */
+export function BeforeField(path: string, options?: OptionsArg): PropertyDecorator { return typed('date', 'beforeField', {path}, options); }
+/** Requires the date-like field to be after another root object date-like field. */
+export function AfterField(path: string, options?: OptionsArg): PropertyDecorator { return typed('date', 'afterField', {path}, options); }
+/** Requires the field when the predicate is true for the root object. */
+export function RequiredIf<TObject = unknown>(predicate: (object: TObject) => boolean, options?: OptionsArg): PropertyDecorator { return add('requiredIf', {predicate}, options); }
+/** Forbids the field when the predicate is true for the root object. */
+export function ForbiddenIf<TObject = unknown>(predicate: (object: TObject) => boolean, options?: OptionsArg): PropertyDecorator { return add('forbiddenIf', {predicate}, options); }

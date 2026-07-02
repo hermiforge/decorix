@@ -27,38 +27,6 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## TODO
 
-### V2 Cross-Field And Object Constraints
-
-Field-level cross-property constraints:
-
-- `EqualsField`
-- `NotEqualsField`
-- `GreaterThanField`
-- `GreaterOrEqualField`
-- `LessThanField`
-- `LessOrEqualField`
-- `BeforeField`
-- `AfterField`
-- `RequiredIf`
-- `ForbiddenIf`
-
-Class-level object constraints example:
-
-```ts
-@ObjectConstraint({
-  path: 'endDate',
-  validator: booking => booking.startDate < booking.endDate,
-  message: 'End date must be after start date.'
-})
-```
-
-Rules:
-
-- Store object constraints on `ModelMetadata.objectConstraints`.
-- Field cross-property constraints stay attached to the decorated field and receive `context.object`.
-- Error path defaults to decorated field for cross-field constraints and to `options.path`/`errorPath` for object constraints.
-- JSON Schema export marks non-exportable object/cross-field constraints in `x-decorix-constraints`.
-
 ### V3 Custom Constraint APIs
 
 - Implement reusable user-defined annotations.
@@ -122,6 +90,18 @@ CLI:
 
 ## DONE
 
+### V2 Cross-Field And Object Constraints
+
+- Added native field-level cross-property constraints: `EqualsField`, `NotEqualsField`, `GreaterThanField`, `GreaterOrEqualField`, `LessThanField`, `LessOrEqualField`, `BeforeField`, `AfterField`, `RequiredIf`, and `ForbiddenIf`.
+- Decorators attach cross-field constraints to the decorated field; builder methods mirror the decorator surface across common, number, and date builders.
+- Field references are root dot-path strings and validation receives the full root object via `context.object`.
+- Equality uses `Object.is`; numeric comparisons require both values to be numbers; date comparisons reuse date-like timestamp normalization.
+- Missing current or peer values skip comparison constraints; `RequiredIf` runs for `null`/`undefined` and `ForbiddenIf` fails only for present values.
+- Added `@ObjectConstraint({ path, validator, message, groups })` and builder/raw helpers for named reusable object constraints.
+- Object constraint issue paths default to `[]`, or to the supplied path/validator issue path.
+- JSON Schema preserves V2 field and object constraints under `x-decorix-constraints` and serializes function-valued options as `"[function]"`.
+- Core-backed adapters enforce V2 through core validation.
+- Angular Reactive omits V2 constraints from single-control `ValidatorFn`s and exposes a core-backed form-level `validate` when V2 metadata is present.
 ### V1 Follow-Up Hardening
 
 - Added exhaustive per-constraint tests for every native V1 constraint across presence/nullity, strings, numbers, dates, collections, and enums.
@@ -168,7 +148,7 @@ CLI:
 - `tsc --noEmit -p packages/core/tsconfig.json` passed.
 - Package-by-package typecheck with `tsc --noEmit -p packages/*/tsconfig.json` passed.
 - `tsc --noEmit -p examples/tsconfig.json` passed.
-- `vitest run` passed: 10 test files, 133 tests.
+- `vitest run` passed: 10 test files, 143 tests.
 
 ### Handoff Notes
 

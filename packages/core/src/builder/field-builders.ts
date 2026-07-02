@@ -1,6 +1,7 @@
 import {cloneFieldMetadata, isModelMetadata} from '../metadata/clone';
-import {createConstraintMetadata, normalizeConstraintOptions, removeConstraintMetadata, upsertConstraintMetadata, type ConstraintOptions} from '../metadata/constraints';
-import type {ConstraintMetadata, FieldMetadata, FieldType, ModelMetadata, UiMetadata} from '../metadata/types';
+import {createObjectConstraint} from '../validation/constraint-registry';
+import {createConstraintMetadata, createNamedObjectConstraintMetadata, normalizeConstraintOptions, removeConstraintMetadata, upsertConstraintMetadata, type ConstraintOptions} from '../metadata/constraints';
+import type {ConstraintDefinition, ConstraintMetadata, FieldMetadata, FieldType, ModelMetadata, UiMetadata} from '../metadata/types';
 
 /** Message/group options accepted by builder constraint methods. */
 type OptionsArg = string | ConstraintOptions;
@@ -16,10 +17,11 @@ export interface FieldBuilder {
 /**
  * Creates model metadata with the builder API.
  */
-export function model(name: string, fields: Record<string, FieldBuilder>): ModelMetadata {
+export function model(name: string, fields: Record<string, FieldBuilder>, objectConstraints: ConstraintMetadata[] = []): ModelMetadata {
     return {
         name,
-        fields: Object.entries(fields).map(([fieldName, builder]) => builder.build(fieldName))
+        fields: Object.entries(fields).map(([fieldName, builder]) => builder.build(fieldName)),
+        ...(objectConstraints.length ? {objectConstraints: objectConstraints.map((constraint) => ({...constraint}))} : {})
     };
 }
 
@@ -61,6 +63,14 @@ class BaseFieldBuilder implements FieldBuilder {
     oneOf(values: readonly unknown[], options?: OptionsArg): this { return this.addConstraintName('oneOf', values, options); }
     /** Requires a value not to be one of the supplied forbidden values. */
     notOneOf(values: readonly unknown[], options?: OptionsArg): this { return this.addConstraintName('notOneOf', values, options); }
+    /** Requires the field to equal another root object field by dot-path. */
+    equalsField(path: string, options?: OptionsArg): this { return this.addConstraintName('equalsField', {path}, options); }
+    /** Requires the field not to equal another root object field by dot-path. */
+    notEqualsField(path: string, options?: OptionsArg): this { return this.addConstraintName('notEqualsField', {path}, options); }
+    /** Requires the field when the predicate is true for the root object. */
+    requiredIf<TObject = unknown>(predicate: (object: TObject) => boolean, options?: OptionsArg): this { return this.addConstraintName('requiredIf', {predicate}, options); }
+    /** Forbids the field when the predicate is true for the root object. */
+    forbiddenIf<TObject = unknown>(predicate: (object: TObject) => boolean, options?: OptionsArg): this { return this.addConstraintName('forbiddenIf', {predicate}, options); }
 
     /** Sets the field label. */
     label(value: string): this { return this.ui({label: value}); }
@@ -158,6 +168,14 @@ export class NumberFieldBuilder extends BaseFieldBuilder {
     finite(options?: OptionsArg): this { return this.addConstraintName('finite', undefined, options); }
     /** Requires the number to be evenly divisible by the supplied factor. */
     multipleOf(value: number, options?: OptionsArg): this { return this.addConstraintName('multipleOf', value, options); }
+    /** Requires the number to be greater than another root object number field. */
+    greaterThanField(path: string, options?: OptionsArg): this { return this.addConstraintName('greaterThanField', {path}, options); }
+    /** Requires the number to be greater than or equal to another root object number field. */
+    greaterOrEqualField(path: string, options?: OptionsArg): this { return this.addConstraintName('greaterOrEqualField', {path}, options); }
+    /** Requires the number to be less than another root object number field. */
+    lessThanField(path: string, options?: OptionsArg): this { return this.addConstraintName('lessThanField', {path}, options); }
+    /** Requires the number to be less than or equal to another root object number field. */
+    lessOrEqualField(path: string, options?: OptionsArg): this { return this.addConstraintName('lessOrEqualField', {path}, options); }
 }
 
 /** Builder for boolean fields. */
@@ -184,6 +202,10 @@ export class DateFieldBuilder extends BaseFieldBuilder {
     after(value: Date | string | number, options?: OptionsArg): this { return this.addConstraintName('after', value, options); }
     /** Requires the date-like value to stay within the inclusive date range. */
     betweenDates(min: Date | string | number, max: Date | string | number, options?: OptionsArg): this { return this.addConstraintName('betweenDates', {min, max}, options); }
+    /** Requires the date-like value to be before another root object date-like field. */
+    beforeField(path: string, options?: OptionsArg): this { return this.addConstraintName('beforeField', {path}, options); }
+    /** Requires the date-like value to be after another root object date-like field. */
+    afterField(path: string, options?: OptionsArg): this { return this.addConstraintName('afterField', {path}, options); }
 }
 
 /** Builder for enum fields. */
@@ -238,3 +260,15 @@ export function enumField(values: readonly [string, ...string[]]): EnumFieldBuil
 export function arrayField(item: FieldBuilder): ArrayFieldBuilder { return new ArrayFieldBuilder(item); }
 /** Creates an object field builder. */
 export function objectField(fields: Record<string, FieldBuilder> | ModelMetadata): ObjectFieldBuilder { return new ObjectFieldBuilder(fields); }
+/** Creates metadata for a named reusable object-level constraint. */
+export function objectConstraint<TValue, TOptions>(
+    name: string,
+    definition?: Omit<ConstraintDefinition<TValue, TOptions>, 'name' | 'kind'>,
+    options?: ConstraintOptions
+): ConstraintMetadata {
+    if (!name) throw new Error('Object constraint name is required.');
+    if (definition) {
+        createObjectConstraint({...definition, name, kind: 'object'});
+    }
+    return createNamedObjectConstraintMetadata(name, normalizeConstraintOptions(options));
+}

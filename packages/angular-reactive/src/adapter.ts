@@ -1,4 +1,4 @@
-import {getConstraint, getModelMetadata, resolveValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getConstraint, getModelMetadata, resolveValidatorAdapter} from '@decorix/core';
 import type {ConstraintDefinition, ConstraintMetadata, FieldMetadata, ValidationContext, ValidationIssue, ValidationIssueInput} from '@decorix/core';
 import type {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
 import type {
@@ -32,7 +32,7 @@ export function toReactiveFormConfig(
     options: DecorixAngularReactiveFormOptions<DecorixAngularReactiveValidationMode> = {}
 ): DecorixReactiveFormConfig<DecorixAngularReactiveValidationMode> {
     const metadata = getModelMetadata(modelOrMetadata);
-    const adapter = resolveValidatorAdapter(options.validator);
+    const adapter = options.validator === undefined && hasV2Constraints(metadata) ? createCoreValidatorAdapter() : resolveValidatorAdapter(options.validator);
     const schema = adapter?.createSchema(metadata);
     const validationMode = options.validationMode ?? 'angular';
 
@@ -62,10 +62,11 @@ function toFieldConfig(
 
 /** Adds implicit required metadata so Angular ValidatorFn output matches Decorix core semantics. */
 function angularConstraints(field: FieldMetadata): ConstraintMetadata[] {
-    const hasRequiredConstraint = field.constraints.some((constraint) => constraint.name === 'required');
+    const fieldConstraints = field.constraints.filter((constraint) => !isV2Constraint(constraint.name));
+    const hasRequiredConstraint = fieldConstraints.some((constraint) => constraint.name === 'required');
     return field.required && !hasRequiredConstraint
-        ? [{name: 'required'}, ...field.constraints]
-        : field.constraints;
+        ? [{name: 'required'}, ...fieldConstraints]
+        : fieldConstraints;
 }
 
 /** Converts Decorix constraint metadata to a framework-neutral validator descriptor. */
@@ -214,4 +215,31 @@ function lengthOrSize(value: unknown): number | null {
     if (typeof length === 'number') return length;
     const size = (value as {size?: unknown}).size;
     return typeof size === 'number' ? size : null;
+}
+
+const V2_CONSTRAINTS = new Set([
+    'equalsField',
+    'notEqualsField',
+    'greaterThanField',
+    'greaterOrEqualField',
+    'lessThanField',
+    'lessOrEqualField',
+    'beforeField',
+    'afterField',
+    'requiredIf',
+    'forbiddenIf'
+]);
+
+function hasV2Constraints(metadata: {fields: FieldMetadata[]; objectConstraints?: ConstraintMetadata[]}): boolean {
+    return (metadata.objectConstraints?.length ?? 0) > 0 || metadata.fields.some(fieldHasV2Constraint);
+}
+
+function fieldHasV2Constraint(field: FieldMetadata): boolean {
+    return field.constraints.some((constraint) => isV2Constraint(constraint.name))
+        || (field.fields?.some(fieldHasV2Constraint) ?? false)
+        || (field.item ? fieldHasV2Constraint(field.item) : false);
+}
+
+function isV2Constraint(name: string): boolean {
+    return V2_CONSTRAINTS.has(name);
 }

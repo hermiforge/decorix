@@ -65,7 +65,15 @@ describe('@decorix/nest', () => {
 
         expect(() => pipe.transform({slug: 'Bad Slug'})).toThrow(DecorixValidationException);
     });
-});
+
+    it('enforces V2 cross-field constraints through core validation', () => {
+        const metadata = model('NestV2Dto', {
+            password: stringField().required(),
+            confirmPassword: stringField().equalsField('password', 'Passwords must match')
+        });
+
+        expect(() => DecorixPipe(metadata).transform({password: 'a', confirmPassword: 'b'})).toThrow(DecorixValidationException);
+    });});
 
 
 

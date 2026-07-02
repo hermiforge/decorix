@@ -56,7 +56,18 @@ describe('@decorix/vue-vee-validate', () => {
 
         expect(config.validate({slug: 'Bad Slug'})).toMatchObject({success: false, issues: [{message: 'Invalid slug'}]});
     });
-});
+
+    it('enforces V2 cross-field constraints through core validation', () => {
+        const metadata = model('VeeV2Dto', {
+            password: stringField().required(),
+            confirmPassword: stringField().equalsField('password', 'Passwords must match')
+        });
+
+        expect(toVeeValidate(metadata).validate({password: 'a', confirmPassword: 'b'})).toMatchObject({
+            success: false,
+            issues: [{path: ['confirmPassword'], message: 'Passwords must match'}]
+        });
+    });});
 
 
 

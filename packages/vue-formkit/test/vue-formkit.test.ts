@@ -85,7 +85,18 @@ describe('@decorix/vue-formkit', () => {
 ]
 `);
     });
-});
+
+    it('enforces V2 cross-field constraints through core validation', () => {
+        const metadata = model('FormKitV2Dto', {
+            password: stringField().required(),
+            confirmPassword: stringField().equalsField('password', 'Passwords must match')
+        });
+
+        expect(toFormKit(metadata).validate?.({password: 'a', confirmPassword: 'b'})).toMatchObject({
+            success: false,
+            issues: [{path: ['confirmPassword'], message: 'Passwords must match'}]
+        });
+    });});
 
 
 

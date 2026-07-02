@@ -93,7 +93,17 @@ describe('@decorix/react-hook-form', () => {
 }
 `);
     });
-});
+
+    it('enforces V2 cross-field constraints through core validation', async () => {
+        const metadata = model('HookV2Dto', {
+            password: stringField().required(),
+            confirmPassword: stringField().equalsField('password', 'Passwords must match')
+        });
+
+        const result = await toReactHookForm(metadata).resolver({password: 'a', confirmPassword: 'b'});
+
+        expect(result.errors).toMatchObject({confirmPassword: {message: 'Passwords must match'}});
+    });});
 
 
 

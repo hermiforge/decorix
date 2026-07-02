@@ -59,7 +59,17 @@ describe('@decorix/react-tanstack-form', () => {
 
         expect(config.validators.onSubmit({slug: 'Bad Slug'})).toEqual({slug: ['Invalid slug']});
     });
-});
+
+    it('enforces V2 cross-field constraints through core validation', () => {
+        const metadata = model('TanStackV2Dto', {
+            password: stringField().required(),
+            confirmPassword: stringField().equalsField('password', 'Passwords must match')
+        });
+
+        expect(toTanStackForm(metadata).validators.onSubmit({password: 'a', confirmPassword: 'b'})).toEqual({
+            confirmPassword: ['Passwords must match']
+        });
+    });});
 
 
 

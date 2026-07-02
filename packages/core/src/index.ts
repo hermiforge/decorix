@@ -1,23 +1,39 @@
 import './validation/native-constraints';
 
 export type {
+    ConditionalFieldOptions,
     ConstraintDefinition,
     ConstraintMetadata,
+    CrossFieldPredicate,
     FieldMetadata,
+    FieldReferenceOptions,
     FieldType,
     JsonSchemaFragment,
     ModelMetadata,
     ModelTarget,
+    ObjectConstraintOptions,
     UiMetadata,
     ValidationContext,
     ValidationIssueInput
 } from './metadata/types';
 export {cloneFieldMetadata, cloneModelMetadata, isModelMetadata} from './metadata/clone';
-export {constraintName, constraintValue, createConstraintMetadata, normalizeConstraintOptions} from './metadata/constraints';
+export {constraintName, constraintValue, createConstraintMetadata, createInlineObjectConstraintMetadata, createNamedObjectConstraintMetadata, normalizeConstraintOptions}
+    from './metadata/constraints';
+export type {ObjectConstraintMetadataOptions} from './metadata/constraints';
 export {getModelMetadata, hasModelMetadata, registerModelMetadata} from './registry/model-registry';
-export {Model} from './decorators/model';
+export {Model, ObjectConstraint} from './decorators/model';
 export {
     After,
+    RequiredIf,
+    NotEqualsField,
+    LessThanField,
+    LessOrEqualField,
+    GreaterThanField,
+    GreaterOrEqualField,
+    ForbiddenIf,
+    EqualsField,
+    BeforeField,
+    AfterField,
     Before,
     Between,
     BetweenDates,
@@ -79,6 +95,7 @@ export {
     enumField,
     model,
     numberField,
+    objectConstraint,
     objectField,
     stringField
 } from './builder/field-builders';

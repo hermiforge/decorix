@@ -109,6 +109,7 @@ function toConstraintExtension(constraint: ConstraintMetadata, async: boolean): 
 
 /** Serializes non-JSON option values such as RegExp and Date for schema extensions. */
 function serializeOption(option: unknown): unknown {
+    if (typeof option === 'function') return '[function]';
     if (option instanceof RegExp) return {source: option.source, flags: option.flags};
     if (option instanceof Date) return option.toISOString();
     if (Array.isArray(option)) return option.map(serializeOption);

@@ -20,6 +20,29 @@ export type ConstraintMetadata<TOptions = unknown> = {
     groups?: string[];
 };
 
+/** Predicate used by conditional cross-field constraints. */
+export type CrossFieldPredicate<TObject = unknown> = (object: TObject) => boolean;
+
+/** Options used by constraints that compare the current field to another root dot-path. */
+export type FieldReferenceOptions = {
+    /** Dot-path resolved from the root object. */
+    path: string;
+};
+
+/** Options used by conditional presence constraints. */
+export type ConditionalFieldOptions<TObject = unknown> = {
+    /** Predicate evaluated against the root object. */
+    predicate: CrossFieldPredicate<TObject>;
+};
+
+/** Options used by inline object-level constraints. */
+export type ObjectConstraintOptions<TObject = unknown> = {
+    /** Optional issue path. Defaults to the object root. */
+    path?: Array<string | number>;
+    /** Object-level predicate. */
+    validator: (object: TObject, context: ValidationContext<TObject>) => boolean | ValidationIssueInput | Promise<boolean | ValidationIssueInput>;
+};
+
 /** JSON Schema fragment emitted by constraint definitions that have native schema support. */
 export type JsonSchemaFragment = Record<string, unknown>;
 

@@ -118,7 +118,7 @@ async function validateModelAsync(value: unknown, metadata: ModelMetadata, optio
 function validateFieldSync(root: unknown, value: unknown, field: FieldMetadata, path: Array<string | number>, options: ValidationOptions, registry: ConstraintRegistry, issues: ValidationIssue[]): void {
     const state = fieldState(field);
     // Optional and nullable short-circuit only their matching absent value.
-    if ((value === undefined && state.optional) || (value === null && state.nullable)) return;
+    if ((value === undefined && state.optional && !hasRequiredIf(field)) || (value === null && state.nullable && !hasRequiredIf(field))) return;
     const implicitRequired = requiredIssue(field, value, path, options.group);
     if (implicitRequired) issues.push(implicitRequired);
 
@@ -135,7 +135,7 @@ function validateFieldSync(root: unknown, value: unknown, field: FieldMetadata, 
 async function validateFieldAsync(root: unknown, value: unknown, field: FieldMetadata, path: Array<string | number>, options: ValidationOptions, registry: ConstraintRegistry, issues: ValidationIssue[]): Promise<void> {
     const state = fieldState(field);
     // Optional and nullable short-circuit only their matching absent value.
-    if ((value === undefined && state.optional) || (value === null && state.nullable)) return;
+    if ((value === undefined && state.optional && !hasRequiredIf(field)) || (value === null && state.nullable && !hasRequiredIf(field))) return;
     const implicitRequired = requiredIssue(field, value, path, options.group);
     if (implicitRequired) issues.push(implicitRequired);
 
@@ -285,8 +285,12 @@ function runnableConstraints(constraints: ConstraintMetadata[], group?: string):
     return constraints.filter((constraint) => !constraint.groups?.length || (group !== undefined && constraint.groups.includes(group)));
 }
 
+function hasRequiredIf(field: FieldMetadata): boolean {
+    return field.constraints.some((constraint) => constraint.name === 'requiredIf');
+}
+
 function shouldSkipConstraint(value: unknown, constraintName: string): boolean {
-    if (constraintName === 'required' || constraintName === 'notNull' || constraintName === 'notUndefined' || constraintName === 'optional' || constraintName === 'nullable') {
+    if (constraintName === 'required' || constraintName === 'notNull' || constraintName === 'notUndefined' || constraintName === 'optional' || constraintName === 'nullable' || constraintName === 'requiredIf' || constraintName === 'forbiddenIf') {
         return false;
     }
     return value === null || value === undefined;

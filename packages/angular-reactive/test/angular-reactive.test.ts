@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {Email, EqualsField, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toReactiveFormConfig} from '../src/index';
 import type {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
@@ -229,5 +229,25 @@ describe('@decorix/angular-reactive', () => {
 ]
 `);
     });
-});
+
+    it('uses form-level core validation for V2 constraints without single-control ValidatorFns', () => {
+        @Model('ReactiveV2Dto')
+        class ReactiveV2Dto {
+            @Required()
+            password!: string;
+
+            @EqualsField('password', 'Passwords must match')
+            confirmPassword?: string;
+        }
+
+        const config = toReactiveFormConfig(ReactiveV2Dto, {validationMode: 'both'});
+        const confirmPassword = config.fields.find((field) => field.name === 'confirmPassword');
+
+        expect(config.validate?.({password: 'a', confirmPassword: 'b'})).toMatchObject({
+            success: false,
+            issues: [{path: ['confirmPassword'], constraint: 'equalsField', message: 'Passwords must match'}]
+        });
+        expect(confirmPassword?.validators).toEqual([]);
+        expect(confirmPassword?.validatorDescriptors).toEqual([]);
+    });});
 

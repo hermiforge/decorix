@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {arrayField, dateField, Email, enumField, Label, Model, model, numberField, objectField, Required, stringField} from '@decorix/core';
+import {arrayField, dateField, Email, enumField, Label, Model, model, numberField, objectConstraint, ObjectConstraint, objectField, Required, RequiredIf, stringField} from '@decorix/core';
 import {toJsonSchema} from '../src/index';
 
 describe('@decorix/json-schema', () => {
@@ -148,7 +148,45 @@ describe('@decorix/json-schema', () => {
 }
 `);
     });
-});
+
+    it('preserves V2 constraints and serializes function options safely', () => {
+        @ObjectConstraint<{password?: string; confirmPassword?: string}>({
+            path: 'confirmPassword',
+            validator: (object) => object.password === object.confirmPassword,
+            message: 'Passwords must match'
+        })
+        @Model('SchemaV2DecoratorDto')
+        class SchemaV2DecoratorDto {
+            @RequiredIf<{mode?: string}>((object) => object.mode === 'advanced')
+            token?: string;
+        }
+
+        expect(toJsonSchema(SchemaV2DecoratorDto)).toMatchObject({
+            properties: {
+                token: {
+                    'x-decorix-constraints': [
+                        {name: 'requiredIf', options: {predicate: '[function]'}}
+                    ]
+                }
+            },
+            'x-decorix-constraints': [
+                {name: 'objectConstraint', options: {path: ['confirmPassword'], validator: '[function]'}, message: 'Passwords must match'}
+            ]
+        });
+
+        const metadata = model('SchemaV2BuilderDto', {
+            confirmPassword: stringField().equalsField('password'),
+            max: numberField().greaterThanField('min')
+        }, [objectConstraint<Record<string, unknown>, undefined>('schemaNamedObjectConstraint', {validate: () => false}, {groups: ['strict']})]);
+
+        expect(toJsonSchema(metadata)).toMatchObject({
+            properties: {
+                confirmPassword: {'x-decorix-constraints': [{name: 'equalsField', options: {path: 'password'}}]},
+                max: {'x-decorix-constraints': [{name: 'greaterThanField', options: {path: 'min'}}]}
+            },
+            'x-decorix-constraints': [{name: 'schemaNamedObjectConstraint', groups: ['strict']}]
+        });
+    });});
 
 
 

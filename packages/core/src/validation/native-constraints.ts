@@ -1,5 +1,5 @@
-import {createConstraint} from './constraint-registry';
-import type {ConstraintDefinition} from '../metadata/types';
+import {createConstraint, createObjectConstraint} from './constraint-registry';
+import type {ConstraintDefinition, ConditionalFieldOptions, FieldReferenceOptions, ObjectConstraintOptions} from '../metadata/types';
 
 /** Regular expression used by the native email constraint. */
 const EMAIL_REGEXP = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,6 +30,38 @@ function dateValue(value: unknown): number | undefined {
     return undefined;
 }
 
+
+/** Resolves a dot-path against the root object. */
+function readPath(object: unknown, path: string): unknown {
+    return path.split('.').reduce<unknown>((current, segment) => {
+        if (current === null || current === undefined) return undefined;
+        if (typeof current !== 'object') return undefined;
+        return (current as Record<string, unknown>)[segment];
+    }, object);
+}
+
+/** Returns true for null or undefined values that should skip comparison constraints. */
+function missing(value: unknown): boolean {
+    return value === null || value === undefined;
+}
+
+/** Runs a numeric field-to-field comparison. */
+function compareNumber(value: unknown, options: FieldReferenceOptions, object: unknown, compare: (left: number, right: number) => boolean) {
+    const peer = readPath(object, options.path);
+    if (missing(value) || missing(peer)) return true;
+    if (typeof value !== 'number' || typeof peer !== 'number') return typeFail('number');
+    return compare(value, peer) || false;
+}
+
+/** Runs a date-like field-to-field comparison. */
+function compareDate(value: unknown, options: FieldReferenceOptions, object: unknown, compare: (left: number, right: number) => boolean) {
+    const peer = readPath(object, options.path);
+    if (missing(value) || missing(peer)) return true;
+    const left = dateValue(value);
+    const right = dateValue(peer);
+    if (left === undefined || right === undefined) return typeFail('date');
+    return compare(left, right) || false;
+}
 /** Builds a normalized type-mismatch issue payload for native constraints. */
 function typeFail(expected: string) {
     return {code: 'decorix.type', params: {expected}};
@@ -38,6 +70,10 @@ function typeFail(expected: string) {
 /** Registers a field-level native constraint in the default registry. */
 function field<TOptions>(definition: Omit<ConstraintDefinition<unknown, TOptions>, 'kind'>): void {
     createConstraint({...definition, kind: 'field'});
+}
+/** Registers an object-level native constraint in the default registry. */
+function object<TOptions>(definition: Omit<ConstraintDefinition<unknown, TOptions>, 'kind'>): void {
+    createObjectConstraint({...definition, kind: 'object'});
 }
 
 /**
@@ -48,6 +84,7 @@ function field<TOptions>(definition: Omit<ConstraintDefinition<unknown, TOptions
  */
 export function registerNativeConstraints(): void {
     const defs: Array<() => void> = [
+        () => object<ObjectConstraintOptions>({name: 'objectConstraint', validate: (value, options, context) => { const result = options.validator(value, context); if (result instanceof Promise) return result; if (result === true) return true; if (result === false) return {path: options.path ?? []}; return {...result, path: result.path ?? options.path ?? []}; }, message: 'Object failed validation.'}),
         // Presence and nullity constraints define when absent values are allowed or rejected.
         () => field({name: 'required', validate: (value) => value !== null && value !== undefined, message: 'Value is required.'}),
         () => field({name: 'optional', validate: () => true, message: 'Value is optional.'}),
@@ -56,6 +93,16 @@ export function registerNativeConstraints(): void {
         () => field({name: 'notUndefined', validate: (value) => value !== undefined, message: 'Value must not be undefined.'}),
         () => field({name: 'notEmpty', validate: (value) => nullable(value) || (length(value) !== undefined ? length(value)! > 0 : typeFail('sized')), message: 'Value must not be empty.'}),
         () => field({name: 'notBlank', validate: (value) => nullable(value) || (typeof value === 'string' ? value.trim().length > 0 : typeFail('string')), message: 'Value must not be blank.'}),
+        () => field<FieldReferenceOptions>({name: 'equalsField', validate: (value, options, context) => { const peer = readPath(context.object, options.path); return missing(value) || missing(peer) || Object.is(value, peer); }, message: 'Value must equal the referenced field.'}),
+        () => field<FieldReferenceOptions>({name: 'notEqualsField', validate: (value, options, context) => { const peer = readPath(context.object, options.path); return missing(value) || missing(peer) || !Object.is(value, peer); }, message: 'Value must not equal the referenced field.'}),
+        () => field<FieldReferenceOptions>({name: 'greaterThanField', validate: (value, options, context) => compareNumber(value, options, context.object, (left, right) => left > right), message: 'Value must be greater than the referenced field.'}),
+        () => field<FieldReferenceOptions>({name: 'greaterOrEqualField', validate: (value, options, context) => compareNumber(value, options, context.object, (left, right) => left >= right), message: 'Value must be greater than or equal to the referenced field.'}),
+        () => field<FieldReferenceOptions>({name: 'lessThanField', validate: (value, options, context) => compareNumber(value, options, context.object, (left, right) => left < right), message: 'Value must be less than the referenced field.'}),
+        () => field<FieldReferenceOptions>({name: 'lessOrEqualField', validate: (value, options, context) => compareNumber(value, options, context.object, (left, right) => left <= right), message: 'Value must be less than or equal to the referenced field.'}),
+        () => field<FieldReferenceOptions>({name: 'beforeField', validate: (value, options, context) => compareDate(value, options, context.object, (left, right) => left < right), message: 'Value must be before the referenced field.'}),
+        () => field<FieldReferenceOptions>({name: 'afterField', validate: (value, options, context) => compareDate(value, options, context.object, (left, right) => left > right), message: 'Value must be after the referenced field.'}),
+        () => field<ConditionalFieldOptions>({name: 'requiredIf', validate: (value, options, context) => options.predicate(context.object) ? value !== null && value !== undefined : true, message: 'Value is required.'}),
+        () => field<ConditionalFieldOptions>({name: 'forbiddenIf', validate: (value, options, context) => options.predicate(context.object) ? value === null || value === undefined : true, message: 'Value is forbidden.'}),
         // String constraints validate textual shape, length, casing, and common formats.
         () => field<number>({name: 'minLength', validate: (value, min) => nullable(value) || (typeof value === 'string' ? value.length >= min : typeFail('string')), message: (min) => `Value must be at least ${min} characters.`, toJsonSchema: (min) => ({minLength: min})}),
         () => field<number>({name: 'maxLength', validate: (value, max) => nullable(value) || (typeof value === 'string' ? value.length <= max : typeFail('string')), message: (max) => `Value must be at most ${max} characters.`, toJsonSchema: (max) => ({maxLength: max})}),
