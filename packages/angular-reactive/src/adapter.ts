@@ -10,7 +10,8 @@ import type {
     DecorixReactiveFormModel
 } from './types';
 
-const EMAIL_REGEXP = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// The domain label before the final dot excludes `.` to keep the match linear-time.
+const EMAIL_REGEXP = /^[^\s@]+@[^\s@.]+\.[^\s@]+$/;
 
 /**
  * Creates an Angular Reactive Forms configuration from Decorix metadata.

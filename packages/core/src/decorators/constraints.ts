@@ -5,8 +5,10 @@ import {fieldDecorator} from './common';
 type OptionsArg = string | ConstraintOptions;
 /** Inclusive numeric range used by range-based decorators. */
 type Range = {min: number; max: number};
+/** Date-like input accepted by date decorators. */
+type DateLike = Date | string | number;
 /** Inclusive date range used by date-range decorators. */
-type DateRange = {min: Date | string | number; max: Date | string | number};
+type DateRange = {min: DateLike; max: DateLike};
 
 /**
  * Attaches an arbitrary registered constraint to a field by name.
@@ -142,11 +144,11 @@ export function Future(options?: OptionsArg): PropertyDecorator { return typed('
 /** Requires a date-like value to be after or equal to the current time. */
 export function FutureOrPresent(options?: OptionsArg): PropertyDecorator { return typed('date', 'futureOrPresent', undefined, options); }
 /** Requires a date-like value to be before the supplied target. */
-export function Before(value: Date | string | number, options?: OptionsArg): PropertyDecorator { return typed('date', 'before', value, options); }
+export function Before(value: DateLike, options?: OptionsArg): PropertyDecorator { return typed('date', 'before', value, options); }
 /** Requires a date-like value to be after the supplied target. */
-export function After(value: Date | string | number, options?: OptionsArg): PropertyDecorator { return typed('date', 'after', value, options); }
+export function After(value: DateLike, options?: OptionsArg): PropertyDecorator { return typed('date', 'after', value, options); }
 /** Requires a date-like value to stay within the inclusive date range. */
-export function BetweenDates(min: Date | string | number, max: Date | string | number, options?: OptionsArg): PropertyDecorator { return typed('date', 'betweenDates', {min, max} satisfies DateRange, options); }
+export function BetweenDates(min: DateLike, max: DateLike, options?: OptionsArg): PropertyDecorator { return typed('date', 'betweenDates', {min, max} satisfies DateRange, options); }
 
 /** Requires an array to contain at least the supplied item count. */
 export function MinItems(value: number, options?: OptionsArg): PropertyDecorator { return typed('array', 'minItems', value, options); }

@@ -162,5 +162,11 @@ export type ModelMetadata = {
 
 /**
  * A constructor or function used as a registry key for decorator-declared models.
+ *
+ * `Function` is intentional here: the registry accepts any decorated class
+ * regardless of its constructor signature and only uses the value as a WeakMap
+ * key and to read `.name`, so a narrower callable/constructor type would reject
+ * legitimate decorated classes.
  */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type -- registry key must accept any class constructor
 export type ModelTarget = Function;

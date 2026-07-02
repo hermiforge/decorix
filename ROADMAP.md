@@ -22,6 +22,13 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 - Custom validation fallback logic must never be uncommented.
 - No adapter may ignore a core constraint. If the target framework cannot express a constraint natively, the adapter must preserve it in descriptors or schema metadata and enforce it through Decorix custom/core validation where the framework allows runtime validation.
 - Sync-only adapter paths must fail clearly when they encounter async constraints, unless the framework-specific integration exposes an async validation path.
+
+## Quality Gate (run every pass)
+
+- Before committing any implementation pass, run and pass all of: `pnpm lint` (ESLint + SonarJS), `pnpm typecheck` (strict flags), `pnpm examples:typecheck`, `pnpm test`, and `pnpm build`.
+- Fix every lint/type finding. If a rule is genuinely inapplicable, disable it narrowly (inline `eslint-disable-next-line` or a scoped override in `eslint.config.mjs`) with a one-line rationale — never silence findings broadly or leave them unresolved.
+- CI enforces `lint`, `typecheck`, `test`, and `build`; keep the tree green so every handoff is a clean checkpoint.
+
 ## IN_PROGRESS
 
 - No active item at the end of this implementation pass.
@@ -55,6 +62,15 @@ CLI:
 - CLI reads DTO entrypoints, loads metadata, and writes artifacts without app runtime bootstrapping.
 
 ## DONE
+
+### Quality Gate Tooling
+
+- Hardened `tsconfig.base.json` with `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, and `noImplicitOverride`; removed the one surfaced issue (unused `Nullable` import in `packages/core/test/core.test.ts`).
+- Added ESLint 9 flat config (`eslint.config.mjs`) with `typescript-eslint` + `eslint-plugin-sonarjs` recommended rules, plus `lint`/`lint:fix` scripts and a CI `pnpm lint` step.
+- Fixed all SonarJS/typescript-eslint findings: linear-time email regexes (`packages/core/src/validation/native-constraints.ts`, `packages/angular-reactive/src/adapter.ts`), enclosed one-line `if` bodies in the `objectConstraint`/`pattern` validators, `DateLike` type aliases (native-constraints, field-builders, decorators), test-fixture rule relaxations (`no-hardcoded-passwords`/`no-duplicate-string`/`cognitive-complexity`), and a narrowly-justified `no-unsafe-function-type` disable on `ModelTarget`.
+- Added a standing **Quality Gate** section requiring `pnpm lint` + `pnpm typecheck` + `pnpm test` + `pnpm build` to pass every pass.
+
+Verification: `pnpm lint` clean, `pnpm -r typecheck` passed (10 packages), `examples:typecheck` passed, `vitest run` passed (10 files, 152 tests).
 
 ### V4 JSON Schema Export And Import
 

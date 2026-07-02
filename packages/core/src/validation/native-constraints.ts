@@ -1,11 +1,14 @@
 import {createConstraint, createObjectConstraint} from './constraint-registry';
 import type {ConstraintDefinition, ConditionalFieldOptions, FieldReferenceOptions, ObjectConstraintOptions} from '../metadata/types';
 
-/** Regular expression used by the native email constraint. */
-const EMAIL_REGEXP = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Regular expression used by the native email constraint. The domain label before the final dot excludes `.` to stay linear-time. */
+const EMAIL_REGEXP = /^[^\s@]+@[^\s@.]+\.[^\s@]+$/;
 const URL_REGEXP = /^(https?:\/\/)[^\s/$.?#].[^\s]*$/i;
 const UUID_REGEXP = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SLUG_REGEXP = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Date-like input accepted by native date comparison constraints. */
+type DateLike = Date | string | number;
 
 /** Returns true when a value should be treated as absent by nullable-aware native constraints. */
 function nullable(value: unknown): boolean {
@@ -84,7 +87,7 @@ function object<TOptions>(definition: Omit<ConstraintDefinition<unknown, TOption
  */
 export function registerNativeConstraints(): void {
     const defs: Array<() => void> = [
-        () => object<ObjectConstraintOptions>({name: 'objectConstraint', validate: (value, options, context) => { const result = options.validator(value, context); if (result instanceof Promise) return result; if (result === true) return true; if (result === false) return {path: options.path ?? []}; return {...result, path: result.path ?? options.path ?? []}; }, message: 'Object failed validation.'}),
+        () => object<ObjectConstraintOptions>({name: 'objectConstraint', validate: (value, options, context) => { const result = options.validator(value, context); if (result instanceof Promise) { return result; } if (result === true) { return true; } if (result === false) { return {path: options.path ?? []}; } return {...result, path: result.path ?? options.path ?? []}; }, message: 'Object failed validation.'}),
         // Presence and nullity constraints define when absent values are allowed or rejected.
         () => field({name: 'required', validate: (value) => value !== null && value !== undefined, message: 'Value is required.'}),
         () => field({name: 'optional', validate: () => true, message: 'Value is optional.'}),
@@ -107,7 +110,7 @@ export function registerNativeConstraints(): void {
         () => field<number>({name: 'minLength', validate: (value, min) => nullable(value) || (typeof value === 'string' ? value.length >= min : typeFail('string')), message: (min) => `Value must be at least ${min} characters.`, toJsonSchema: (min) => ({minLength: min})}),
         () => field<number>({name: 'maxLength', validate: (value, max) => nullable(value) || (typeof value === 'string' ? value.length <= max : typeFail('string')), message: (max) => `Value must be at most ${max} characters.`, toJsonSchema: (max) => ({maxLength: max})}),
         () => field<{min: number; max: number}>({name: 'length', validate: (value, options) => nullable(value) || (typeof value === 'string' ? value.length >= options.min && value.length <= options.max : typeFail('string')), message: (o) => `Value must be between ${o.min} and ${o.max} characters.`, toJsonSchema: (o) => ({minLength: o.min, maxLength: o.max})}),
-        () => field<RegExp>({name: 'pattern', validate: (value, pattern) => { if (nullable(value)) return true; if (typeof value !== 'string') return typeFail('string'); pattern.lastIndex = 0; const ok = pattern.test(value); pattern.lastIndex = 0; return ok; }, message: 'Value does not match the required pattern.', toJsonSchema: (pattern) => ({pattern: pattern.source})}),
+        () => field<RegExp>({name: 'pattern', validate: (value, pattern) => { if (nullable(value)) { return true; } if (typeof value !== 'string') { return typeFail('string'); } pattern.lastIndex = 0; const ok = pattern.test(value); pattern.lastIndex = 0; return ok; }, message: 'Value does not match the required pattern.', toJsonSchema: (pattern) => ({pattern: pattern.source})}),
         () => field({name: 'email', validate: (value) => nullable(value) || (typeof value === 'string' ? EMAIL_REGEXP.test(value) : typeFail('string')), message: 'Value must be a valid email address.', toJsonSchema: () => ({format: 'email'})}),
         () => field({name: 'url', validate: (value) => nullable(value) || (typeof value === 'string' ? URL_REGEXP.test(value) : typeFail('string')), message: 'Value must be a valid URL.', toJsonSchema: () => ({format: 'uri'})}),
         () => field({name: 'uuid', validate: (value) => nullable(value) || (typeof value === 'string' ? UUID_REGEXP.test(value) : typeFail('string')), message: 'Value must be a valid UUID.', toJsonSchema: () => ({format: 'uuid'})}),
@@ -133,9 +136,9 @@ export function registerNativeConstraints(): void {
         () => field({name: 'pastOrPresent', validate: (value) => nullable(value) || ((dateValue(value) ?? Number.POSITIVE_INFINITY) <= Date.now()), message: 'Value must be in the past or present.'}),
         () => field({name: 'future', validate: (value) => nullable(value) || ((dateValue(value) ?? Number.NEGATIVE_INFINITY) > Date.now()), message: 'Value must be in the future.'}),
         () => field({name: 'futureOrPresent', validate: (value) => nullable(value) || ((dateValue(value) ?? Number.NEGATIVE_INFINITY) >= Date.now()), message: 'Value must be in the future or present.'}),
-        () => field<Date | string | number>({name: 'before', validate: (value, target) => nullable(value) || ((dateValue(value) ?? Number.POSITIVE_INFINITY) < (dateValue(target) ?? Number.NEGATIVE_INFINITY)), message: 'Value must be before the target date.'}),
-        () => field<Date | string | number>({name: 'after', validate: (value, target) => nullable(value) || ((dateValue(value) ?? Number.NEGATIVE_INFINITY) > (dateValue(target) ?? Number.POSITIVE_INFINITY)), message: 'Value must be after the target date.'}),
-        () => field<{min: Date | string | number; max: Date | string | number}>({name: 'betweenDates', validate: (value, o) => { const current = dateValue(value); return nullable(value) || (current !== undefined && current >= (dateValue(o.min) ?? Number.POSITIVE_INFINITY) && current <= (dateValue(o.max) ?? Number.NEGATIVE_INFINITY)); }, message: 'Value must be between the target dates.'}),
+        () => field<DateLike>({name: 'before', validate: (value, target) => nullable(value) || ((dateValue(value) ?? Number.POSITIVE_INFINITY) < (dateValue(target) ?? Number.NEGATIVE_INFINITY)), message: 'Value must be before the target date.'}),
+        () => field<DateLike>({name: 'after', validate: (value, target) => nullable(value) || ((dateValue(value) ?? Number.NEGATIVE_INFINITY) > (dateValue(target) ?? Number.POSITIVE_INFINITY)), message: 'Value must be after the target date.'}),
+        () => field<{min: DateLike; max: DateLike}>({name: 'betweenDates', validate: (value, o) => { const current = dateValue(value); return nullable(value) || (current !== undefined && current >= (dateValue(o.min) ?? Number.POSITIVE_INFINITY) && current <= (dateValue(o.max) ?? Number.NEGATIVE_INFINITY)); }, message: 'Value must be between the target dates.'}),
         // Collection constraints validate array cardinality and uniqueness.
         () => field<number>({name: 'minItems', validate: (value, min) => nullable(value) || (Array.isArray(value) ? value.length >= min : typeFail('array')), message: (min) => `Value must contain at least ${min} items.`, toJsonSchema: (min) => ({minItems: min})}),
         () => field<number>({name: 'maxItems', validate: (value, max) => nullable(value) || (Array.isArray(value) ? value.length <= max : typeFail('array')), message: (max) => `Value must contain at most ${max} items.`, toJsonSchema: (max) => ({maxItems: max})}),

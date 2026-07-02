@@ -5,6 +5,8 @@ import type {ConstraintDefinition, ConstraintMetadata, FieldMetadata, FieldType,
 
 /** Message/group options accepted by builder constraint methods. */
 type OptionsArg = string | ConstraintOptions;
+/** Date-like input accepted by date builder constraint methods. */
+type DateLike = Date | string | number;
 
 /**
  * Common interface implemented by all field builders.
@@ -211,11 +213,11 @@ export class DateFieldBuilder extends BaseFieldBuilder {
     /** Requires the date-like value to be after or equal to the current time. */
     futureOrPresent(options?: OptionsArg): this { return this.addConstraintName('futureOrPresent', undefined, options); }
     /** Requires the date-like value to be before the supplied target. */
-    before(value: Date | string | number, options?: OptionsArg): this { return this.addConstraintName('before', value, options); }
+    before(value: DateLike, options?: OptionsArg): this { return this.addConstraintName('before', value, options); }
     /** Requires the date-like value to be after the supplied target. */
-    after(value: Date | string | number, options?: OptionsArg): this { return this.addConstraintName('after', value, options); }
+    after(value: DateLike, options?: OptionsArg): this { return this.addConstraintName('after', value, options); }
     /** Requires the date-like value to stay within the inclusive date range. */
-    betweenDates(min: Date | string | number, max: Date | string | number, options?: OptionsArg): this { return this.addConstraintName('betweenDates', {min, max}, options); }
+    betweenDates(min: DateLike, max: DateLike, options?: OptionsArg): this { return this.addConstraintName('betweenDates', {min, max}, options); }
     /** Requires the date-like value to be before another root object date-like field. */
     beforeField(path: string, options?: OptionsArg): this { return this.addConstraintName('beforeField', {path}, options); }
     /** Requires the date-like value to be after another root object date-like field. */
