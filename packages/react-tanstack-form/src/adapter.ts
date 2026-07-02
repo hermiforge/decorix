@@ -1,4 +1,4 @@
-import {getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
 import {collectErrors} from './errors';
 import type {DecorixTanStackFormConfig, DecorixTanStackFormModel, DecorixTanStackFormOptions} from './types';
 import type {ModelMetadata} from '@decorix/core';
@@ -15,7 +15,7 @@ export function toTanStackForm(
     options: DecorixTanStackFormOptions = {}
 ): DecorixTanStackFormConfig {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = requireValidatorAdapter(options.validator).createSchema(metadata);
+    const schema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
 
     return {
         metadata,
@@ -46,3 +46,5 @@ export function useTanStackDecorix(
 function defaults(metadata: ModelMetadata, provided: Record<string, unknown> = {}): Record<string, unknown> {
     return Object.fromEntries(metadata.fields.map((field) => [field.name, provided[field.name]]));
 }
+
+

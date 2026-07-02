@@ -124,4 +124,18 @@ describe('@decorix/angular-reactive', () => {
         expect(config.fields[0]?.validators.every((validator) => typeof validator === 'function')).toBe(true);
         expect(config.validate?.({name: 'A', email: 'bad'})).toMatchObject({success: false});
     });
+    it('enforces unsupported sync constraints through a Decorix-backed ValidatorFn', () => {
+        const metadata = model('ReactiveFallbackDto', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const config = toReactiveFormConfig(metadata);
+        const slug = config.fields[0];
+
+        expect(runValidators(slug?.validators ?? [], 'Bad Slug')).toEqual([
+            {slug: {message: 'Invalid slug'}}
+        ]);
+        expect(runValidators(slug?.validators ?? [], 'good-slug')).toEqual([]);
+    });
 });
+

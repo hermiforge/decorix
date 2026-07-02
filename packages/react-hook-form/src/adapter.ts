@@ -1,4 +1,4 @@
-import {getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
 import {hookFormErrors} from './errors';
 import type {
     DecorixReactHookFormConfig,
@@ -19,7 +19,7 @@ export function toReactHookForm(
     options: DecorixReactHookFormOptions = {}
 ): DecorixReactHookFormConfig {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = requireValidatorAdapter(options.validator).createSchema(metadata);
+    const schema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
 
     return {
         metadata,
@@ -59,6 +59,8 @@ function defaults(metadata: ModelMetadata, provided: Record<string, unknown> = {
 }
 
 function requiredRule(field: FieldMetadata): boolean | string {
-    const required = field.constraints.find((constraint) => constraint.kind === 'required');
+    const required = field.constraints.find((constraint) => constraint.name === 'required');
     return required?.message ?? field.required;
 }
+
+

@@ -43,5 +43,20 @@ describe('@decorix/zod', () => {
 
         expect(adapter.name).toBe('zod-test-default');
     });
+
+    it('enforces unsupported native constraints with a Zod custom fallback', () => {
+        const article = model('ArticleDtoZodFallback', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const result = toZod(article).safeParse({slug: 'Bad Slug'});
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error.issues[0]).toMatchObject({message: 'Invalid slug'});
+        }
+    });
 });
+
+
 

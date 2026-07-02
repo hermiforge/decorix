@@ -36,5 +36,24 @@ describe('@decorix/json-schema', () => {
             }
         });
     });
+
+    it('preserves non-exportable constraints in x-decorix-constraints', () => {
+        const article = model('ArticleDtoJsonSchemaFallback', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        expect(toJsonSchema(article)).toMatchObject({
+            properties: {
+                slug: {
+                    type: 'string',
+                    'x-decorix-constraints': [
+                        {name: 'slug', message: 'Invalid slug'}
+                    ]
+                }
+            }
+        });
+    });
 });
+
+
 

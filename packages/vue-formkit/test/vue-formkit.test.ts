@@ -4,7 +4,7 @@ import {registerZodValidator} from '@decorix/zod';
 import {toFormKit, useFormKitDecorix} from '../src/index';
 
 describe('@decorix/vue-formkit', () => {
-    it('creates FormKit schema from decorators without a runtime validator', () => {
+    it('creates FormKit schema from decorators with core runtime validation', () => {
         @Model('SignupDto')
         class SignupDto {
             @Required()
@@ -19,7 +19,7 @@ describe('@decorix/vue-formkit', () => {
 
         const config = toFormKit(SignupDto);
 
-        expect(config.validate).toBeUndefined();
+        expect(config.validate?.({name: 'A', email: 'bad'})).toMatchObject({success: false});
         expect(config.schema[0]).toMatchObject({
             $formkit: 'text',
             name: 'name',
@@ -41,5 +41,18 @@ describe('@decorix/vue-formkit', () => {
         expect(config.schema[1]?.validation).toBe('required|email');
         expect(config.validate?.({name: 'A', email: 'bad'})).toMatchObject({success: false});
     });
+
+    it('uses core validation for constraints FormKit strings cannot express natively', () => {
+        const article = model('FormKitFallbackDto', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const config = toFormKit(article);
+
+        expect(config.validate?.({slug: 'Bad Slug'})).toMatchObject({success: false, issues: [{message: 'Invalid slug'}]});
+    });
 });
+
+
+
 

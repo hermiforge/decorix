@@ -51,5 +51,18 @@ describe('@decorix/react-hook-form', () => {
             'No Decorix validator adapter registered'
         );
     });
+
+    it('uses core validation for constraints React Hook Form rules cannot express natively', async () => {
+        const article = model('HookFormFallbackDto', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const config = toReactHookForm(article);
+        const result = await config.resolver({slug: 'Bad Slug'});
+
+        expect(result.errors).toMatchObject({slug: {message: 'Invalid slug'}});
+    });
 });
+
+
 

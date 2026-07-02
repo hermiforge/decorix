@@ -45,6 +45,9 @@ export function getModelMetadata(modelOrMetadata: ModelTarget | ModelMetadata): 
     return cloneModelMetadata(metadata);
 }
 
+/**
+ * Reads mutable metadata for decorators, creating an empty model entry when needed.
+ */
 export function getOrCreateMutableModelMetadata(target: ModelTarget): ModelMetadata {
     const current = modelRegistry.get(target);
     if (current) {
@@ -56,10 +59,16 @@ export function getOrCreateMutableModelMetadata(target: ModelTarget): ModelMetad
     return metadata;
 }
 
+/**
+ * Commits decorator-mutated metadata back to the registry as a defensive clone.
+ */
 export function commitModelMetadata(target: ModelTarget, metadata: ModelMetadata): void {
     modelRegistry.set(target, cloneModelMetadata(metadata));
 }
 
+/**
+ * Reads mutable field metadata for decorators, creating a string field placeholder when needed.
+ */
 export function getOrCreateMutableFieldMetadata(target: ModelTarget, name: string): FieldMetadata {
     const metadata = getOrCreateMutableModelMetadata(target);
     const existing = metadata.fields.find((field) => field.name === name);
@@ -67,6 +76,7 @@ export function getOrCreateMutableFieldMetadata(target: ModelTarget, name: strin
         return existing;
     }
 
+    // Decorators do not know the TypeScript property type, so string is the safest editable placeholder.
     const field: FieldMetadata = {name, type: 'string', required: false, constraints: []};
     metadata.fields.push(field);
     return field;

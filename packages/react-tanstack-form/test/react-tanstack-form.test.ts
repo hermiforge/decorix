@@ -49,5 +49,17 @@ describe('@decorix/react-tanstack-form', () => {
             'No Decorix validator adapter registered'
         );
     });
+
+    it('uses core validation for constraints TanStack Form cannot express natively', () => {
+        const article = model('TanStackFallbackDto', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const config = toTanStackForm(article);
+
+        expect(config.validators.onSubmit({slug: 'Bad Slug'})).toEqual({slug: ['Invalid slug']});
+    });
 });
+
+
 

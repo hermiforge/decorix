@@ -1,6 +1,9 @@
 import {getOrCreateMutableFieldMetadata} from '../registry/model-registry';
 import type {FieldMetadata, ModelTarget} from '../metadata/types';
 
+/**
+ * Creates a property decorator that mutates Decorix field metadata.
+ */
 export function fieldDecorator(mutator: (field: FieldMetadata) => void): PropertyDecorator {
     return (target, propertyKey) => {
         const modelTarget = target.constructor as ModelTarget;

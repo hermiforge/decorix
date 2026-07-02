@@ -1,5 +1,8 @@
 import type {FieldMetadata} from '@decorix/core';
 
+/**
+ * Maps Decorix field metadata to the closest FormKit input type.
+ */
 export function formKitType(field: FieldMetadata): string {
     switch (field.type) {
         case 'number':
@@ -11,20 +14,25 @@ export function formKitType(field: FieldMetadata): string {
         case 'enum':
             return 'select';
         default:
+            // FormKit text inputs are the safest fallback for object/string-like fields.
             return 'text';
     }
 }
 
+/**
+ * Converts Decorix constraints into FormKit's pipe-delimited validation string.
+ */
 export function formKitValidation(field: FieldMetadata): string {
     const rules = field.required ? ['required'] : [];
     for (const constraint of field.constraints) {
-        if (constraint.kind === 'required') {
+        if (constraint.name === 'required') {
             continue;
         }
-        if ('value' in constraint) {
-            rules.push(`${constraint.kind}:${constraint.value instanceof RegExp ? constraint.value.source : constraint.value}`);
+        if (constraint.options !== undefined) {
+            // RegExp objects are serialized to their source because FormKit validation strings cannot carry objects.
+            rules.push(`${constraint.name}:${constraint.options instanceof RegExp ? constraint.options.source : constraint.options}`);
         } else {
-            rules.push(constraint.kind);
+            rules.push(constraint.name);
         }
     }
     return rules.join('|');

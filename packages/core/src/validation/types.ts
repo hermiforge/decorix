@@ -1,12 +1,15 @@
 import type {ModelMetadata} from '../metadata/types';
+import type {ValidationOptions} from './engine';
 
 /**
  * Framework-neutral validation issue.
  */
 export type ValidationIssue = {
     path: Array<string | number>;
+    code: string;
     message: string;
-    code?: string;
+    constraint: string;
+    params?: Record<string, unknown>;
 };
 
 /**
@@ -26,7 +29,7 @@ export interface ValidatorSchema<TValue = unknown> {
      * @param value - Unknown input to validate.
      * @returns Successful parsed data or normalized validation issues.
      */
-    validate(value: unknown): ValidationResult<TValue>;
+    validate(value: unknown, options?: ValidationOptions): ValidationResult<TValue>;
 }
 
 /**
@@ -51,3 +54,5 @@ export interface ValidatorAdapter<TSchema extends ValidatorSchema = ValidatorSch
  * Validator adapter reference accepted by generated UI adapters.
  */
 export type ValidatorAdapterRef = ValidatorAdapter | string;
+
+export type {ValidationOptions};

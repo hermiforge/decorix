@@ -1,15 +1,68 @@
+import './validation/native-constraints';
+
 export type {
+    ConstraintDefinition,
     ConstraintMetadata,
     FieldMetadata,
     FieldType,
+    JsonSchemaFragment,
     ModelMetadata,
     ModelTarget,
-    UiMetadata
+    UiMetadata,
+    ValidationContext,
+    ValidationIssueInput
 } from './metadata/types';
 export {cloneFieldMetadata, cloneModelMetadata, isModelMetadata} from './metadata/clone';
+export {constraintName, constraintValue, createConstraintMetadata, normalizeConstraintOptions} from './metadata/constraints';
 export {getModelMetadata, hasModelMetadata, registerModelMetadata} from './registry/model-registry';
 export {Model} from './decorators/model';
-export {Email, Max, MaxLength, Min, MinLength, Pattern, Required} from './decorators/constraints';
+export {
+    After,
+    Before,
+    Between,
+    BetweenDates,
+    Contains,
+    Email,
+    EndsWith,
+    Enum,
+    Finite,
+    Future,
+    FutureOrPresent,
+    Integer,
+    Length,
+    Lowercase,
+    Max,
+    MaxItems,
+    MaxLength,
+    Min,
+    MinItems,
+    MinLength,
+    MultipleOf,
+    Negative,
+    NegativeOrZero,
+    NotBlank,
+    NotEmpty,
+    NotEmptyArray,
+    NotNull,
+    NotOneOf,
+    NotUndefined,
+    Nullable,
+    OneOf,
+    Optional,
+    Past,
+    PastOrPresent,
+    Pattern,
+    Positive,
+    PositiveOrZero,
+    Required,
+    Size,
+    Slug,
+    StartsWith,
+    UniqueItems,
+    Uppercase,
+    Url,
+    Uuid
+} from './decorators/constraints';
 export {Description, Group, Hidden, Label, Order, Placeholder, Readonly} from './decorators/ui';
 export type {FieldBuilder} from './builder/field-builders';
 export {
@@ -29,7 +82,18 @@ export {
     objectField,
     stringField
 } from './builder/field-builders';
-export type {ValidationIssue, ValidationResult, ValidatorAdapter, ValidatorAdapterRef, ValidatorSchema} from './validation/types';
+export type {ValidationIssue, ValidationOptions, ValidationResult, ValidatorAdapter, ValidatorAdapterRef, ValidatorSchema} from './validation/types';
+export {validate, validateAsync} from './validation/engine';
+export {createCoreValidatorAdapter, type CoreValidatorSchema} from './validation/core-adapter';
+export {
+    ConstraintRegistry,
+    createAsyncConstraint,
+    createConstraint,
+    createObjectConstraint,
+    defaultConstraintRegistry,
+    getConstraint,
+    registerConstraint
+} from './validation/constraint-registry';
 export {
     getDefaultValidatorAdapter,
     getValidatorAdapter,

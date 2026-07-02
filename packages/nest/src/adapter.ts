@@ -1,4 +1,4 @@
-import {getModelMetadata, requireValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
 import {DecorixValidationException} from './errors';
 import type {DecorixPipeModel, DecorixPipeOptions, DecorixPipeTransform} from './types';
 
@@ -14,7 +14,7 @@ export function DecorixPipe(
     options: DecorixPipeOptions = {}
 ): DecorixPipeTransform {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = requireValidatorAdapter(options.validator).createSchema(metadata);
+    const schema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
 
     return {
         transform(value: unknown): unknown {
@@ -29,3 +29,5 @@ export function DecorixPipe(
         }
     };
 }
+
+

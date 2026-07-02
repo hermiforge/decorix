@@ -1,4 +1,4 @@
-import {getModelMetadata, resolveValidatorAdapter} from '@decorix/core';
+import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter} from '@decorix/core';
 import {formKitType, formKitValidation} from './validation';
 import type {DecorixFormKitConfig, DecorixFormKitModel, DecorixFormKitOptions} from './types';
 import type {FieldMetadata, ModelMetadata} from '@decorix/core';
@@ -15,14 +15,13 @@ export function toFormKit(
     options: DecorixFormKitOptions = {}
 ): DecorixFormKitConfig {
     const metadata = getModelMetadata(modelOrMetadata);
-    const adapter = resolveValidatorAdapter(options.validator);
-    const validatorSchema = adapter?.createSchema(metadata);
+    const validatorSchema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
 
     return {
         metadata,
         initialValues: defaults(metadata, options.initialValues),
         schema: metadata.fields.map(toFieldSchema),
-        ...(validatorSchema ? {validate: (value: unknown) => validatorSchema.validate(value)} : {})
+        validate: (value: unknown) => validatorSchema.validate(value)
     };
 }
 
@@ -56,3 +55,4 @@ function toFieldSchema(field: FieldMetadata) {
 function defaults(metadata: ModelMetadata, provided: Record<string, unknown> = {}): Record<string, unknown> {
     return Object.fromEntries(metadata.fields.map((field) => [field.name, provided[field.name]]));
 }
+

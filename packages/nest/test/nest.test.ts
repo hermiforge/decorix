@@ -55,5 +55,17 @@ describe('@decorix/nest', () => {
             'No Decorix validator adapter registered'
         );
     });
+
+    it('uses core validation for constraints Nest pipes cannot express natively', () => {
+        const article = model('NestFallbackDto', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const pipe = DecorixPipe(article);
+
+        expect(() => pipe.transform({slug: 'Bad Slug'})).toThrow(DecorixValidationException);
+    });
 });
+
+
 

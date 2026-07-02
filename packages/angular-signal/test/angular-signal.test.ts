@@ -52,5 +52,18 @@ describe('@decorix/angular-signal', () => {
             'No Decorix validator adapter registered'
         );
     });
+
+    it('uses core validation for constraints the form facade cannot express natively', () => {
+        const article = model('SignalFallbackDto', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const form = toSignalForm(article, {initialValue: {slug: 'Bad Slug'}});
+
+        expect(form.slug.errors()).toEqual(['Invalid slug']);
+        expect(form.submit()).toMatchObject({success: false});
+    });
 });
+
+
 

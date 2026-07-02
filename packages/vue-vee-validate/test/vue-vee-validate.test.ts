@@ -46,5 +46,17 @@ describe('@decorix/vue-vee-validate', () => {
             'No Decorix validator adapter registered'
         );
     });
+
+    it('uses core validation for constraints VeeValidate descriptors cannot express natively', () => {
+        const article = model('VeeFallbackDto', {
+            slug: stringField().required().slug('Invalid slug')
+        });
+
+        const config = toVeeValidate(article);
+
+        expect(config.validate({slug: 'Bad Slug'})).toMatchObject({success: false, issues: [{message: 'Invalid slug'}]});
+    });
 });
+
+
 

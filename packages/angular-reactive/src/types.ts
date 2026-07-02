@@ -26,15 +26,11 @@ export type DecorixAngularReactiveFormOptions<
  * Abstract validator descriptor derived from Decorix constraints.
  */
 export type DecorixReactiveFieldValidatorDescriptor = {
-    kind: ConstraintMetadata['kind'];
+    kind: ConstraintMetadata['name'];
+    groups?: string[];
     value?: unknown;
     message?: string;
 };
-
-/**
- * @deprecated Use DecorixReactiveFieldValidatorDescriptor for descriptor output.
- */
-export type DecorixReactiveFieldValidator = DecorixReactiveFieldValidatorDescriptor;
 
 type DecorixReactiveFieldConfigBase = {
     name: string;
