@@ -9,12 +9,43 @@ type Range = {min: number; max: number};
 type DateRange = {min: Date | string | number; max: Date | string | number};
 
 /**
- * Adds a constraint without changing the field's inferred type.
+ * Attaches an arbitrary registered constraint to a field by name.
+ *
+ * This is the generic public annotation used to apply user-defined constraints
+ * (registered via `createConstraint`/`defineConstraint`) without pinning the
+ * field's inferred type. It handles `{ message, groups }` and string-message
+ * shorthand identically to the native constraint decorators.
+ *
+ * @param name - Registered constraint name to attach.
+ * @param options - Constraint-specific option payload, if any.
+ * @param arg - Message string or `{ message, groups }` metadata override.
  */
-function add(name: string, options?: unknown, arg?: OptionsArg): PropertyDecorator {
+export function Constraint(name: string, options?: unknown, arg?: OptionsArg): PropertyDecorator {
     return fieldDecorator((field) => {
         upsertConstraintMetadata(field, createConstraintMetadata(name, options, normalizeConstraintOptions(arg)));
     });
+}
+
+/**
+ * Builds a reusable field-constraint decorator bound to a registered name.
+ *
+ * The returned annotation accepts a per-usage message/group override. When both
+ * a baked-in `defaultOptions` and a call-site `arg` are supplied, the call-site
+ * `arg` wins so individual fields can override the shared default message.
+ *
+ * @param name - Registered constraint name the decorator attaches.
+ * @param defaultOptions - Optional constraint option payload baked into the decorator.
+ * @returns A decorator factory `(arg?) => PropertyDecorator`.
+ */
+export function createConstraintDecorator(name: string, defaultOptions?: unknown): (arg?: OptionsArg) => PropertyDecorator {
+    return (arg?: OptionsArg) => Constraint(name, defaultOptions, arg);
+}
+
+/**
+ * Adds a constraint without changing the field's inferred type.
+ */
+function add(name: string, options?: unknown, arg?: OptionsArg): PropertyDecorator {
+    return Constraint(name, options, arg);
 }
 
 /**

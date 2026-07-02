@@ -70,27 +70,39 @@ export function getConstraint(name: string, registry = defaultConstraintRegistry
 
 /**
  * Creates and registers a synchronous field constraint.
+ *
+ * @param definition - Field constraint definition without the fixed `kind`.
+ * @param registry - Target registry. Defaults to the process-wide registry.
  */
 export function createConstraint<TValue, TOptions>(
-    definition: Omit<ConstraintDefinition<TValue, TOptions>, 'kind'> & {kind?: 'field'}
+    definition: Omit<ConstraintDefinition<TValue, TOptions>, 'kind'> & {kind?: 'field'},
+    registry = defaultConstraintRegistry
 ): ConstraintDefinition<TValue, TOptions> {
-    return registerConstraint({...definition, kind: 'field'});
+    return registerConstraint({...definition, kind: 'field'}, registry);
 }
 
 /**
  * Creates and registers a synchronous object-level constraint.
+ *
+ * @param definition - Object constraint definition without the fixed `kind`.
+ * @param registry - Target registry. Defaults to the process-wide registry.
  */
 export function createObjectConstraint<TValue, TOptions>(
-    definition: Omit<ConstraintDefinition<TValue, TOptions>, 'kind'> & {kind?: 'object'}
+    definition: Omit<ConstraintDefinition<TValue, TOptions>, 'kind'> & {kind?: 'object'},
+    registry = defaultConstraintRegistry
 ): ConstraintDefinition<TValue, TOptions> {
-    return registerConstraint({...definition, kind: 'object'});
+    return registerConstraint({...definition, kind: 'object'}, registry);
 }
 
 /**
  * Creates and registers an asynchronous field constraint.
+ *
+ * @param definition - Field constraint definition without the fixed `kind`/`async`.
+ * @param registry - Target registry. Defaults to the process-wide registry.
  */
 export function createAsyncConstraint<TValue, TOptions>(
-    definition: Omit<ConstraintDefinition<TValue, TOptions>, 'kind' | 'async'> & {kind?: 'field'}
+    definition: Omit<ConstraintDefinition<TValue, TOptions>, 'kind' | 'async'> & {kind?: 'field'},
+    registry = defaultConstraintRegistry
 ): ConstraintDefinition<TValue, TOptions> {
-    return registerConstraint({...definition, kind: 'field', async: true});
+    return registerConstraint({...definition, kind: 'field', async: true}, registry);
 }

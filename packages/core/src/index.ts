@@ -23,6 +23,8 @@ export type {ObjectConstraintMetadataOptions} from './metadata/constraints';
 export {getModelMetadata, hasModelMetadata, registerModelMetadata} from './registry/model-registry';
 export {Model, ObjectConstraint} from './decorators/model';
 export {
+    Constraint,
+    createConstraintDecorator,
     After,
     RequiredIf,
     NotEqualsField,
@@ -101,6 +103,7 @@ export {
 } from './builder/field-builders';
 export type {ValidationIssue, ValidationOptions, ValidationResult, ValidatorAdapter, ValidatorAdapterRef, ValidatorSchema} from './validation/types';
 export {validate, validateAsync} from './validation/engine';
+export {defineConstraint, defineAsyncConstraint, type ReusableConstraint} from './validation/define-constraint';
 export {createCoreValidatorAdapter, type CoreValidatorSchema} from './validation/core-adapter';
 export {
     ConstraintRegistry,

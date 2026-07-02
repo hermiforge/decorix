@@ -41,6 +41,41 @@ const SignupDto = model('SignupDto', {
 });
 ```
 
+## Custom Constraints
+
+Define a reusable constraint once with `defineConstraint`, then apply it as a
+decorator or as builder metadata. A per-field `message` overrides the
+definition's default message; constraint names must be unique within a registry.
+
+```ts
+import {defineConstraint, Model, model, numberField, validate} from '@decorix/core';
+
+const EvenNumber = defineConstraint<number, undefined>({
+  name: 'evenNumber',
+  validate: (value) => typeof value === 'number' && value % 2 === 0,
+  message: 'Value must be even.'
+});
+
+// As a decorator
+@Model('CounterDto')
+class CounterDto {
+  @EvenNumber.decorator('Count must be even')
+  count!: number;
+}
+
+// As builder metadata (reuses the same registered name)
+const CounterModel = model('CounterDto', {
+  count: numberField().constraint('evenNumber', undefined, 'Count must be even')
+});
+
+validate({count: 3}, CounterModel); // { success: false, issues: [{ constraint: 'evenNumber', ... }] }
+```
+
+Use `defineAsyncConstraint` for async rules (resolved by `validateAsync`), and
+pass a custom `ConstraintRegistry` as the second argument to `defineConstraint`
+plus `validate(value, model, { registry })` to keep constraints isolated from
+the default global registry.
+
 ## Validator Notes
 
 `@decorix/core` only defines the `ValidatorAdapter` contract and global registry. Register a custom adapter with `registerValidatorAdapter`, or use `registerZodValidator()` from `@decorix/zod` before calling adapters that require runtime validation.

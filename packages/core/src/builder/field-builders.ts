@@ -87,6 +87,20 @@ class BaseFieldBuilder implements FieldBuilder {
     /** Sets the field group. */
     group(value: string): this { return this.ui({group: value}); }
 
+    /**
+     * Attaches an arbitrary registered constraint to the field by name.
+     *
+     * Public counterpart to the native constraint methods for user-defined
+     * constraints (registered via `createConstraint`/`defineConstraint`).
+     *
+     * @param name - Registered constraint name to attach.
+     * @param options - Constraint-specific option payload, if any.
+     * @param arg - Message string or `{ message, groups }` metadata override.
+     */
+    constraint(name: string, options?: unknown, arg?: OptionsArg): this {
+        return this.addConstraintName(name, options, arg);
+    }
+
     /** Builds immutable field metadata for the supplied name. */
     build(name: string): FieldMetadata {
         return cloneFieldMetadata({name, ...this.field});

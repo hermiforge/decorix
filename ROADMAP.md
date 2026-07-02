@@ -28,14 +28,6 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## TODO
 
-### V3 Custom Constraint APIs
-
-- Implement reusable user-defined annotations.
-- Custom decorators support `{ groups, message }` consistently.
-- User message overrides definition message.
-- Constraint names must be unique within a registry.
-- Default global registry is used unless validation receives a custom registry.
-
 ### V4 JSON Schema Export And Import
 
 Export:
@@ -90,6 +82,29 @@ CLI:
 - CLI reads DTO entrypoints, loads metadata, and writes artifacts without app runtime bootstrapping.
 
 ## DONE
+
+### V3 Custom Constraint APIs
+
+- Added `defineConstraint` and `defineAsyncConstraint`: register a user constraint once and receive `{ name, decorator, constraint }` for "define once, reuse everywhere" usage across decorators, builders, and object-constraint arrays.
+- Added a generic public `Constraint(name, options?, arg?)` decorator and a `createConstraintDecorator(name, defaultOptions?)` factory; the call-site `arg` overrides the decorator's baked-in default options.
+- Added a public `BaseFieldBuilder.constraint(name, options?, arg?)` method so any builder can attach an arbitrary registered constraint (delegates to the existing `addConstraintName`).
+- `createConstraint`, `createObjectConstraint`, and `createAsyncConstraint` now accept an optional target `registry` (default `defaultConstraintRegistry`), enabling isolated registries.
+- Verified existing guarantees: unique names per registry (`ConstraintRegistry.register` throws on duplicates), user message precedence over definition message (`engine.ts` `constraint.message ?? input.message ?? messageFor(...)`), and custom-registry override via `validate(value, model, { registry })` with default-registry fallback.
+
+Files added:
+
+- `packages/core/src/validation/define-constraint.ts`
+
+Key files modified:
+
+- `packages/core/src/validation/constraint-registry.ts` (optional `registry` param on create helpers)
+- `packages/core/src/decorators/constraints.ts` (`Constraint`, `createConstraintDecorator`)
+- `packages/core/src/builder/field-builders.ts` (public `constraint` method)
+- `packages/core/src/index.ts` (new exports)
+- `packages/core/test/core.test.ts` (V3 coverage)
+- `packages/core/README.md` (Custom Constraints section)
+
+Verification: `pnpm -r typecheck` passed (10 packages), `examples:typecheck` passed, `vitest run` passed (10 files, 148 tests).
 
 ### V2 Cross-Field And Object Constraints
 

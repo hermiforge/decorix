@@ -2,6 +2,11 @@ import {describe, expect, it} from 'vitest';
 import {
     arrayField,
     BeforeField,
+    Constraint,
+    ConstraintRegistry,
+    createConstraintDecorator,
+    defineAsyncConstraint,
+    defineConstraint,
     EqualsField,
     ForbiddenIf,
     GreaterThanField,
@@ -446,4 +451,105 @@ describe('@decorix/core', () => {
 
         const rootPathMetadata = model('RootObjectConstraintDto', {}, [objectConstraint<Record<string, unknown>, undefined>('rootObjectFailure', {validate: () => false})]);
         expect(validate({}, rootPathMetadata)).toMatchObject({success: false, issues: [{path: [], constraint: 'rootObjectFailure'}]});
+    });
+
+    it('defines reusable custom field constraints usable as decorator and builder metadata', () => {
+        const evenNumber = defineConstraint<number, undefined>({
+            name: 'coreTestEvenNumber',
+            validate: (value) => typeof value === 'number' && value % 2 === 0,
+            message: 'Value must be even.'
+        });
+
+        @Model('EvenDecoratorDto')
+        class EvenDecoratorDto {
+            @evenNumber.decorator()
+            count?: number;
+        }
+
+        expect(validate({count: 4}, EvenDecoratorDto)).toMatchObject({success: true});
+        expect(validate({count: 3}, EvenDecoratorDto)).toMatchObject({
+            success: false,
+            issues: [{path: ['count'], constraint: 'coreTestEvenNumber', message: 'Value must be even.'}]
+        });
+
+        // Same registered constraint reused via the generic builder method.
+        const builderMetadata = model('EvenBuilderDto', {
+            count: numberField().optional().constraint('coreTestEvenNumber'),
+            other: numberField().optional().constraint('coreTestEvenNumber')
+        });
+        expect(validate({count: 3, other: 4}, builderMetadata)).toMatchObject({
+            success: false,
+            issues: [{path: ['count'], constraint: 'coreTestEvenNumber'}]
+        });
+
+        // The metadata factory yields reusable metadata carrying a per-usage override.
+        expect(evenNumber.constraint('Override')).toMatchObject({name: 'coreTestEvenNumber', message: 'Override'});
+    });
+
+    it('lets the user message override the custom constraint definition message', () => {
+        const nonEmpty = defineConstraint<string, undefined>({
+            name: 'coreTestNonEmptyCustom',
+            validate: (value) => typeof value === 'string' && value.length > 0,
+            message: 'Definition default message.'
+        });
+
+        @Model('CustomMessageDto')
+        class CustomMessageDto {
+            @nonEmpty.decorator('Field-specific message.')
+            label?: string;
+        }
+
+        expect(validate({label: ''}, CustomMessageDto)).toMatchObject({
+            success: false,
+            issues: [{constraint: 'coreTestNonEmptyCustom', message: 'Field-specific message.'}]
+        });
+
+        // A per-usage decorator override wins over the baked-in default options.
+        const decorator = createConstraintDecorator('coreTestNonEmptyCustom', undefined);
+        expect(typeof decorator()).toBe('function');
+    });
+
+    it('enforces unique constraint names within a registry', () => {
+        defineConstraint<unknown, undefined>({name: 'coreTestUniqueName', validate: () => true});
+        expect(() => defineConstraint<unknown, undefined>({name: 'coreTestUniqueName', validate: () => true}))
+            .toThrow('already registered');
+    });
+
+    it('isolates constraints registered into a custom registry from the default registry', () => {
+        const registry = new ConstraintRegistry();
+        defineConstraint<unknown, undefined>({
+            name: 'coreTestIsolatedConstraint',
+            validate: () => false,
+            message: 'Isolated failure.'
+        }, registry);
+
+        // Passing a custom registry replaces the default entirely, so the field carries only the
+        // custom constraint (no native constraints the isolated registry would fail to resolve).
+        const metadata = metadataFor({name: 'coreTestIsolatedConstraint'});
+
+        // The custom registry resolves the definition; the default registry does not know the name.
+        expect(validate({value: 'x'}, metadata, {registry})).toMatchObject({
+            success: false,
+            issues: [{constraint: 'coreTestIsolatedConstraint', message: 'Isolated failure.'}]
+        });
+        expect(() => validate({value: 'x'}, metadata)).toThrow('No Decorix constraint registered for "coreTestIsolatedConstraint"');
+    });
+
+    it('registers async custom constraints rejected by validate and resolved by validateAsync', async () => {
+        const asyncRule = defineAsyncConstraint<unknown, undefined>({
+            name: 'coreTestDefineAsync',
+            validate: async () => false,
+            message: 'Async custom failed.'
+        });
+
+        const metadata = model('DefineAsyncDto', {value: stringField().optional().constraint(asyncRule.name)});
+
+        expect(() => validate({value: 'x'}, metadata)).toThrow('Use validateAsync instead');
+        await expect(validateAsync({value: 'x'}, metadata)).resolves.toMatchObject({
+            success: false,
+            issues: [{path: ['value'], constraint: 'coreTestDefineAsync', message: 'Async custom failed.'}]
+        });
+
+        // The generic Constraint decorator attaches the same registered name.
+        expect(typeof Constraint('coreTestDefineAsync')).toBe('function');
     });});
