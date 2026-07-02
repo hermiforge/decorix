@@ -137,5 +137,97 @@ describe('@decorix/angular-reactive', () => {
         ]);
         expect(runValidators(slug?.validators ?? [], 'good-slug')).toEqual([]);
     });
+
+    it('snapshots descriptor mode output shape', () => {
+        const metadata = model('ReactiveDescriptorSnapshotDto', {
+            title: stringField().required('Title required').minLength(3).maxLength(20),
+            slug: stringField().slug('Invalid slug').optional(),
+            age: numberField().between(18, 65).integer().optional()
+        });
+
+        const config = toReactiveFormConfig(metadata, {validationMode: 'descriptors', initialValue: {title: 'Draft'}});
+
+        expect(config.fields.map((field) => ({
+            name: field.name,
+            required: field.required,
+            initialValue: field.initialValue,
+            validators: field.validators
+        }))).toMatchInlineSnapshot(`
+[
+  {
+    "initialValue": "Draft",
+    "name": "title",
+    "required": true,
+    "validators": [
+      {
+        "groups": undefined,
+        "kind": "required",
+        "message": "Title required",
+        "value": undefined,
+      },
+      {
+        "groups": undefined,
+        "kind": "minLength",
+        "message": undefined,
+        "value": 3,
+      },
+      {
+        "groups": undefined,
+        "kind": "maxLength",
+        "message": undefined,
+        "value": 20,
+      },
+    ],
+  },
+  {
+    "initialValue": undefined,
+    "name": "slug",
+    "required": false,
+    "validators": [
+      {
+        "groups": undefined,
+        "kind": "slug",
+        "message": "Invalid slug",
+        "value": undefined,
+      },
+      {
+        "groups": undefined,
+        "kind": "optional",
+        "message": undefined,
+        "value": undefined,
+      },
+    ],
+  },
+  {
+    "initialValue": undefined,
+    "name": "age",
+    "required": false,
+    "validators": [
+      {
+        "groups": undefined,
+        "kind": "between",
+        "message": undefined,
+        "value": {
+          "max": 65,
+          "min": 18,
+        },
+      },
+      {
+        "groups": undefined,
+        "kind": "integer",
+        "message": undefined,
+        "value": undefined,
+      },
+      {
+        "groups": undefined,
+        "kind": "optional",
+        "message": undefined,
+        "value": undefined,
+      },
+    ],
+  },
+]
+`);
+    });
 });
 

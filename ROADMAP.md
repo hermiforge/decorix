@@ -27,12 +27,6 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## TODO
 
-### V1 Follow-Up Hardening
-
-- Add exhaustive per-constraint tests for every native V1 constraint, beyond the current representative core coverage.
-- Add snapshots for the new metadata shape in adapters where useful.
-- Consider a formatting pass if the project later adopts a formatter command.
-
 ### V2 Cross-Field And Object Constraints
 
 Field-level cross-property constraints:
@@ -128,6 +122,13 @@ CLI:
 
 ## DONE
 
+### V1 Follow-Up Hardening
+
+- Added exhaustive per-constraint tests for every native V1 constraint across presence/nullity, strings, numbers, dates, collections, and enums.
+- Covered valid and invalid values, absent-value skip behavior, type mismatch behavior where applicable, custom messages, and normalized issue shape.
+- Added regression coverage for implicit required fields, explicit optional/nullable semantics, grouped constraints, nested object paths, arrays of nested objects, and sync rejection of async constraints.
+- Added inline adapter snapshots for broad JSON Schema output, Angular Reactive descriptor mode, Vue FormKit validation strings, and React Hook Form resolver errors.
+
 ### V1 Core Validation Platform
 
 - Replaced lightweight constraint metadata union with `{ name, options, message, groups }` records.
@@ -167,7 +168,7 @@ CLI:
 - `tsc --noEmit -p packages/core/tsconfig.json` passed.
 - Package-by-package typecheck with `tsc --noEmit -p packages/*/tsconfig.json` passed.
 - `tsc --noEmit -p examples/tsconfig.json` passed.
-- `vitest run` passed: 10 test files, 33 tests.
+- `vitest run` passed: 10 test files, 133 tests.
 
 ### Handoff Notes
 
@@ -199,4 +200,3 @@ Key files modified:
 - `packages/vue-vee-validate/src/adapter.ts`
 - `packages/vue-formkit/src/validation.ts`
 - `packages/nest/src/adapter.ts`
-

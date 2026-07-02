@@ -51,6 +51,40 @@ describe('@decorix/vue-formkit', () => {
 
         expect(config.validate?.({slug: 'Bad Slug'})).toMatchObject({success: false, issues: [{message: 'Invalid slug'}]});
     });
+
+    it('snapshots FormKit validation strings', () => {
+        const metadata = model('FormKitValidationSnapshotDto', {
+            title: stringField().required().minLength(3).maxLength(20),
+            email: stringField().email().optional(),
+            age: numberField().min(18).max(65).optional()
+        });
+
+        const config = toFormKit(metadata);
+
+        expect(config.schema.map((field) => ({
+            formkit: field.$formkit,
+            name: field.name,
+            validation: field.validation
+        }))).toMatchInlineSnapshot(`
+[
+  {
+    "formkit": "text",
+    "name": "title",
+    "validation": "required|minLength:3|maxLength:20",
+  },
+  {
+    "formkit": "text",
+    "name": "email",
+    "validation": "email|optional",
+  },
+  {
+    "formkit": "number",
+    "name": "age",
+    "validation": "min:18|max:65|optional",
+  },
+]
+`);
+    });
 });
 
 

@@ -62,6 +62,37 @@ describe('@decorix/react-hook-form', () => {
 
         expect(result.errors).toMatchObject({slug: {message: 'Invalid slug'}});
     });
+
+    it('snapshots core resolver error shape', async () => {
+        const metadata = model('HookResolverSnapshotDto', {
+            name: stringField().required('Name required').minLength(2, 'Name too short'),
+            email: stringField().email('Invalid email').optional(),
+            age: numberField().min(18, 'Too young').optional()
+        });
+
+        const config = toReactHookForm(metadata);
+        const result = await config.resolver({name: 'A', email: 'bad', age: 16});
+
+        expect(result).toMatchInlineSnapshot(`
+{
+  "errors": {
+    "age": {
+      "message": "Too young",
+      "type": "decorix.min",
+    },
+    "email": {
+      "message": "Invalid email",
+      "type": "decorix.email",
+    },
+    "name": {
+      "message": "Name too short",
+      "type": "decorix.minLength",
+    },
+  },
+  "values": {},
+}
+`);
+    });
 });
 
 
