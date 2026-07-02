@@ -12,6 +12,7 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 - Constraint metadata moved from the old `{ kind, value, message }` union to registry-driven records: `{ name, options, message, groups }`.
 - Decorator/builder compatibility preserves simple overloads such as `.required('Message')`, `@Required('Message')`, and `@MinLength(3, 'Message')`.
 - Adapters with no explicit validator now use the core validator facade. An explicit missing validator name still throws the previous registry error.
+- Commit after each completed implementation pass so handoffs always have a clean recorded checkpoint.
 
 ## Documentation and Constraint Coverage Standard
 
