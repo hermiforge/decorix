@@ -28,33 +28,6 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## TODO
 
-### V4 JSON Schema Export And Import
-
-Export:
-
-- Use `toJsonSchema` on constraint definitions.
-- Merge compatible fragments into field schemas.
-- Preserve non-exportable constraints under `x-decorix-constraints` with `name`, `async`, and `options`.
-
-Native mappings:
-
-- `MinLength` -> `minLength`
-- `MaxLength` -> `maxLength`
-- `Length` -> `minLength` + `maxLength`
-- `Pattern` -> `pattern`
-- `Email`/`Url`/`Uuid` -> `format`
-- `Min`/`Max`/`Between` -> numeric bounds
-- `Integer` -> `type: "integer"`
-- `MultipleOf` -> `multipleOf`
-- `MinItems`/`MaxItems`/`Size`/`UniqueItems` -> array keywords
-- `Enum`/`OneOf`/`NotOneOf` -> `enum`/`not`
-
-Import:
-
-- Best-effort conversion from standard JSON Schema keywords to native constraints.
-- Preserve unknown `x-decorix-constraints`.
-- Do not reconstruct arbitrary custom validator functions.
-
 ### V5 Async, Zod, Angular, CLI
 
 Async validation:
@@ -82,6 +55,27 @@ CLI:
 - CLI reads DTO entrypoints, loads metadata, and writes artifacts without app runtime bootstrapping.
 
 ## DONE
+
+### V4 JSON Schema Export And Import
+
+- Export was already complete (`toJsonSchema`/`fieldToJsonSchema`): native fragment merge, `x-decorix-constraints` preservation with `name`/`async`/`options`, and all native mappings (`MinLength`→`minLength`, `Length`→`minLength`+`maxLength`, `Email`/`Url`/`Uuid`→`format`, `Min`/`Max`/`Between`→numeric bounds, `Integer`→`type:"integer"`, array keywords, `Enum`/`OneOf`/`NotOneOf`→`enum`/`not`).
+- Added `fromJsonSchema(schema)` importer (`packages/json-schema/src/import.ts`): best-effort standard-keyword → native-constraint conversion, field-type detection (array/object/enum/integer/number/boolean/date/string), nested objects and array items, and `required` → `field.required` (+ explicit `optional` constraint for non-required fields).
+- `x-decorix-constraints` deserialization inverts the exporter: RegExp `{source, flags}` restored to `RegExp`; arrays/objects recursed; `'[function]'` predicate/validator sentinels preserved verbatim (functions are not reconstructed). Field-level entries append to the field; model-level entries become `objectConstraints`.
+- UI metadata reconstructed (`title`/`description`/`readOnly`/`x-decorix-*`) for a full round-trip; `toJsonSchema(fromJsonSchema(x))` is stable for Decorix-produced schemas (verified by round-trip tests).
+- Extended the readable `JsonSchema` type (`multipleOf`, `minItems`, `maxItems`, `uniqueItems`, `not`) and exported `fromJsonSchema` from the package index.
+
+Files added:
+
+- `packages/json-schema/src/import.ts`
+
+Key files modified:
+
+- `packages/json-schema/src/index.ts` (export `fromJsonSchema`)
+- `packages/json-schema/src/types.ts` (readable keywords)
+- `packages/json-schema/test/json-schema.test.ts` (round-trip, keyword mapping, extension preservation, nested/UI)
+- `packages/json-schema/README.md` (Import section)
+
+Verification: `pnpm -r typecheck` passed (10 packages), `examples:typecheck` passed, `vitest run` passed (10 files, 152 tests).
 
 ### V3 Custom Constraint APIs
 

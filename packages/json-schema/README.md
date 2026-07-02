@@ -45,6 +45,32 @@ const SignupDto = model('SignupDto', {
 const schema = toJsonSchema(SignupDto);
 ```
 
+## Import (JSON Schema → metadata)
+
+`fromJsonSchema` performs the best-effort inverse of `toJsonSchema`: standard
+keywords map back to native constraints, and Decorix-specific
+`x-decorix-constraints` entries are restored verbatim, so
+`toJsonSchema(fromJsonSchema(schema))` is stable for Decorix-produced schemas.
+Arbitrary custom validator/predicate functions cannot be reconstructed and are
+preserved as the `'[function]'` sentinel.
+
+```ts
+import {validate} from '@decorix/core';
+import {fromJsonSchema} from '@decorix/json-schema';
+
+const metadata = fromJsonSchema({
+  title: 'SignupDto',
+  type: 'object',
+  properties: {
+    name: {type: 'string', minLength: 2},
+    email: {type: 'string', format: 'email'}
+  },
+  required: ['name', 'email']
+});
+
+validate({name: 'Al', email: 'al@example.com'}, metadata); // { success: true, ... }
+```
+
 ## Validator Notes
 
 `@decorix/json-schema` emits schema data only and does not need a `ValidatorAdapter`.
