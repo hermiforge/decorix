@@ -7,21 +7,30 @@ import {createAsyncConstraint, createConstraint, defaultConstraintRegistry, type
 type OptionsArg = string | ConstraintOptions;
 
 /**
- * A registered, reusable field constraint that can be applied as a decorator,
- * as a builder metadata factory, or as raw metadata.
+ * A registered, reusable field constraint.
+ *
+ * The value is itself callable so it applies directly as a property decorator —
+ * `@StartsWithA()` or `@StartsWithA('override message')` — mirroring the native
+ * decorators (`@Required()`, `@Min(3)`). It also carries its registered `name`
+ * (so it can be passed by reference to the builder `.constraint(...)` method)
+ * and a `constraint(...)` factory for model-level `objectConstraints` arrays.
+ *
+ * By convention the holding const is PascalCase for decorator ergonomics, while
+ * the registered `name` stays camelCase (it surfaces as `issue.constraint` and
+ * the `decorix.<name>` issue code).
  */
 export interface ReusableConstraint {
-    /** Registered constraint name, unique within its registry. */
-    readonly name: string;
     /**
-     * Property decorator applying the constraint to a `@Model` field.
+     * Applies the constraint as a property decorator.
      *
      * @param arg - Per-usage message string or `{ message, groups }` override.
      */
-    readonly decorator: (arg?: OptionsArg) => PropertyDecorator;
+    (arg?: OptionsArg): PropertyDecorator;
+    /** Registered constraint name, unique within its registry. */
+    readonly name: string;
     /**
-     * Builds constraint metadata for builder `.constraint(...)` reuse or for
-     * model-level `objectConstraints` arrays.
+     * Builds constraint metadata for model-level `objectConstraints` arrays or
+     * raw-metadata reuse.
      *
      * @param arg - Per-usage message string or `{ message, groups }` override.
      */
@@ -67,13 +76,15 @@ export function defineAsyncConstraint<TValue, TOptions>(
     return toReusableConstraint(registered.name);
 }
 
-/** Builds the decorator/metadata factories bound to a registered constraint name. */
+/** Builds the callable decorator bound to a registered constraint name, carrying `name` and a metadata factory. */
 function toReusableConstraint(name: string): ReusableConstraint {
     const decorator = createConstraintDecorator(name);
-    return {
-        name,
-        decorator,
-        // Decorators and builders share the same normalized metadata shape.
+    // The reusable IS the decorator factory, so `@X()` works directly.
+    const reusable = (arg?: OptionsArg): PropertyDecorator => decorator(arg);
+    // `Function.prototype.name` is non-writable, so override it explicitly to expose the registered name.
+    Object.defineProperty(reusable, 'name', {value: name, configurable: true});
+    // Decorators and builders share the same normalized metadata shape.
+    return Object.assign(reusable, {
         constraint: (arg?: OptionsArg) => createConstraintMetadata(name, undefined, normalizeConstraintOptions(arg))
-    };
+    }) as ReusableConstraint;
 }

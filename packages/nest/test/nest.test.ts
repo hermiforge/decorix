@@ -21,14 +21,14 @@ import {registerZodValidator} from '@decorix/zod';
 import {DecorixPipe, DecorixValidationException} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
-const nestStartsWithA = defineConstraint<string, undefined>({
+const NestStartsWithA = defineConstraint<string, undefined>({
     name: 'nestStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
 });
 
 /** Reusable custom async constraint exercised in decorator mode. */
-const nestAsyncDeco = defineAsyncConstraint<string, undefined>({
+const NestAsyncDeco = defineAsyncConstraint<string, undefined>({
     name: 'nestAsyncDeco',
     validate: async (value) => value !== 'taken',
     message: 'Already taken'
@@ -125,7 +125,7 @@ describe('@decorix/nest', () => {
         registerZodValidator({name: 'zod-nest-custom-sync'});
 
         const builder = model('NestCustomSyncBuilderDto', {
-            code: stringField().required().constraint('nestStartsWithA')
+            code: stringField().required().constraint(NestStartsWithA)
         });
         expect(DecorixPipe(builder).transform({code: 'Alpha'})).toMatchObject({code: 'Alpha'});
         expect(() => DecorixPipe(builder).transform({code: 'Bravo'})).toThrow(DecorixValidationException);
@@ -133,7 +133,7 @@ describe('@decorix/nest', () => {
         @Model('NestCustomSyncClassDto')
         class NestCustomSyncClassDto {
             @Required()
-            @nestStartsWithA.decorator()
+            @NestStartsWithA()
             code!: string;
         }
         expect(DecorixPipe(NestCustomSyncClassDto).transform({code: 'Alpha'})).toMatchObject({code: 'Alpha'});
@@ -152,7 +152,7 @@ describe('@decorix/nest', () => {
         @Model('NestAsyncClassDto')
         class NestAsyncClassDto {
             @Required()
-            @nestAsyncDeco.decorator()
+            @NestAsyncDeco()
             username!: string;
         }
 

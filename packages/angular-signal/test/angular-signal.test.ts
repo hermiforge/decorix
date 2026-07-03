@@ -21,14 +21,14 @@ import {registerZodValidator} from '@decorix/zod';
 import {toSignalForm} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
-const signalStartsWithA = defineConstraint<string, undefined>({
+const SignalStartsWithA = defineConstraint<string, undefined>({
     name: 'signalStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
 });
 
 /** Reusable custom async constraint exercised in decorator mode. */
-const signalAsyncDeco = defineAsyncConstraint<string, undefined>({
+const SignalAsyncDeco = defineAsyncConstraint<string, undefined>({
     name: 'signalAsyncDeco',
     validate: async (value) => value !== 'taken',
     message: 'Already taken'
@@ -118,7 +118,7 @@ describe('@decorix/angular-signal', () => {
         registerZodValidator({name: 'zod-angular-signal-custom-sync'});
 
         const builder = model('SignalCustomSyncBuilderDto', {
-            code: stringField().required().constraint('signalStartsWithA')
+            code: stringField().required().constraint(SignalStartsWithA)
         });
         const builderForm = toSignalForm(builder, {initialValue: {code: 'Bravo'}});
         expect(builderForm.code.errors()).toEqual(['Must start with A']);
@@ -128,7 +128,7 @@ describe('@decorix/angular-signal', () => {
         @Model('SignalCustomSyncClassDto')
         class SignalCustomSyncClassDto {
             @Required()
-            @signalStartsWithA.decorator()
+            @SignalStartsWithA()
             code!: string;
         }
         const classForm = toSignalForm(SignalCustomSyncClassDto, {initialValue: {code: 'Bravo'}});
@@ -143,7 +143,7 @@ describe('@decorix/angular-signal', () => {
         @Model('SignalAsyncClassDto')
         class SignalAsyncClassDto {
             @Required()
-            @signalAsyncDeco.decorator()
+            @SignalAsyncDeco()
             username!: string;
         }
 

@@ -2,6 +2,7 @@ import {cloneFieldMetadata, isModelMetadata} from '../metadata/clone';
 import {createObjectConstraint} from '../validation/constraint-registry';
 import {createConstraintMetadata, createNamedObjectConstraintMetadata, normalizeConstraintOptions, removeConstraintMetadata, upsertConstraintMetadata, type ConstraintOptions} from '../metadata/constraints';
 import type {ConstraintDefinition, ConstraintMetadata, FieldMetadata, FieldType, ModelMetadata, UiMetadata} from '../metadata/types';
+import type {ReusableConstraint} from '../validation/define-constraint';
 
 /** Message/group options accepted by builder constraint methods. */
 type OptionsArg = string | ConstraintOptions;
@@ -90,17 +91,33 @@ class BaseFieldBuilder implements FieldBuilder {
     group(value: string): this { return this.ui({group: value}); }
 
     /**
+     * Attaches a reusable constraint to the field by reference.
+     *
+     * Preferred, type-safe form for constraints created with `defineConstraint`/
+     * `defineAsyncConstraint`: pass the constraint itself instead of its name.
+     *
+     * @param constraint - The reusable constraint returned by `defineConstraint`.
+     * @param arg - Message string or `{ message, groups }` metadata override.
+     */
+    constraint(constraint: ReusableConstraint, arg?: OptionsArg): this;
+    /**
      * Attaches an arbitrary registered constraint to the field by name.
      *
-     * Public counterpart to the native constraint methods for user-defined
-     * constraints (registered via `createConstraint`/`defineConstraint`).
+     * Use this string form for constraints registered via `createConstraint`
+     * (no reusable handle), for a per-field option payload, or for dynamic names
+     * (CLI / JSON Schema import).
      *
      * @param name - Registered constraint name to attach.
      * @param options - Constraint-specific option payload, if any.
      * @param arg - Message string or `{ message, groups }` metadata override.
      */
-    constraint(name: string, options?: unknown, arg?: OptionsArg): this {
-        return this.addConstraintName(name, options, arg);
+    constraint(name: string, options?: unknown, arg?: OptionsArg): this;
+    constraint(nameOrConstraint: string | ReusableConstraint, options?: unknown, arg?: OptionsArg): this {
+        // A reusable constraint is callable; the second arg is then the message/groups override (no option payload).
+        if (typeof nameOrConstraint === 'function') {
+            return this.addConstraintName(nameOrConstraint.name, undefined, options as OptionsArg);
+        }
+        return this.addConstraintName(nameOrConstraint, options, arg);
     }
 
     /** Builds immutable field metadata for the supplied name. */

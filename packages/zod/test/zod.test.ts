@@ -21,7 +21,7 @@ import {
 import {createZodValidatorAdapter, registerZodValidator, toZod} from '../src/index';
 
 /** Reusable custom sync constraint registered once for the decorator/builder symmetry tests. */
-const startsWithA = defineConstraint<string, undefined>({
+const StartsWithA = defineConstraint<string, undefined>({
     name: 'zodStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
@@ -112,7 +112,7 @@ describe('@decorix/zod', () => {
     it('enforces a custom sync constraint in builder and decorator mode', () => {
         // Builder mode: reference the registered constraint by name.
         const builder = model('ZodCustomSyncBuilderDto', {
-            code: stringField().required().constraint('zodStartsWithA')
+            code: stringField().required().constraint(StartsWithA)
         });
         expect(toZod(builder).safeParse({code: 'Bravo'}).success).toBe(false);
         expect(toZod(builder).safeParse({code: 'Alpha'}).success).toBe(true);
@@ -121,7 +121,7 @@ describe('@decorix/zod', () => {
         @Model('ZodCustomSyncClassDto')
         class ZodCustomSyncClassDto {
             @Required()
-            @startsWithA.decorator()
+            @StartsWithA()
             code!: string;
         }
 

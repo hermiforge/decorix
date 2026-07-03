@@ -21,14 +21,14 @@ import {registerZodValidator} from '@decorix/zod';
 import {toTanStackForm, useTanStackDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
-const tanstackStartsWithA = defineConstraint<string, undefined>({
+const TanstackStartsWithA = defineConstraint<string, undefined>({
     name: 'tanstackStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
 });
 
 /** Reusable custom async constraint exercised in decorator mode. */
-const tanstackAsyncDeco = defineAsyncConstraint<string, undefined>({
+const TanstackAsyncDeco = defineAsyncConstraint<string, undefined>({
     name: 'tanstackAsyncDeco',
     validate: async (value) => value !== 'taken',
     message: 'Already taken'
@@ -121,7 +121,7 @@ describe('@decorix/react-tanstack-form', () => {
         registerZodValidator({name: 'zod-tanstack-custom-sync'});
 
         const builder = model('TanStackCustomSyncBuilderDto', {
-            code: stringField().required().constraint('tanstackStartsWithA')
+            code: stringField().required().constraint(TanstackStartsWithA)
         });
         expect(toTanStackForm(builder).validators.onSubmit({code: 'Bravo'})).toEqual({code: ['Must start with A']});
         expect(toTanStackForm(builder).validators.onSubmit({code: 'Alpha'})).toBeUndefined();
@@ -129,7 +129,7 @@ describe('@decorix/react-tanstack-form', () => {
         @Model('TanStackCustomSyncClassDto')
         class TanStackCustomSyncClassDto {
             @Required()
-            @tanstackStartsWithA.decorator()
+            @TanstackStartsWithA()
             code!: string;
         }
         expect(toTanStackForm(TanStackCustomSyncClassDto).validators.onSubmit({code: 'Bravo'})).toEqual({code: ['Must start with A']});
@@ -142,7 +142,7 @@ describe('@decorix/react-tanstack-form', () => {
         @Model('TanStackAsyncClassDto')
         class TanStackAsyncClassDto {
             @Required()
-            @tanstackAsyncDeco.decorator()
+            @TanstackAsyncDeco()
             username!: string;
         }
 

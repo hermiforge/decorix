@@ -39,6 +39,18 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## DONE
 
+### V5.3 Callable Custom-Constraint API (DX, pre-publish breaking change)
+
+Improved custom-constraint ergonomics before publish (no back-compat kept — not yet released). `defineConstraint`/`defineAsyncConstraint` now return a **callable** `ReusableConstraint`: it applies directly as a decorator (`@StartsWithA()` / `@StartsWithA('override')`, like the native `@Required()`), and the builder `.constraint(...)` accepts it **by reference** (`stringField().constraint(StartsWithA)`) — removing magic strings and gaining type-safety/refactorability. The old `.decorator()` method and `ReusableConstraint.decorator` were removed. `constraint.name` and `constraint.constraint(...)` (metadata factory) are retained.
+
+- Option payloads still go through the generic `@Constraint(name, options)` decorator and the string form `.constraint(name, options)` (the callable only takes a message/groups override, matching native decorators).
+- Builder `.constraint()` is overloaded: `(constraint: ReusableConstraint, arg?)` and `(name: string, options?, arg?)`. The string form remains for `createConstraint`-only definitions and dynamic names (CLI / JSON Schema import).
+- Convention: PascalCase const for decorator use, camelCase registry `name`.
+
+Key files: `packages/core/src/validation/define-constraint.ts` (callable via `Object.defineProperty` name override + `Object.assign`), `packages/core/src/builder/field-builders.ts` (overload + `import type ReusableConstraint`). All in-repo usages migrated (`@x.decorator()` → `@X()`, `.constraint('name')` → `.constraint(X)`); README updated.
+
+Verification: `pnpm lint` clean, typecheck 11 packages + `examples:typecheck`, `vitest run` 204 tests, build 11 packages — all green.
+
 ### V5.2 Validator Test Coverage Hardening (pre-publish)
 
 Ahead of an npm/GitHub publish, symmetric builder + decorator coverage of validators was added across every package. Previously only `@decorix/core` (and `@decorix/zod` partially) exercised custom sync constraints and decorator-mode custom/cross-field paths; the 7 downstream adapters tested only a single builder-mode async constraint. Added per adapter (react-hook-form, nest, angular-signal, angular-reactive, vue-vee-validate, vue-formkit, react-tanstack-form): a custom **sync** constraint in builder **and** decorator mode, a custom **async** constraint in decorator mode, a cross-field (`@EqualsField`) constraint in decorator mode, and native number/date runtime enforcement in both modes. Also: `@decorix/zod` gained decorator-mode custom + options-payload params + native number/date breadth; `@decorix/json-schema` gained a custom-field-constraint preservation round-trip; `@decorix/cli` gained a scan test surfacing a custom constraint name from decorator + builder fixtures; `@decorix/core` gained an options-payload → `issue.params` case.

@@ -455,16 +455,17 @@ describe('@decorix/core', () => {
         expect(validate({}, rootPathMetadata)).toMatchObject({success: false, issues: [{path: [], constraint: 'rootObjectFailure'}]});
     });
 
-    it('defines reusable custom field constraints usable as decorator and builder metadata', () => {
-        const evenNumber = defineConstraint<number, undefined>({
+    it('defines reusable custom field constraints usable as a callable decorator and by builder reference', () => {
+        const EvenNumber = defineConstraint<number, undefined>({
             name: 'coreTestEvenNumber',
             validate: (value) => typeof value === 'number' && value % 2 === 0,
             message: 'Value must be even.'
         });
 
+        // The reusable constraint is callable, so it applies directly as a decorator.
         @Model('EvenDecoratorDto')
         class EvenDecoratorDto {
-            @evenNumber.decorator()
+            @EvenNumber()
             count?: number;
         }
 
@@ -474,18 +475,19 @@ describe('@decorix/core', () => {
             issues: [{path: ['count'], constraint: 'coreTestEvenNumber', message: 'Value must be even.'}]
         });
 
-        // Same registered constraint reused via the generic builder method.
+        // The same constraint is reused by reference in the builder — no magic string.
         const builderMetadata = model('EvenBuilderDto', {
-            count: numberField().optional().constraint('coreTestEvenNumber'),
-            other: numberField().optional().constraint('coreTestEvenNumber')
+            count: numberField().optional().constraint(EvenNumber),
+            other: numberField().optional().constraint(EvenNumber)
         });
         expect(validate({count: 3, other: 4}, builderMetadata)).toMatchObject({
             success: false,
             issues: [{path: ['count'], constraint: 'coreTestEvenNumber'}]
         });
 
-        // The metadata factory yields reusable metadata carrying a per-usage override.
-        expect(evenNumber.constraint('Override')).toMatchObject({name: 'coreTestEvenNumber', message: 'Override'});
+        // It exposes its registered name and a metadata factory for objectConstraints reuse.
+        expect(EvenNumber.name).toBe('coreTestEvenNumber');
+        expect(EvenNumber.constraint('Override')).toMatchObject({name: 'coreTestEvenNumber', message: 'Override'});
     });
 
     it('threads a custom options payload into issue params in decorator and builder mode', () => {
@@ -519,7 +521,7 @@ describe('@decorix/core', () => {
     });
 
     it('lets the user message override the custom constraint definition message', () => {
-        const nonEmpty = defineConstraint<string, undefined>({
+        const NonEmpty = defineConstraint<string, undefined>({
             name: 'coreTestNonEmptyCustom',
             validate: (value) => typeof value === 'string' && value.length > 0,
             message: 'Definition default message.'
@@ -527,7 +529,7 @@ describe('@decorix/core', () => {
 
         @Model('CustomMessageDto')
         class CustomMessageDto {
-            @nonEmpty.decorator('Field-specific message.')
+            @NonEmpty('Field-specific message.')
             label?: string;
         }
 
@@ -574,7 +576,7 @@ describe('@decorix/core', () => {
             message: 'Async custom failed.'
         });
 
-        const metadata = model('DefineAsyncDto', {value: stringField().optional().constraint(asyncRule.name)});
+        const metadata = model('DefineAsyncDto', {value: stringField().optional().constraint(asyncRule)});
 
         expect(() => validate({value: 'x'}, metadata)).toThrow('Use validateAsync instead');
         await expect(validateAsync({value: 'x'}, metadata)).resolves.toMatchObject({

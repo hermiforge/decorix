@@ -22,14 +22,14 @@ import {registerZodValidator} from '@decorix/zod';
 import {toFormKit, useFormKitDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
-const formkitStartsWithA = defineConstraint<string, undefined>({
+const FormkitStartsWithA = defineConstraint<string, undefined>({
     name: 'formkitStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
 });
 
 /** Reusable custom async constraint exercised in decorator mode. */
-const formkitAsyncDeco = defineAsyncConstraint<string, undefined>({
+const FormkitAsyncDeco = defineAsyncConstraint<string, undefined>({
     name: 'formkitAsyncDeco',
     validate: async (value) => value !== 'taken',
     message: 'Already taken'
@@ -150,7 +150,7 @@ describe('@decorix/vue-formkit', () => {
 
     it('enforces a custom sync constraint in builder and decorator mode', () => {
         const builder = model('FormKitCustomSyncBuilderDto', {
-            code: stringField().required().constraint('formkitStartsWithA')
+            code: stringField().required().constraint(FormkitStartsWithA)
         });
         expect(toFormKit(builder).validate?.({code: 'Bravo'})).toMatchObject({
             success: false,
@@ -161,7 +161,7 @@ describe('@decorix/vue-formkit', () => {
         @Model('FormKitCustomSyncClassDto')
         class FormKitCustomSyncClassDto {
             @Required()
-            @formkitStartsWithA.decorator()
+            @FormkitStartsWithA()
             code!: string;
         }
         expect(toFormKit(FormKitCustomSyncClassDto).validate?.({code: 'Bravo'})).toMatchObject({
@@ -175,7 +175,7 @@ describe('@decorix/vue-formkit', () => {
         @Model('FormKitAsyncClassDto')
         class FormKitAsyncClassDto {
             @Required()
-            @formkitAsyncDeco.decorator()
+            @FormkitAsyncDeco()
             username!: string;
         }
 

@@ -43,9 +43,15 @@ const SignupDto = model('SignupDto', {
 
 ## Custom Constraints
 
-Define a reusable constraint once with `defineConstraint`, then apply it as a
-decorator or as builder metadata. A per-field `message` overrides the
+Define a reusable constraint once with `defineConstraint`. The result is
+**callable**, so it applies directly as a decorator — just like the native
+`@Required()` / `@Min(3)` — and can be passed **by reference** to the builder
+`.constraint(...)` method (no magic strings). A per-field `message` overrides the
 definition's default message; constraint names must be unique within a registry.
+
+By convention the holding const is PascalCase (for decorator use) while the
+registered `name` stays camelCase — it surfaces as `issue.constraint` and the
+`decorix.<name>` issue code.
 
 ```ts
 import {defineConstraint, Model, model, numberField, validate} from '@decorix/core';
@@ -56,25 +62,30 @@ const EvenNumber = defineConstraint<number, undefined>({
   message: 'Value must be even.'
 });
 
-// As a decorator
+// As a decorator — the constraint is callable, no `.decorator()`
 @Model('CounterDto')
 class CounterDto {
-  @EvenNumber.decorator('Count must be even')
+  @EvenNumber('Count must be even')
   count!: number;
 }
 
-// As builder metadata (reuses the same registered name)
+// In the builder — by reference, fully typed and refactor-safe
 const CounterModel = model('CounterDto', {
-  count: numberField().constraint('evenNumber', undefined, 'Count must be even')
+  count: numberField().constraint(EvenNumber, 'Count must be even')
 });
 
 validate({count: 3}, CounterModel); // { success: false, issues: [{ constraint: 'evenNumber', ... }] }
 ```
 
-Use `defineAsyncConstraint` for async rules (resolved by `validateAsync`), and
-pass a custom `ConstraintRegistry` as the second argument to `defineConstraint`
-plus `validate(value, model, { registry })` to keep constraints isolated from
-the default global registry.
+Need a per-field **option payload** (not just a message)? Use the generic
+`@Constraint(name, options)` decorator or the string form of the builder method,
+`.constraint(name, options)`. Both attach the options that your `validate`
+receives and that surface as `issue.params`.
+
+Use `defineAsyncConstraint` for async rules (resolved by `validateAsync`; also
+callable as `@MyAsyncRule()`), and pass a custom `ConstraintRegistry` as the
+second argument to `defineConstraint` plus `validate(value, model, { registry })`
+to keep constraints isolated from the default global registry.
 
 ## Async Validation
 

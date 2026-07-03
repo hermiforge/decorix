@@ -5,14 +5,14 @@ import {toReactiveFormConfig} from '../src/index';
 import type {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
-const reactiveStartsWithA = defineConstraint<string, undefined>({
+const ReactiveStartsWithA = defineConstraint<string, undefined>({
     name: 'reactiveStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
 });
 
 /** Reusable custom async constraint exercised in decorator mode. */
-const reactiveAsyncDeco = defineAsyncConstraint<string, undefined>({
+const ReactiveAsyncDeco = defineAsyncConstraint<string, undefined>({
     name: 'reactiveAsyncDeco',
     validate: async (value) => value !== 'taken',
     message: 'Already taken'
@@ -291,7 +291,7 @@ describe('@decorix/angular-reactive', () => {
 
     it('enforces a custom sync constraint through a Decorix-backed ValidatorFn in builder and decorator mode', () => {
         const builder = model('ReactiveCustomSyncBuilderDto', {
-            code: stringField().required().constraint('reactiveStartsWithA')
+            code: stringField().required().constraint(ReactiveStartsWithA)
         });
         const builderField = toReactiveFormConfig(builder).fields.find((field) => field.name === 'code');
         expect(runValidators(builderField?.validators ?? [], 'Bravo')).toEqual([{reactiveStartsWithA: {message: 'Must start with A'}}]);
@@ -300,7 +300,7 @@ describe('@decorix/angular-reactive', () => {
         @Model('ReactiveCustomSyncClassDto')
         class ReactiveCustomSyncClassDto {
             @Required()
-            @reactiveStartsWithA.decorator()
+            @ReactiveStartsWithA()
             code!: string;
         }
         const classField = toReactiveFormConfig(ReactiveCustomSyncClassDto).fields.find((field) => field.name === 'code');
@@ -312,7 +312,7 @@ describe('@decorix/angular-reactive', () => {
         @Model('ReactiveAsyncClassDto')
         class ReactiveAsyncClassDto {
             @Required()
-            @reactiveAsyncDeco.decorator()
+            @ReactiveAsyncDeco()
             username!: string;
         }
 

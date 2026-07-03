@@ -21,14 +21,14 @@ import {registerZodValidator} from '@decorix/zod';
 import {toVeeValidate, useVeeDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
-const veeStartsWithA = defineConstraint<string, undefined>({
+const VeeStartsWithA = defineConstraint<string, undefined>({
     name: 'veeStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
 });
 
 /** Reusable custom async constraint exercised in decorator mode. */
-const veeAsyncDeco = defineAsyncConstraint<string, undefined>({
+const VeeAsyncDeco = defineAsyncConstraint<string, undefined>({
     name: 'veeAsyncDeco',
     validate: async (value) => value !== 'taken',
     message: 'Already taken'
@@ -122,7 +122,7 @@ describe('@decorix/vue-vee-validate', () => {
         registerZodValidator({name: 'zod-vee-custom-sync'});
 
         const builder = model('VeeCustomSyncBuilderDto', {
-            code: stringField().required().constraint('veeStartsWithA')
+            code: stringField().required().constraint(VeeStartsWithA)
         });
         expect(toVeeValidate(builder).validate({code: 'Bravo'})).toMatchObject({
             success: false,
@@ -133,7 +133,7 @@ describe('@decorix/vue-vee-validate', () => {
         @Model('VeeCustomSyncClassDto')
         class VeeCustomSyncClassDto {
             @Required()
-            @veeStartsWithA.decorator()
+            @VeeStartsWithA()
             code!: string;
         }
         expect(toVeeValidate(VeeCustomSyncClassDto).validate({code: 'Bravo'})).toMatchObject({
@@ -149,7 +149,7 @@ describe('@decorix/vue-vee-validate', () => {
         @Model('VeeAsyncClassDto')
         class VeeAsyncClassDto {
             @Required()
-            @veeAsyncDeco.decorator()
+            @VeeAsyncDeco()
             username!: string;
         }
 

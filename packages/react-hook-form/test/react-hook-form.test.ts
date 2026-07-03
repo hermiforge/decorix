@@ -21,14 +21,14 @@ import {registerZodValidator} from '@decorix/zod';
 import {toReactHookForm, useReactHookDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
-const rhfStartsWithA = defineConstraint<string, undefined>({
+const RhfStartsWithA = defineConstraint<string, undefined>({
     name: 'rhfStartsWithA',
     validate: (value) => typeof value === 'string' && value.startsWith('A'),
     message: 'Must start with A'
 });
 
 /** Reusable custom async constraint exercised in decorator mode. */
-const rhfAsyncDeco = defineAsyncConstraint<string, undefined>({
+const RhfAsyncDeco = defineAsyncConstraint<string, undefined>({
     name: 'rhfAsyncDeco',
     validate: async (value) => value !== 'taken',
     message: 'Already taken'
@@ -155,7 +155,7 @@ describe('@decorix/react-hook-form', () => {
         registerZodValidator({name: 'zod-react-hook-custom-sync'});
 
         const builder = model('HookCustomSyncBuilderDto', {
-            code: stringField().required().constraint('rhfStartsWithA')
+            code: stringField().required().constraint(RhfStartsWithA)
         });
         expect((await toReactHookForm(builder).resolver({code: 'Bravo'})).errors).toMatchObject({code: {message: 'Must start with A'}});
         expect((await toReactHookForm(builder).resolver({code: 'Alpha'})).errors).toMatchObject({});
@@ -163,7 +163,7 @@ describe('@decorix/react-hook-form', () => {
         @Model('HookCustomSyncClassDto')
         class HookCustomSyncClassDto {
             @Required()
-            @rhfStartsWithA.decorator()
+            @RhfStartsWithA()
             code!: string;
         }
         expect((await toReactHookForm(HookCustomSyncClassDto).resolver({code: 'Bravo'})).errors).toMatchObject({code: {message: 'Must start with A'}});
@@ -176,7 +176,7 @@ describe('@decorix/react-hook-form', () => {
         @Model('HookAsyncClassDto')
         class HookAsyncClassDto {
             @Required()
-            @rhfAsyncDeco.decorator()
+            @RhfAsyncDeco()
             username!: string;
         }
 
