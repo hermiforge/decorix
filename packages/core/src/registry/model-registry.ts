@@ -4,6 +4,41 @@ import type {FieldMetadata, ModelMetadata, ModelTarget} from '../metadata/types'
 const modelRegistry = new WeakMap<ModelTarget, ModelMetadata>();
 
 /**
+ * Global-symbol key mirroring model metadata directly on the target class.
+ *
+ * The `WeakMap` above is private to a single loaded `@decorix/core` instance.
+ * When a model is declared under one instance (for example a DTO transpiled by
+ * a tsx/tsconfig loader) but inspected under another (a natively-loaded copy of
+ * core, as in `@decorix/cli`), the two WeakMaps differ and metadata appears
+ * missing. A `Symbol.for` key is shared across every core instance and lives on
+ * the class object itself, so metadata written by one instance is readable by
+ * any other — matching the boundary-safe behavior builder metadata already has
+ * via structural `isModelMetadata` checks.
+ */
+const MODEL_METADATA_KEY = Symbol.for('decorix.model.metadata');
+
+/**
+ * Mirrors metadata onto the target under {@link MODEL_METADATA_KEY} as a
+ * non-enumerable property so it never leaks into spreads or `Object.keys`.
+ */
+function mirrorModelMetadata(target: ModelTarget, metadata: ModelMetadata): void {
+    Object.defineProperty(target, MODEL_METADATA_KEY, {
+        value: metadata,
+        enumerable: false,
+        configurable: true,
+        writable: true
+    });
+}
+
+/**
+ * Reads the cross-instance metadata mirror from a target, if present.
+ */
+function readModelMetadataMirror(target: ModelTarget): ModelMetadata | undefined {
+    const mirror = (target as unknown as Record<symbol, unknown>)[MODEL_METADATA_KEY];
+    return isModelMetadata(mirror) ? mirror : undefined;
+}
+
+/**
  * Registers metadata for a model target.
  *
  * @param target - Constructor or function used as the registry key.
@@ -11,7 +46,9 @@ const modelRegistry = new WeakMap<ModelTarget, ModelMetadata>();
  * @returns The stored metadata object.
  */
 export function registerModelMetadata(target: ModelTarget, metadata: ModelMetadata): ModelMetadata {
-    modelRegistry.set(target, cloneModelMetadata(metadata));
+    const stored = cloneModelMetadata(metadata);
+    modelRegistry.set(target, stored);
+    mirrorModelMetadata(target, stored);
     return getModelMetadata(target);
 }
 
@@ -22,7 +59,7 @@ export function registerModelMetadata(target: ModelTarget, metadata: ModelMetada
  * @returns Whether metadata exists in the Decorix registry.
  */
 export function hasModelMetadata(target: ModelTarget): boolean {
-    return modelRegistry.has(target);
+    return modelRegistry.has(target) || readModelMetadataMirror(target) !== undefined;
 }
 
 /**
@@ -37,7 +74,8 @@ export function getModelMetadata(modelOrMetadata: ModelTarget | ModelMetadata): 
         return cloneModelMetadata(modelOrMetadata);
     }
 
-    const metadata = modelRegistry.get(modelOrMetadata);
+    // Prefer the local WeakMap; fall back to the cross-instance mirror for models declared under a different core instance.
+    const metadata = modelRegistry.get(modelOrMetadata) ?? readModelMetadataMirror(modelOrMetadata);
     if (!metadata) {
         throw new Error(`No Decorix metadata registered for ${modelOrMetadata.name || 'anonymous model'}.`);
     }
@@ -56,6 +94,8 @@ export function getOrCreateMutableModelMetadata(target: ModelTarget): ModelMetad
 
     const metadata: ModelMetadata = {name: target.name, fields: []};
     modelRegistry.set(target, metadata);
+    // Mirror the live object so in-place decorator mutations remain readable across core instances.
+    mirrorModelMetadata(target, metadata);
     return metadata;
 }
 
@@ -63,7 +103,9 @@ export function getOrCreateMutableModelMetadata(target: ModelTarget): ModelMetad
  * Commits decorator-mutated metadata back to the registry as a defensive clone.
  */
 export function commitModelMetadata(target: ModelTarget, metadata: ModelMetadata): void {
-    modelRegistry.set(target, cloneModelMetadata(metadata));
+    const stored = cloneModelMetadata(metadata);
+    modelRegistry.set(target, stored);
+    mirrorModelMetadata(target, stored);
 }
 
 /**

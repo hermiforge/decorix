@@ -1,4 +1,5 @@
-import {resolve} from 'node:path';
+import {existsSync} from 'node:fs';
+import {dirname, join, resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {tsImport} from 'tsx/esm/api';
 import {getModelMetadata, hasModelMetadata, isModelMetadata} from '@decorix/core';
@@ -37,18 +38,52 @@ export function discoverModels(moduleExports: Record<string, unknown>): Discover
 }
 
 /**
+ * Walks up from a directory to find the nearest `tsconfig.json`.
+ *
+ * @param fromDir - Absolute directory to start searching from.
+ * @returns The absolute path to the closest `tsconfig.json`, or `undefined` when none exists up to the filesystem root.
+ */
+function resolveNearestTsconfig(fromDir: string): string | undefined {
+    let current = fromDir;
+    // Stop when `dirname` no longer changes the path (filesystem root reached).
+    for (;;) {
+        const candidate = join(current, 'tsconfig.json');
+        if (existsSync(candidate)) return candidate;
+        const parent = dirname(current);
+        if (parent === current) return undefined;
+        current = parent;
+    }
+}
+
+/**
  * Loads a TypeScript or JavaScript entry module and returns its exports.
  *
  * Uses tsx (esbuild) so DTO files authored in TypeScript — including
  * `experimentalDecorators` and definite-assignment fields — run without a
  * separate build, triggering `@Model` decorator registration as a side effect.
  *
+ * Decorix decorators are legacy TypeScript decorators (`(target, propertyKey)`),
+ * so esbuild must emit with `experimentalDecorators`. tsx does not reliably apply
+ * that flag through its default tsconfig discovery (e.g. a root `tsconfig.json`
+ * with `files: []` matches no file), which makes esbuild fall back to TC39
+ * standard decorators and crashes registration. We therefore pass an explicit
+ * tsconfig: a decorator-using project always sets `experimentalDecorators: true`,
+ * so applying its own config is both correct and non-clobbering (its `paths`
+ * aliases are preserved).
+ *
  * @param entry - Absolute or relative path to the DTO entry module.
+ * @param tsconfigPath - Optional explicit tsconfig path; defaults to the nearest `tsconfig.json` above the entry file, then above the CWD.
  * @returns The module's exports.
  */
-export async function loadEntry(entry: string): Promise<Record<string, unknown>> {
+export async function loadEntry(entry: string, tsconfigPath?: string): Promise<Record<string, unknown>> {
     const absolute = resolve('.', entry);
     // tsx resolves the entry and its imports relative to the current working directory.
     const parentUrl = pathToFileURL(resolve('.', 'index.js')).href;
-    return tsImport(pathToFileURL(absolute).href, parentUrl) as Promise<Record<string, unknown>>;
+    const tsconfig =
+        (tsconfigPath && resolve('.', tsconfigPath)) ??
+        resolveNearestTsconfig(dirname(absolute)) ??
+        resolveNearestTsconfig(resolve('.'));
+    // When no tsconfig is found, leave tsx to its default discovery rather than forcing a config that could break resolution.
+    const options = tsconfig ? {parentURL: parentUrl, tsconfig} : {parentURL: parentUrl};
+    return tsImport(pathToFileURL(absolute).href, options) as Promise<Record<string, unknown>>;
 }

@@ -39,6 +39,21 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## DONE
 
+### V5.1 CLI Decorator Loading Fix
+
+The V5 CLI shipped with its primary command broken for decorator DTOs (only the pure render functions were unit-tested; `loadEntry` was never exercised end to end). Two bugs were fixed:
+
+- **Standard-decorator emit.** `loadEntry` loaded entries via `tsImport` without imposing a tsconfig, so tsx/esbuild emitted TC39 standard decorators (`__decorateElement`) and crashed Decorix's legacy-decorator runtime (`Cannot read properties of undefined (reading 'constructor')`). The earlier claim that the loader "supports experimentalDecorators" was false in practice — the root `tsconfig.json` has `files: []`, so tsx's default discovery applied no `experimentalDecorators`. Fix: `loadEntry(entry, tsconfigPath?)` now resolves the nearest `tsconfig.json` above the entry (then the CWD) and passes it explicitly to `tsImport`; a new `--tsconfig` option overrides it. Added a hint on the constructor-crash message.
+- **Cross-instance registry.** Decorator metadata lived only in a module-private `WeakMap` in `@decorix/core`. When a DTO is transpiled under tsx's core instance but inspected under the natively-loaded core instance (the CLI), the two WeakMaps differ and `hasModelMetadata` returned false — so decorator models were never discovered (builder models escaped this via structural `isModelMetadata`). Fix: the registry now mirrors metadata onto the class under `Symbol.for('decorix.model.metadata')` (a non-enumerable, cross-instance-shared key); `hasModelMetadata`/`getModelMetadata` fall back to the mirror.
+- **Real end-to-end coverage.** Added `packages/cli/test/cli-e2e.test.ts` driving the real `runCli` against on-disk `.ts` fixtures (decorator + builder), plus exported fixtures under `packages/cli/test/fixtures/`.
+
+Key files modified:
+
+- `packages/cli/src/loader.ts` (nearest-tsconfig resolution, explicit `tsconfig` to `tsImport`)
+- `packages/cli/src/cli.ts` (`--tsconfig` option), `packages/cli/bin/decorix.mjs` (crash hint)
+- `packages/core/src/registry/model-registry.ts` (global-symbol metadata mirror)
+- `packages/cli/test/{cli-e2e.test.ts,fixtures/*}` (new), `packages/cli/README.md`
+
 ### V5 Async, Zod, Angular, CLI
 
 Async foundation:
@@ -57,7 +72,7 @@ Angular:
 
 CLI:
 
-- Added `@decorix/cli` with `bin` `decorix` and commands `scan`, `json-schema`, `zod`, `angular-validators`. Loads TS/JS DTO entries via tsx (esbuild — supports `experimentalDecorators` and definite-assignment fields), discovers `@Model` classes and builder metadata, and emits JSON Schema or thin re-export modules (`toZod` / `toReactiveFormConfig`) so constraint functions are never serialized.
+- Added `@decorix/cli` with `bin` `decorix` and commands `scan`, `json-schema`, `zod`, `angular-validators`. Loads TS/JS DTO entries via tsx (esbuild), discovers `@Model` classes and builder metadata, and emits JSON Schema or thin re-export modules (`toZod` / `toReactiveFormConfig`) so constraint functions are never serialized. (Note: the original decorator-loading path was broken — see **V5.1 CLI Decorator Loading Fix** above for the `experimentalDecorators` and cross-instance-registry corrections.)
 
 Files added:
 

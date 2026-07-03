@@ -33,6 +33,26 @@ The `zod` and `angular-validators` commands emit thin TypeScript modules that
 re-export `toZod(Model)` / `toReactiveFormConfig(Model)` from the entry, so
 constraint functions never need to be serialized.
 
+## Requirements for decorator DTOs
+
+The loader must be able to **export-discover** your models and transpile them
+with legacy TypeScript decorators:
+
+- **Export your DTOs.** `scan`/`json-schema`/… only see exported members
+  (`export class UserDto` or `export const UserDto = model(...)`). A non-exported
+  model is silently invisible.
+- **Enable `experimentalDecorators`.** Decorix decorators are legacy decorators,
+  so the entry must be transpiled with `"experimentalDecorators": true`. The CLI
+  resolves the nearest `tsconfig.json` above your entry file (then the CWD) and
+  applies it; a decorator-using project already sets this flag. If your DTO uses
+  decorators and you see `Cannot read properties of undefined (reading 'constructor')`,
+  your resolved tsconfig lacks the flag — pass `--tsconfig <file>` to point at one
+  that sets it.
+
+```sh
+decorix scan ./src/dtos.ts --tsconfig ./tsconfig.json
+```
+
 ## Programmatic API
 
 ```ts

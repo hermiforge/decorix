@@ -11,7 +11,10 @@ export type CliIO = {
 };
 
 /** Options shared by artifact-emitting commands. */
-type ArtifactOptions = {model?: string; out?: string};
+type ArtifactOptions = {model?: string; out?: string; tsconfig?: string};
+
+/** Options for the scan command. */
+type ScanOptions = {tsconfig?: string};
 
 const defaultIO: CliIO = {
     log: (message) => console.log(message),
@@ -28,32 +31,39 @@ const defaultIO: CliIO = {
 export async function runCli(args: string[], io: CliIO = defaultIO): Promise<void> {
     const cli = cac('decorix');
 
-    cli.command('scan <entry>', 'List Decorix models found in an entry module').action(async (entry: string) => {
-        const models = discoverModels(await loadEntry(entry));
-        io.log(renderScan(models));
-    });
+    const tsconfigHelp = 'Path to a tsconfig.json (defaults to the nearest one; must enable experimentalDecorators)';
+
+    cli.command('scan <entry>', 'List Decorix models found in an entry module')
+        .option('--tsconfig <file>', tsconfigHelp)
+        .action(async (entry: string, options: ScanOptions) => {
+            const models = discoverModels(await loadEntry(entry, options.tsconfig));
+            io.log(renderScan(models));
+        });
 
     cli.command('json-schema <entry>', 'Emit JSON Schema for a model')
         .option('--model <name>', 'Model name or export to select')
         .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
         .action(async (entry: string, options: ArtifactOptions) => {
-            const model = selectModel(discoverModels(await loadEntry(entry)), options.model);
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
             emit(io, options.out, renderJsonSchema(model));
         });
 
     cli.command('zod <entry>', 'Emit a Zod schema module for a model')
         .option('--model <name>', 'Model name or export to select')
         .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
         .action(async (entry: string, options: ArtifactOptions) => {
-            const model = selectModel(discoverModels(await loadEntry(entry)), options.model);
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
             emit(io, options.out, renderZodModule(entry, model));
         });
 
     cli.command('angular-validators <entry>', 'Emit an Angular reactive form config module for a model')
         .option('--model <name>', 'Model name or export to select')
         .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
         .action(async (entry: string, options: ArtifactOptions) => {
-            const model = selectModel(discoverModels(await loadEntry(entry)), options.model);
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
             emit(io, options.out, renderAngularValidatorsModule(entry, model));
         });
 
