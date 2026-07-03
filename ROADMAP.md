@@ -39,6 +39,15 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## DONE
 
+### V5.2 Validator Test Coverage Hardening (pre-publish)
+
+Ahead of an npm/GitHub publish, symmetric builder + decorator coverage of validators was added across every package. Previously only `@decorix/core` (and `@decorix/zod` partially) exercised custom sync constraints and decorator-mode custom/cross-field paths; the 7 downstream adapters tested only a single builder-mode async constraint. Added per adapter (react-hook-form, nest, angular-signal, angular-reactive, vue-vee-validate, vue-formkit, react-tanstack-form): a custom **sync** constraint in builder **and** decorator mode, a custom **async** constraint in decorator mode, a cross-field (`@EqualsField`) constraint in decorator mode, and native number/date runtime enforcement in both modes. Also: `@decorix/zod` gained decorator-mode custom + options-payload params + native number/date breadth; `@decorix/json-schema` gained a custom-field-constraint preservation round-trip; `@decorix/cli` gained a scan test surfacing a custom constraint name from decorator + builder fixtures; `@decorix/core` gained an options-payload → `issue.params` case.
+
+- Tests only — no package source changed. Constraint names are prefixed per package to avoid `defaultConstraintRegistry` collisions across a single vitest run.
+- Note: decorator-declared array fields have no element type, so array constraints are exercised in builder mode only (Zod-backed adapters require an array `item`).
+
+Verification: `pnpm lint` clean, typecheck 11 packages + `examples:typecheck`, `vitest run` **204 tests** (12 files, up from 172), build 11 packages — all green.
+
 ### V5.1 CLI Decorator Loading Fix
 
 The V5 CLI shipped with its primary command broken for decorator DTOs (only the pure render functions were unit-tested; `loadEntry` was never exercised end to end). Two bugs were fixed:

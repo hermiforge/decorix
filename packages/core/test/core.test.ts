@@ -488,6 +488,36 @@ describe('@decorix/core', () => {
         expect(evenNumber.constraint('Override')).toMatchObject({name: 'coreTestEvenNumber', message: 'Override'});
     });
 
+    it('threads a custom options payload into issue params in decorator and builder mode', () => {
+        defineConstraint<string, {prefix: string}>({
+            name: 'coreTestHasPrefix',
+            validate: (value, options) => typeof value === 'string' && value.startsWith(options.prefix),
+            message: (options) => `Must start with "${options.prefix}".`
+        });
+
+        // The generic Constraint decorator carries an options payload the ReusableConstraint decorator cannot.
+        @Model('PrefixDecoratorDto')
+        class PrefixDecoratorDto {
+            @Constraint('coreTestHasPrefix', {prefix: 'A'})
+            code?: string;
+        }
+
+        expect(validate({code: 'Bravo'}, PrefixDecoratorDto)).toMatchObject({
+            success: false,
+            issues: [{constraint: 'coreTestHasPrefix', message: 'Must start with "A".', params: {prefix: 'A'}}]
+        });
+        expect(validate({code: 'Alpha'}, PrefixDecoratorDto).success).toBe(true);
+
+        // The builder .constraint(name, options) mirrors the decorator and spreads object options as params.
+        const builderMetadata = model('PrefixBuilderDto', {
+            code: stringField().optional().constraint('coreTestHasPrefix', {prefix: 'A'})
+        });
+        expect(validate({code: 'Zulu'}, builderMetadata)).toMatchObject({
+            success: false,
+            issues: [{constraint: 'coreTestHasPrefix', params: {prefix: 'A'}}]
+        });
+    });
+
     it('lets the user message override the custom constraint definition message', () => {
         const nonEmpty = defineConstraint<string, undefined>({
             name: 'coreTestNonEmptyCustom',

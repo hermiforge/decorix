@@ -1,7 +1,38 @@
 import {describe, expect, it} from 'vitest';
-import {createAsyncConstraint, Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {
+    createAsyncConstraint,
+    dateField,
+    defineAsyncConstraint,
+    defineConstraint,
+    Email,
+    EqualsField,
+    Integer,
+    Max,
+    Min,
+    MinLength,
+    Model,
+    model,
+    numberField,
+    Past,
+    Required,
+    stringField
+} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toReactHookForm, useReactHookDecorix} from '../src/index';
+
+/** Reusable custom sync constraint for the builder/decorator symmetry tests. */
+const rhfStartsWithA = defineConstraint<string, undefined>({
+    name: 'rhfStartsWithA',
+    validate: (value) => typeof value === 'string' && value.startsWith('A'),
+    message: 'Must start with A'
+});
+
+/** Reusable custom async constraint exercised in decorator mode. */
+const rhfAsyncDeco = defineAsyncConstraint<string, undefined>({
+    name: 'rhfAsyncDeco',
+    validate: async (value) => value !== 'taken',
+    message: 'Already taken'
+});
 
 describe('@decorix/react-hook-form', () => {
     it('creates React Hook Form config from decorators', async () => {
@@ -118,6 +149,85 @@ describe('@decorix/react-hook-form', () => {
         const config = toReactHookForm(metadata);
         expect((await config.resolver({username: 'free'})).errors).toMatchObject({});
         expect((await config.resolver({username: 'taken'})).errors).toMatchObject({username: {message: 'Already taken'}});
+    });
+
+    it('enforces a custom sync constraint in builder and decorator mode', async () => {
+        registerZodValidator({name: 'zod-react-hook-custom-sync'});
+
+        const builder = model('HookCustomSyncBuilderDto', {
+            code: stringField().required().constraint('rhfStartsWithA')
+        });
+        expect((await toReactHookForm(builder).resolver({code: 'Bravo'})).errors).toMatchObject({code: {message: 'Must start with A'}});
+        expect((await toReactHookForm(builder).resolver({code: 'Alpha'})).errors).toMatchObject({});
+
+        @Model('HookCustomSyncClassDto')
+        class HookCustomSyncClassDto {
+            @Required()
+            @rhfStartsWithA.decorator()
+            code!: string;
+        }
+        expect((await toReactHookForm(HookCustomSyncClassDto).resolver({code: 'Bravo'})).errors).toMatchObject({code: {message: 'Must start with A'}});
+        expect((await toReactHookForm(HookCustomSyncClassDto).resolver({code: 'Alpha'})).errors).toMatchObject({});
+    });
+
+    it('resolves a custom async constraint declared in decorator mode', async () => {
+        registerZodValidator({name: 'zod-react-hook-async-class'});
+
+        @Model('HookAsyncClassDto')
+        class HookAsyncClassDto {
+            @Required()
+            @rhfAsyncDeco.decorator()
+            username!: string;
+        }
+
+        const config = toReactHookForm(HookAsyncClassDto);
+        expect((await config.resolver({username: 'free'})).errors).toMatchObject({});
+        expect((await config.resolver({username: 'taken'})).errors).toMatchObject({username: {message: 'Already taken'}});
+    });
+
+    it('enforces a cross-field constraint declared in decorator mode', async () => {
+        registerZodValidator({name: 'zod-react-hook-crossfield-class'});
+
+        @Model('HookCrossFieldClassDto')
+        class HookCrossFieldClassDto {
+            @Required()
+            password!: string;
+
+            @EqualsField('password', 'Passwords must match')
+            confirmPassword?: string;
+        }
+
+        const result = await toReactHookForm(HookCrossFieldClassDto).resolver({password: 'a', confirmPassword: 'b'});
+        expect(result.errors).toMatchObject({confirmPassword: {message: 'Passwords must match'}});
+    });
+
+    it('enforces native number and date constraints in builder and decorator mode', async () => {
+        registerZodValidator({name: 'zod-react-hook-natives'});
+        const past = new Date('2000-01-01');
+        const future = new Date(Date.now() + 86_400_000);
+
+        const builder = model('HookNativeBuilderDto', {
+            age: numberField().min(18).max(65).integer(),
+            createdAt: dateField().past()
+        });
+        expect((await toReactHookForm(builder).resolver({age: 30, createdAt: past})).errors).toMatchObject({});
+        expect((await toReactHookForm(builder).resolver({age: 10, createdAt: past})).errors).toMatchObject({age: {}});
+        expect((await toReactHookForm(builder).resolver({age: 30.5, createdAt: past})).errors).toMatchObject({age: {}});
+        expect((await toReactHookForm(builder).resolver({age: 30, createdAt: future})).errors).toMatchObject({createdAt: {}});
+
+        @Model('HookNativeClassDto')
+        class HookNativeClassDto {
+            @Min(18)
+            @Max(65)
+            @Integer()
+            age!: number;
+
+            @Past()
+            createdAt!: Date;
+        }
+        expect((await toReactHookForm(HookNativeClassDto).resolver({age: 30, createdAt: past})).errors).toMatchObject({});
+        expect((await toReactHookForm(HookNativeClassDto).resolver({age: 10, createdAt: past})).errors).toMatchObject({age: {}});
+        expect((await toReactHookForm(HookNativeClassDto).resolver({age: 30, createdAt: future})).errors).toMatchObject({createdAt: {}});
     });});
 
 

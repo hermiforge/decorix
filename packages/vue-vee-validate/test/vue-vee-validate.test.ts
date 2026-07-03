@@ -1,7 +1,38 @@
 import {describe, expect, it} from 'vitest';
-import {createAsyncConstraint, Email, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {
+    createAsyncConstraint,
+    dateField,
+    defineAsyncConstraint,
+    defineConstraint,
+    Email,
+    EqualsField,
+    Integer,
+    Max,
+    Min,
+    MinLength,
+    Model,
+    model,
+    numberField,
+    Past,
+    Required,
+    stringField
+} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toVeeValidate, useVeeDecorix} from '../src/index';
+
+/** Reusable custom sync constraint for the builder/decorator symmetry tests. */
+const veeStartsWithA = defineConstraint<string, undefined>({
+    name: 'veeStartsWithA',
+    validate: (value) => typeof value === 'string' && value.startsWith('A'),
+    message: 'Must start with A'
+});
+
+/** Reusable custom async constraint exercised in decorator mode. */
+const veeAsyncDeco = defineAsyncConstraint<string, undefined>({
+    name: 'veeAsyncDeco',
+    validate: async (value) => value !== 'taken',
+    message: 'Already taken'
+});
 
 describe('@decorix/vue-vee-validate', () => {
     it('creates VeeValidate config from decorators', () => {
@@ -85,6 +116,96 @@ describe('@decorix/vue-vee-validate', () => {
             success: false,
             issues: [{message: 'Already taken'}]
         });
+    });
+
+    it('enforces a custom sync constraint in builder and decorator mode', () => {
+        registerZodValidator({name: 'zod-vee-custom-sync'});
+
+        const builder = model('VeeCustomSyncBuilderDto', {
+            code: stringField().required().constraint('veeStartsWithA')
+        });
+        expect(toVeeValidate(builder).validate({code: 'Bravo'})).toMatchObject({
+            success: false,
+            issues: [{path: ['code'], message: 'Must start with A'}]
+        });
+        expect(toVeeValidate(builder).validate({code: 'Alpha'})).toMatchObject({success: true});
+
+        @Model('VeeCustomSyncClassDto')
+        class VeeCustomSyncClassDto {
+            @Required()
+            @veeStartsWithA.decorator()
+            code!: string;
+        }
+        expect(toVeeValidate(VeeCustomSyncClassDto).validate({code: 'Bravo'})).toMatchObject({
+            success: false,
+            issues: [{path: ['code'], message: 'Must start with A'}]
+        });
+        expect(toVeeValidate(VeeCustomSyncClassDto).validate({code: 'Alpha'})).toMatchObject({success: true});
+    });
+
+    it('resolves a custom async constraint declared in decorator mode', async () => {
+        registerZodValidator({name: 'zod-vee-async-class'});
+
+        @Model('VeeAsyncClassDto')
+        class VeeAsyncClassDto {
+            @Required()
+            @veeAsyncDeco.decorator()
+            username!: string;
+        }
+
+        const config = toVeeValidate(VeeAsyncClassDto);
+        await expect(config.validateAsync({username: 'free'})).resolves.toMatchObject({success: true});
+        await expect(config.validateAsync({username: 'taken'})).resolves.toMatchObject({
+            success: false,
+            issues: [{message: 'Already taken'}]
+        });
+    });
+
+    it('enforces a cross-field constraint declared in decorator mode', () => {
+        registerZodValidator({name: 'zod-vee-crossfield-class'});
+
+        @Model('VeeCrossFieldClassDto')
+        class VeeCrossFieldClassDto {
+            @Required()
+            password!: string;
+
+            @EqualsField('password', 'Passwords must match')
+            confirmPassword?: string;
+        }
+
+        expect(toVeeValidate(VeeCrossFieldClassDto).validate({password: 'a', confirmPassword: 'b'})).toMatchObject({
+            success: false,
+            issues: [{path: ['confirmPassword'], message: 'Passwords must match'}]
+        });
+    });
+
+    it('enforces native number and date constraints in builder and decorator mode', () => {
+        registerZodValidator({name: 'zod-vee-natives'});
+        const past = new Date('2000-01-01');
+        const future = new Date(Date.now() + 86_400_000);
+
+        const builder = model('VeeNativeBuilderDto', {
+            age: numberField().min(18).max(65).integer(),
+            createdAt: dateField().past()
+        });
+        expect(toVeeValidate(builder).validate({age: 30, createdAt: past})).toMatchObject({success: true});
+        expect(toVeeValidate(builder).validate({age: 10, createdAt: past})).toMatchObject({success: false});
+        expect(toVeeValidate(builder).validate({age: 30.5, createdAt: past})).toMatchObject({success: false});
+        expect(toVeeValidate(builder).validate({age: 30, createdAt: future})).toMatchObject({success: false});
+
+        @Model('VeeNativeClassDto')
+        class VeeNativeClassDto {
+            @Min(18)
+            @Max(65)
+            @Integer()
+            age!: number;
+
+            @Past()
+            createdAt!: Date;
+        }
+        expect(toVeeValidate(VeeNativeClassDto).validate({age: 30, createdAt: past})).toMatchObject({success: true});
+        expect(toVeeValidate(VeeNativeClassDto).validate({age: 10, createdAt: past})).toMatchObject({success: false});
+        expect(toVeeValidate(VeeNativeClassDto).validate({age: 30, createdAt: future})).toMatchObject({success: false});
     });});
 
 

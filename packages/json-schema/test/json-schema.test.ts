@@ -1,6 +1,13 @@
 import {describe, expect, it} from 'vitest';
-import {arrayField, dateField, Email, enumField, Label, Model, model, numberField, objectConstraint, ObjectConstraint, objectField, Required, RequiredIf, stringField, validate} from '@decorix/core';
+import {arrayField, dateField, defineConstraint, Email, enumField, Label, Model, model, numberField, objectConstraint, ObjectConstraint, objectField, Required, RequiredIf, stringField, validate} from '@decorix/core';
 import {fromJsonSchema, toJsonSchema} from '../src/index';
+
+/** Reusable custom field constraint for the decorator/builder preservation test. */
+const jsonStartsWithA = defineConstraint<string, undefined>({
+    name: 'jsonSchemaStartsWithA',
+    validate: (value) => typeof value === 'string' && value.startsWith('A'),
+    message: 'Must start with A'
+});
 
 describe('@decorix/json-schema', () => {
     it('emits JSON Schema for builder-declared metadata', () => {
@@ -186,6 +193,35 @@ describe('@decorix/json-schema', () => {
             },
             'x-decorix-constraints': [{name: 'schemaNamedObjectConstraint', groups: ['strict']}]
         });
+    });
+
+    it('preserves a custom field constraint from decorator and builder mode and round-trips it', () => {
+        @Model('JsonSchemaCustomClassDto')
+        class JsonSchemaCustomClassDto {
+            @Required()
+            @jsonStartsWithA.decorator('Must start with A')
+            code!: string;
+        }
+
+        const exported = toJsonSchema(JsonSchemaCustomClassDto);
+        expect(exported).toMatchObject({
+            properties: {
+                code: {'x-decorix-constraints': [{name: 'jsonSchemaStartsWithA', message: 'Must start with A'}]}
+            }
+        });
+
+        // The builder attaches the same registered constraint by name.
+        const builder = model('JsonSchemaCustomBuilderDto', {
+            code: stringField().required().constraint('jsonSchemaStartsWithA', undefined, 'Must start with A')
+        });
+        expect(toJsonSchema(builder)).toMatchObject({
+            properties: {
+                code: {'x-decorix-constraints': [{name: 'jsonSchemaStartsWithA', message: 'Must start with A'}]}
+            }
+        });
+
+        // Export/import/export is stable for the preserved custom constraint.
+        expect(toJsonSchema(fromJsonSchema(exported))).toEqual(exported);
     });
 
     it('round-trips a broad Decorix-exported schema unchanged', () => {

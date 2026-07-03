@@ -74,4 +74,13 @@ describe('@decorix/cli end-to-end', () => {
         await runCli(['scan', fixture('decorator-dto.ts'), '--tsconfig', fixture('tsconfig.json')], io);
         expect(io.output).toContain('CliUserDto (export CliUserDto)');
     });
+
+    it('surfaces custom named constraints from decorator and builder models', async () => {
+        const io = captureIO();
+        await runCli(['scan', fixture('custom-constraint-dto.ts')], io);
+        expect(io.output).toContain('CliCustomClassDto (export CliCustomClassDto)');
+        expect(io.output).toContain('CliCustomBuilderDto (export CliCustomBuilderDto)');
+        // The custom constraint name appears for both authoring modes.
+        expect(io.output.match(/startsWithA/g)).toHaveLength(2);
+    });
 });

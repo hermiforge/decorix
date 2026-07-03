@@ -1,8 +1,22 @@
 import {describe, expect, it} from 'vitest';
-import {createAsyncConstraint, Email, EqualsField, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
+import {createAsyncConstraint, defineAsyncConstraint, defineConstraint, Email, EqualsField, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toReactiveFormConfig} from '../src/index';
 import type {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
+
+/** Reusable custom sync constraint for the builder/decorator symmetry tests. */
+const reactiveStartsWithA = defineConstraint<string, undefined>({
+    name: 'reactiveStartsWithA',
+    validate: (value) => typeof value === 'string' && value.startsWith('A'),
+    message: 'Must start with A'
+});
+
+/** Reusable custom async constraint exercised in decorator mode. */
+const reactiveAsyncDeco = defineAsyncConstraint<string, undefined>({
+    name: 'reactiveAsyncDeco',
+    validate: async (value) => value !== 'taken',
+    message: 'Already taken'
+});
 
 function control(value: unknown): AbstractControl {
     return {value} as AbstractControl;
@@ -272,6 +286,44 @@ describe('@decorix/angular-reactive', () => {
         await expect(config.validateAsync?.({username: 'taken'})).resolves.toMatchObject({
             success: false,
             issues: [{constraint: 'reactiveAsyncAvailable', message: 'Already taken'}]
+        });
+    });
+
+    it('enforces a custom sync constraint through a Decorix-backed ValidatorFn in builder and decorator mode', () => {
+        const builder = model('ReactiveCustomSyncBuilderDto', {
+            code: stringField().required().constraint('reactiveStartsWithA')
+        });
+        const builderField = toReactiveFormConfig(builder).fields.find((field) => field.name === 'code');
+        expect(runValidators(builderField?.validators ?? [], 'Bravo')).toEqual([{reactiveStartsWithA: {message: 'Must start with A'}}]);
+        expect(runValidators(builderField?.validators ?? [], 'Alpha')).toEqual([]);
+
+        @Model('ReactiveCustomSyncClassDto')
+        class ReactiveCustomSyncClassDto {
+            @Required()
+            @reactiveStartsWithA.decorator()
+            code!: string;
+        }
+        const classField = toReactiveFormConfig(ReactiveCustomSyncClassDto).fields.find((field) => field.name === 'code');
+        expect(runValidators(classField?.validators ?? [], 'Bravo')).toEqual([{reactiveStartsWithA: {message: 'Must start with A'}}]);
+        expect(runValidators(classField?.validators ?? [], 'Alpha')).toEqual([]);
+    });
+
+    it('emits an async validator for a custom async constraint declared in decorator mode', async () => {
+        @Model('ReactiveAsyncClassDto')
+        class ReactiveAsyncClassDto {
+            @Required()
+            @reactiveAsyncDeco.decorator()
+            username!: string;
+        }
+
+        const config = toReactiveFormConfig(ReactiveAsyncClassDto);
+        const username = config.fields.find((field) => field.name === 'username');
+        expect(username?.asyncValidators).toHaveLength(1);
+        await expect(username?.asyncValidators?.[0](control('taken'))).resolves.toMatchObject({reactiveAsyncDeco: {message: 'Already taken'}});
+        await expect(username?.asyncValidators?.[0](control('free'))).resolves.toBeNull();
+        await expect(config.validateAsync?.({username: 'taken'})).resolves.toMatchObject({
+            success: false,
+            issues: [{constraint: 'reactiveAsyncDeco', message: 'Already taken'}]
         });
     });});
 
