@@ -13,6 +13,7 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 - Decorator/builder compatibility preserves simple overloads such as `.required('Message')`, `@Required('Message')`, and `@MinLength(3, 'Message')`.
 - Adapters with no explicit validator now use the core validator facade. An explicit missing validator name still throws the previous registry error.
 - Commit after each completed implementation pass so handoffs always have a clean recorded checkpoint.
+- License: LGPL-3.0-or-later (chosen over plain GPL v3 so applications that merely depend on `@decorix/*` are not forced into the same copyleft; modifications to Decorix itself remain copyleft).
 
 ## Documentation and Constraint Coverage Standard
 
@@ -38,6 +39,16 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 - No open roadmap items. New work should be appended here before implementation.
 
 ## DONE
+
+### License: LGPL-3.0-or-later
+
+Ahead of the public v1 publish, added a repo-wide license. Chose LGPL v3 over plain GPL v3: plain GPL would force any application merely importing `@decorix/*` to also be GPL-licensed, which is unusual and adoption-limiting for a library; LGPL keeps copyleft on Decorix's own source and modifications while letting consuming applications keep their own license.
+
+- Added `LICENSE` (full LGPL-3.0 text, incorporating GNU GPL v3 by reference per its own terms).
+- Added `"license": "LGPL-3.0-or-later"` to the root `package.json` and to all 11 published packages (`core`, `cli`, and the 9 packages under `packages/adapters/`).
+- Added a License section to the root `README.md` linking to `LICENSE` and the incorporated GPL v3 text.
+
+Note: only the LGPL-specific text is bundled (matches GitHub/npm license detection); the full incorporated GNU GPL v3 text itself is referenced by URL rather than duplicated in-repo.
 
 ### Repo Layout: Adapters Grouped Under `packages/adapters/`
 

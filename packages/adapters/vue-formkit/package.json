@@ -2,6 +2,7 @@
   "name": "@decorix/vue-formkit",
   "version": "0.1.0",
   "description": "FormKit adapter for Decorix metadata.",
+  "license": "LGPL-3.0-or-later",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

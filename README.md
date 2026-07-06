@@ -93,3 +93,7 @@ Run:
 pnpm examples:typecheck
 ```
 
+## License
+
+Decorix is licensed under the [GNU Lesser General Public License v3.0 or later](LICENSE) (LGPL-3.0-or-later). This copyleft applies to Decorix itself and to modifications distributed as part of it; applications that merely depend on `@decorix/*` packages through their published interfaces are not required to adopt the same license (see LICENSE, sections 0-6, and the incorporated [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.txt) for the exact terms).
+
