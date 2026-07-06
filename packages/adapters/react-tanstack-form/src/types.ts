@@ -9,15 +9,22 @@ export type DecorixTanStackFormOptions = {
 };
 
 /**
+ * A single TanStack Form field-level validation error report, as expected by
+ * `onSubmit`/`onSubmitAsync`: `{fields: {name: message}}`, or `undefined` when valid.
+ */
+export type DecorixTanStackFormErrors = {fields: Record<string, string>};
+
+/**
  * TanStack Form-oriented configuration generated from Decorix metadata.
  */
 export type DecorixTanStackFormConfig = {
     metadata: ModelMetadata;
     defaultValues: Record<string, unknown>;
     validators: {
-        onSubmit(value: unknown): undefined | Record<string, string[]>;
+        /** @param ctx - TanStack Form's submit context; only `value` (the current form values) is read. */
+        onSubmit(ctx: {value: unknown}): DecorixTanStackFormErrors | undefined;
         /** Async submit validator resolving async constraints; falls back to the sync result otherwise. */
-        onSubmitAsync(value: unknown): Promise<undefined | Record<string, string[]>>;
+        onSubmitAsync(ctx: {value: unknown}): Promise<DecorixTanStackFormErrors | undefined>;
     };
 };
 

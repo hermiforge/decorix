@@ -35,6 +35,7 @@
     "tag:release": "node scripts/tag-release.mjs"
   },
   "devDependencies": {
+    "@angular/compiler": "22.0.3",
     "@changesets/cli": "2.31.0",
     "@types/node": "^22",
     "eslint": "^9",

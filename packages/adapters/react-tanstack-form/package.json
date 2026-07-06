@@ -48,6 +48,10 @@
   "dependencies": {
     "@hermiforge-decorix/core": "workspace:0.1.0"
   },
+  "devDependencies": {
+    "@tanstack/react-form": "1.33.0",
+    "react": "19.2.7"
+  },
   "peerDependencies": {
     "@tanstack/react-form": "^1.33.0",
     "react": "^19.2.0"

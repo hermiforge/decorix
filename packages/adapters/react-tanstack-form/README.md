@@ -35,7 +35,9 @@ const config = toTanStackForm(SignupDto, {
   defaultValues: {name: 'Ada'}
 });
 
-const errors = config.validators.onSubmit({name: 'A', email: 'bad'});
+// TanStack Form calls onSubmit with a context object ({value, ...}), not raw values.
+const errors = config.validators.onSubmit({value: {name: 'A', email: 'bad'}});
+// => {fields: {name: 'Name is too short', email: 'Invalid email'}}
 ```
 
 ## Builder Model

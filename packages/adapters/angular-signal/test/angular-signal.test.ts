@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {
     createAsyncConstraint,
     dateField,
@@ -18,7 +18,72 @@ import {
     stringField
 } from '@hermiforge-decorix/core';
 import {registerZodValidator} from '@hermiforge-decorix/zod';
-import {toSignalForm} from '../src/index';
+
+/**
+ * Exercising the real `form()`/`resource()` runtime requires a fully bootstrapped Angular
+ * application (APP_ID, a change-detection scheduler, zone/zoneless wiring, etc. — the providers
+ * `bootstrapApplication` sets up) that a plain unit test cannot construct without pulling in most of
+ * `@angular/platform-browser`/`platform-server` plus a DOM. That's Angular's own bootstrap concern,
+ * not Decorix's — the previous, fabricated adapter got away with skipping it because it never called
+ * into the real API at all.
+ *
+ * So this suite fakes `@angular/forms/signals` and `@angular/core`'s `resource`/`signal` with minimal,
+ * behavior-preserving stand-ins that record how `toSignalForm` calls the *real* API: which native
+ * validator (`required`/`minLength`/`email`/...) it invokes for which constraint, with which path and
+ * message, and — for the `validate()`/`validateAsync()` fallbacks — that the callback it registers
+ * produces the right `{kind, message}` (or `null`) for a given field context. This directly targets the
+ * bug class this rewrite fixes (wrong function, wrong argument shape) without needing a real app.
+ */
+type NativeCall = {rule: string; path: string; arg?: unknown; message?: string};
+type ValidateCall = {path: string; fn: (ctx: unknown) => unknown};
+type ValidateAsyncCall = {path: string; opts: Record<string, unknown>};
+
+let nativeCalls: NativeCall[] = [];
+let validateCalls: ValidateCall[] = [];
+let validateAsyncCalls: ValidateAsyncCall[] = [];
+
+function pathName(path: unknown): string {
+    return (path as {__name: string}).__name;
+}
+
+vi.mock('@angular/core', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@angular/core')>();
+    return {
+        ...actual,
+        signal: (initial: unknown) => {
+            let value = initial;
+            const fn = (() => value) as unknown as {(): unknown; set: (next: unknown) => void};
+            fn.set = (next: unknown) => {
+                value = next;
+            };
+            return fn;
+        },
+        resource: (options: {loader: (args: {params: unknown}) => unknown; params: () => unknown}) => options
+    };
+});
+
+vi.mock('@angular/forms/signals', () => ({
+    form: (model: () => Record<string, unknown>, schemaFn: (path: unknown) => void) => {
+        const initial = model();
+        const rootPath = new Proxy(
+            {},
+            {get: (_target, name: string) => ({__name: name})}
+        );
+        schemaFn(rootPath);
+        return {__initial: initial};
+    },
+    required: (path: unknown, opts?: {message?: string}) => nativeCalls.push({rule: 'required', path: pathName(path), message: opts?.message}),
+    minLength: (path: unknown, n: number, opts?: {message?: string}) => nativeCalls.push({rule: 'minLength', path: pathName(path), arg: n, message: opts?.message}),
+    maxLength: (path: unknown, n: number, opts?: {message?: string}) => nativeCalls.push({rule: 'maxLength', path: pathName(path), arg: n, message: opts?.message}),
+    min: (path: unknown, n: number, opts?: {message?: string}) => nativeCalls.push({rule: 'min', path: pathName(path), arg: n, message: opts?.message}),
+    max: (path: unknown, n: number, opts?: {message?: string}) => nativeCalls.push({rule: 'max', path: pathName(path), arg: n, message: opts?.message}),
+    email: (path: unknown, opts?: {message?: string}) => nativeCalls.push({rule: 'email', path: pathName(path), message: opts?.message}),
+    pattern: (path: unknown, regex: RegExp, opts?: {message?: string}) => nativeCalls.push({rule: 'pattern', path: pathName(path), arg: regex, message: opts?.message}),
+    validate: (path: unknown, fn: (ctx: unknown) => unknown) => validateCalls.push({path: pathName(path), fn}),
+    validateAsync: (path: unknown, opts: Record<string, unknown>) => validateAsyncCalls.push({path: pathName(path), opts})
+}));
+
+const {toSignalForm} = await import('../src/index');
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
 const SignalStartsWithA = defineConstraint<string, undefined>({
@@ -34,9 +99,15 @@ const SignalAsyncDeco = defineAsyncConstraint<string, undefined>({
     message: 'Already taken'
 });
 
+/** Fakes the `FieldContext` object Angular passes into `validate()`/`onSuccess` callbacks. */
+function fakeFieldContext(value: unknown, valueOf: (path: unknown) => unknown = () => undefined) {
+    return {value: () => value, valueOf: (path: unknown) => valueOf(path)};
+}
+
 describe('@hermiforge-decorix/angular-signal', () => {
-    it('creates and validates a signal form from decorators', () => {
+    it('maps required/minLength/email onto the real native validators, with the right paths and messages', () => {
         registerZodValidator({name: 'zod-angular-signal-class'});
+        nativeCalls = [];
 
         @Model('SignupDto')
         class SignupDto {
@@ -49,53 +120,54 @@ describe('@hermiforge-decorix/angular-signal', () => {
             email!: string;
         }
 
-        const form = toSignalForm(SignupDto, {initialValue: {name: 'A', email: 'bad'}});
+        toSignalForm(SignupDto);
 
-        expect(form.valid()).toBe(false);
-        expect(form.errors()).toMatchObject({name: ['Name too short'], email: ['Invalid email']});
-
-        form.name.set('Ada');
-        form.email.set('ada@example.com');
-
-        expect(form.submit()).toMatchObject({success: true});
+        expect(nativeCalls).toContainEqual({rule: 'required', path: 'name', message: undefined});
+        expect(nativeCalls).toContainEqual({rule: 'minLength', path: 'name', arg: 2, message: 'Name too short'});
+        expect(nativeCalls).toContainEqual({rule: 'required', path: 'email', message: undefined});
+        expect(nativeCalls).toContainEqual({rule: 'email', path: 'email', message: 'Invalid email'});
     });
 
-    it('creates and validates a signal form from builder metadata', () => {
+    it('maps builder constraints onto native validators the same way', () => {
         registerZodValidator({name: 'zod-angular-signal-builder'});
+        nativeCalls = [];
         const user = model('SignupDto', {
             name: stringField().required().minLength(2, 'Name too short'),
             email: stringField().required().email('Invalid email'),
             age: numberField().min(18, 'Too young').optional()
         });
 
-        const form = toSignalForm(user, {initialValue: {name: 'Ada', email: 'bad'}});
+        toSignalForm(user);
 
-        expect(form.email.valid()).toBe(false);
-        expect(form.email.errors()).toEqual(['Invalid email']);
+        expect(nativeCalls).toContainEqual({rule: 'email', path: 'email', message: 'Invalid email'});
+        expect(nativeCalls).toContainEqual({rule: 'min', path: 'age', arg: 18, message: 'Too young'});
+        expect(nativeCalls.some((call) => call.rule === 'required' && call.path === 'age')).toBe(false);
     });
 
-    it('throws when no validator can be resolved', () => {
+    it('throws when no validator can be resolved for a fallback constraint', () => {
         const user = model('SignupDto', {
-            name: stringField().required()
+            code: stringField().required().constraint('missing-angular-signal-constraint')
         });
 
-        expect(() => toSignalForm(user, {validator: 'missing-angular-signal-validator'})).toThrow(
-            'No Decorix validator adapter registered'
-        );
+        expect(() => toSignalForm(user)).toThrow('No Decorix constraint registered');
     });
 
-    it('uses core validation for constraints the form facade cannot express natively', () => {
+    it('registers a validate() fallback for constraints without a native Angular validator', () => {
+        validateCalls = [];
         const article = model('SignalFallbackDto', {
             slug: stringField().required().slug('Invalid slug')
         });
 
-        const form = toSignalForm(article, {initialValue: {slug: 'Bad Slug'}});
+        toSignalForm(article);
 
-        expect(form.slug.errors()).toEqual(['Invalid slug']);
-        expect(form.submit()).toMatchObject({success: false});
+        const call = validateCalls.find((entry) => entry.path === 'slug');
+        expect(call).toBeDefined();
+        expect(call!.fn(fakeFieldContext('Bad Slug'))).toEqual({kind: 'slug', message: 'Invalid slug'});
+        expect(call!.fn(fakeFieldContext('valid-slug'))).toBeNull();
     });
 
-    it('resolves async constraints through async form hooks', async () => {
+    it('registers a validateAsync() fallback for async constraints', async () => {
+        validateAsyncCalls = [];
         createAsyncConstraint<unknown, undefined>({
             name: 'signalAsyncAvailable',
             validate: async (value) => value !== 'taken',
@@ -105,40 +177,43 @@ describe('@hermiforge-decorix/angular-signal', () => {
             username: stringField().required().constraint('signalAsyncAvailable')
         });
 
-        const form = toSignalForm(metadata, {initialValue: {username: 'taken'}});
-        await expect(form.username.errorsAsync()).resolves.toEqual(['Already taken']);
-        await expect(form.submitAsync()).resolves.toMatchObject({success: false});
+        toSignalForm(metadata);
 
-        form.username.set('free');
-        await expect(form.validAsync()).resolves.toBe(true);
-        await expect(form.submitAsync()).resolves.toMatchObject({success: true});
+        const call = validateAsyncCalls.find((entry) => entry.path === 'username');
+        expect(call).toBeDefined();
+        const onSuccess = call!.opts.onSuccess as (result: unknown, ctx: unknown) => unknown;
+        expect(onSuccess(true, fakeFieldContext('free'))).toBeNull();
+        expect(onSuccess(false, fakeFieldContext('taken'))).toEqual({kind: 'signalAsyncAvailable', message: 'Already taken'});
     });
 
     it('enforces a custom sync constraint in builder and decorator mode', () => {
         registerZodValidator({name: 'zod-angular-signal-custom-sync'});
+        validateCalls = [];
 
         const builder = model('SignalCustomSyncBuilderDto', {
             code: stringField().required().constraint(SignalStartsWithA)
         });
-        const builderForm = toSignalForm(builder, {initialValue: {code: 'Bravo'}});
-        expect(builderForm.code.errors()).toEqual(['Must start with A']);
-        builderForm.code.set('Alpha');
-        expect(builderForm.submit()).toMatchObject({success: true});
+        toSignalForm(builder);
+        const builderCall = validateCalls.find((entry) => entry.path === 'code');
+        expect(builderCall!.fn(fakeFieldContext('Bravo'))).toEqual({kind: 'signalStartsWithA', message: 'Must start with A'});
+        expect(builderCall!.fn(fakeFieldContext('Alpha'))).toBeNull();
 
+        validateCalls = [];
         @Model('SignalCustomSyncClassDto')
         class SignalCustomSyncClassDto {
             @Required()
             @SignalStartsWithA()
             code!: string;
         }
-        const classForm = toSignalForm(SignalCustomSyncClassDto, {initialValue: {code: 'Bravo'}});
-        expect(classForm.code.errors()).toEqual(['Must start with A']);
-        classForm.code.set('Alpha');
-        expect(classForm.submit()).toMatchObject({success: true});
+        toSignalForm(SignalCustomSyncClassDto);
+        const classCall = validateCalls.find((entry) => entry.path === 'code');
+        expect(classCall!.fn(fakeFieldContext('Bravo'))).toEqual({kind: 'signalStartsWithA', message: 'Must start with A'});
+        expect(classCall!.fn(fakeFieldContext('Alpha'))).toBeNull();
     });
 
     it('resolves a custom async constraint declared in decorator mode', async () => {
         registerZodValidator({name: 'zod-angular-signal-async-class'});
+        validateAsyncCalls = [];
 
         @Model('SignalAsyncClassDto')
         class SignalAsyncClassDto {
@@ -147,14 +222,16 @@ describe('@hermiforge-decorix/angular-signal', () => {
             username!: string;
         }
 
-        const form = toSignalForm(SignalAsyncClassDto, {initialValue: {username: 'taken'}});
-        await expect(form.username.errorsAsync()).resolves.toEqual(['Already taken']);
-        form.username.set('free');
-        await expect(form.validAsync()).resolves.toBe(true);
+        toSignalForm(SignalAsyncClassDto);
+        const call = validateAsyncCalls.find((entry) => entry.path === 'username');
+        const onSuccess = call!.opts.onSuccess as (result: unknown, ctx: unknown) => unknown;
+        expect(onSuccess(true, fakeFieldContext('free'))).toBeNull();
+        expect(onSuccess(false, fakeFieldContext('taken'))).toEqual({kind: 'signalAsyncDeco', message: 'Already taken'});
     });
 
     it('enforces a cross-field constraint declared in decorator mode', () => {
         registerZodValidator({name: 'zod-angular-signal-crossfield-class'});
+        validateCalls = [];
 
         @Model('SignalCrossFieldClassDto')
         class SignalCrossFieldClassDto {
@@ -165,28 +242,26 @@ describe('@hermiforge-decorix/angular-signal', () => {
             confirmPassword?: string;
         }
 
-        const form = toSignalForm(SignalCrossFieldClassDto, {initialValue: {password: 'a', confirmPassword: 'b'}});
-        expect(form.submit()).toMatchObject({success: false});
-        form.confirmPassword.set('a');
-        expect(form.submit()).toMatchObject({success: true});
+        toSignalForm(SignalCrossFieldClassDto);
+        const call = validateCalls.find((entry) => entry.path === 'confirmPassword');
+        const valueOf = (path: unknown) => (pathName(path) === 'password' ? 'a' : undefined);
+        expect(call!.fn(fakeFieldContext('b', valueOf))).toEqual({kind: 'equalsField', message: 'Passwords must match'});
+        expect(call!.fn(fakeFieldContext('a', valueOf))).toBeNull();
     });
 
     it('enforces native number and date constraints in builder and decorator mode', () => {
         registerZodValidator({name: 'zod-angular-signal-natives'});
-        const past = new Date('2000-01-01');
-        const future = new Date(Date.now() + 86_400_000);
+        nativeCalls = [];
 
         const builder = model('SignalNativeBuilderDto', {
             age: numberField().min(18).max(65).integer(),
             createdAt: dateField().past()
         });
-        const builderForm = toSignalForm(builder, {initialValue: {age: 10, createdAt: past}});
-        expect(builderForm.age.valid()).toBe(false);
-        builderForm.age.set(30);
-        expect(builderForm.age.valid()).toBe(true);
-        builderForm.createdAt.set(future);
-        expect(builderForm.createdAt.valid()).toBe(false);
+        toSignalForm(builder);
+        expect(nativeCalls).toContainEqual({rule: 'min', path: 'age', arg: 18, message: undefined});
+        expect(nativeCalls).toContainEqual({rule: 'max', path: 'age', arg: 65, message: undefined});
 
+        nativeCalls = [];
         @Model('SignalNativeClassDto')
         class SignalNativeClassDto {
             @Min(18)
@@ -197,12 +272,8 @@ describe('@hermiforge-decorix/angular-signal', () => {
             @Past()
             createdAt!: Date;
         }
-        const classForm = toSignalForm(SignalNativeClassDto, {initialValue: {age: 10, createdAt: past}});
-        expect(classForm.age.valid()).toBe(false);
-        classForm.age.set(30);
-        expect(classForm.age.valid()).toBe(true);
+        toSignalForm(SignalNativeClassDto);
+        expect(nativeCalls).toContainEqual({rule: 'min', path: 'age', arg: 18, message: undefined});
+        expect(nativeCalls).toContainEqual({rule: 'max', path: 'age', arg: 65, message: undefined});
     });
 });
-
-
-

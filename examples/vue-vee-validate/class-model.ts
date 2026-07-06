@@ -41,3 +41,6 @@ if (!invalid.success) {
         console.log(`  ${issue.path.join('.')}: ${issue.message}`);
     }
 }
+
+const nameFieldError = await config.validationSchema.name('A');
+console.log('per-field name error:', nameFieldError);

@@ -1,15 +1,17 @@
+// Needed only because this script runs outside an Angular CLI build (which performs its own AOT
+// linking); real Angular apps built with `ng build`/`@angular/build` never need this import.
+import '@angular/compiler';
 import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@hermiforge-decorix/core';
-import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toSignalForm} from '@hermiforge-decorix/angular-signal';
 
-registerZodValidator();
-
+// `fullName`, not `name`: a model field literally named `name` collides with FieldTree's own
+// `Function.prototype.name` at the type level (Angular's own Signal Forms docs avoid it the same way).
 @Model('RegisterUserDto')
 class RegisterUserDto {
     @Required('Name is required')
     @MinLength(2, 'Name is too short')
     @MaxLength(50)
-    name!: string;
+    fullName!: string;
 
     @Required('Email is required')
     @Email('Invalid email')
@@ -28,17 +30,18 @@ class RegisterUserDto {
     confirmPassword!: string;
 }
 
-const form = toSignalForm(RegisterUserDto, {
-    initialValue: {name: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}
-});
-console.log('valid form submit:', form.submit());
+type RegisterUserModel = {fullName: string; email: string; age?: number; password: string; confirmPassword: string};
 
-const invalidForm = toSignalForm(RegisterUserDto, {
-    initialValue: {name: 'A', email: 'not-an-email', age: 12, password: 'short', confirmPassword: 'different'}
-});
-const result = invalidForm.submit();
-console.log('invalid form submit success:', result.success);
-if (!result.success) {
-    console.log('errors by field:', result.errors);
-    console.log('name field errors:', invalidForm.name.errors());
+/**
+ * `toSignalForm` calls Angular's real `form()`, which needs an Angular injection context
+ * (a component/service field initializer always is one). This module only exports a factory
+ * — it cannot execute standalone via `tsx` the way Decorix's other examples do; call it from
+ * inside a bootstrapped Angular application (see this adapter's README for a component example).
+ */
+export function createRegisterForm() {
+    return toSignalForm<RegisterUserModel>(RegisterUserDto, {
+        initialValue: {fullName: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}
+    });
 }
+
+console.log('createRegisterForm() builds a real Angular Signal Forms FieldTree — call it from a component field initializer.');

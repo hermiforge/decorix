@@ -48,6 +48,10 @@
   "dependencies": {
     "@hermiforge-decorix/core": "workspace:0.1.0"
   },
+  "devDependencies": {
+    "@formkit/vue": "2.1.0",
+    "vue": "3.5.39"
+  },
   "peerDependencies": {
     "@formkit/vue": "^2.1.0",
     "vue": "^3.5.0"

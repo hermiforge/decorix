@@ -55,7 +55,7 @@ describe('@hermiforge-decorix/vue-vee-validate', () => {
         expect(config.validate({name: 'A', email: 'bad'})).toMatchObject({success: false});
     });
 
-    it('creates VeeValidate config from builder metadata', () => {
+    it('creates VeeValidate config from builder metadata', async () => {
         registerZodValidator({name: 'zod-vee-builder'});
         const user = model('SignupDto', {
             name: stringField().required().minLength(2, 'Name too short'),
@@ -63,9 +63,24 @@ describe('@hermiforge-decorix/vue-vee-validate', () => {
             age: numberField().min(18, 'Too young').optional()
         });
 
-        const config = useVeeDecorix(user);
+        const config = useVeeDecorix(user, {initialValues: {name: 'Ada', email: 'ada@example.com'}});
 
-        expect(config.validationSchema.validate({name: 'Ada', email: 'ada@example.com'})).toMatchObject({success: true});
+        await expect(config.validationSchema.name('Ada')).resolves.toBe(true);
+        await expect(config.validationSchema.email('ada@example.com')).resolves.toBe(true);
+    });
+
+    it('exposes a generic per-field function map as validationSchema', async () => {
+        registerZodValidator({name: 'zod-vee-field-schema'});
+        const user = model('SignupFieldDto', {
+            name: stringField().required().minLength(2, 'Name too short'),
+            email: stringField().required().email('Invalid email')
+        });
+
+        const config = toVeeValidate(user, {initialValues: {name: 'Ada', email: 'ada@example.com'}});
+
+        await expect(config.validationSchema.name('A')).resolves.toBe('Name too short');
+        await expect(config.validationSchema.email('bad')).resolves.toBe('Invalid email');
+        await expect(config.validationSchema.name('Ada')).resolves.toBe(true);
     });
 
     it('throws when no validator can be resolved', () => {

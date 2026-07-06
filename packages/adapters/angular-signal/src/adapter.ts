@@ -1,59 +1,161 @@
-import {getModelMetadata, resolveSchema, runSchemaAsync} from '@hermiforge-decorix/core';
-import {collectErrors, fieldErrors, issues} from './errors';
-import type {DecorixAngularSignalFormOptions, DecorixInitialValue, DecorixSignalField, DecorixSignalForm, DecorixSignalFormModel} from './types';
+import {resource, signal} from '@angular/core';
+import {email, form, max, maxLength, min, minLength, pattern, required, validate, validateAsync} from '@angular/forms/signals';
+import {
+    buildValidationContext,
+    defaultValuesFor,
+    getModelMetadata,
+    normalizeConstraintIssue,
+    resolveConstraintDefinition
+} from '@hermiforge-decorix/core';
+import type {ConstraintMetadata, FieldMetadata, ModelMetadata} from '@hermiforge-decorix/core';
+import type {FieldTree, SchemaPath, SchemaPathTree, ValidationError} from '@angular/forms/signals';
+import type {Signal} from '@angular/core';
+import type {DecorixAngularSignalFormOptions, DecorixSignalFormModel} from './types';
+
+/** Loosely-typed path handle: Decorix builds the schema from runtime metadata, not static model types. */
+type AnyPath = SchemaPath<never>;
+type AnyPathTree = Record<string, AnyPath>;
 
 /**
- * Creates an Angular Signal Forms compatible facade from Decorix metadata.
+ * Creates a real Angular Signal Forms `FieldTree` from Decorix metadata.
+ *
+ * Builds a `signal()`-backed model and a `schemaFn` that maps Decorix constraints onto Angular's
+ * native validators (`required`, `minLength`, `maxLength`, `min`, `max`, `email`, `pattern`), falling
+ * back to `validate()`/`validateAsync()` for constraints without a native Angular equivalent (custom
+ * and cross-field constraints, and async constraints respectively) — then calls the real `form()`.
+ *
+ * The returned `FieldTree` is Angular's own, unmodified: bind it with `[formField]`, read
+ * `form.field().errors()`/`.valid()`/`.value()`, and submit with the real `submit()` function from
+ * `@angular/forms/signals` — this adapter does not invent its own form facade.
  *
  * @param modelOrMetadata - Registered Decorix model target or raw metadata.
- * @param options - Optional initial values and validator adapter.
- * @returns A signal-like form object with field accessors and validation state.
+ * @param options - Optional initial value, validator adapter, and injector (required for async
+ * constraints when called outside an Angular injection context; see `resource()`'s docs).
  */
-export function toSignalForm(
+export function toSignalForm<TModel extends Record<string, unknown> = Record<string, unknown>>(
     modelOrMetadata: DecorixSignalFormModel,
     options: DecorixAngularSignalFormOptions = {}
-): DecorixSignalForm {
+): FieldTree<TModel> {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = resolveSchema(metadata, options.validator);
-    const values: DecorixInitialValue = {...options.initialValue};
-    const formFields: Record<string, DecorixSignalField> = {};
+    const initial = defaultValuesFor(metadata, options.initialValue) as TModel;
+    const model = signal(initial);
 
-    for (const field of metadata.fields) {
-        if (!(field.name in values)) {
-            values[field.name] = undefined;
+    return form(model, (rootPath: SchemaPathTree<TModel>) => {
+        const paths = rootPath as unknown as AnyPathTree;
+        for (const field of metadata.fields) {
+            const fieldPath = paths[field.name];
+            for (const constraint of fieldConstraintsFor(field)) {
+                applyConstraint(constraint, field, fieldPath, metadata, paths, options);
+            }
         }
-
-        formFields[field.name] = {
-            metadata: field,
-            value: () => values[field.name],
-            set: (value) => {
-                values[field.name] = value;
-            },
-            errors: () => fieldErrors(schema.validate(values), field.name),
-            valid: () => fieldErrors(schema.validate(values), field.name).length === 0,
-            errorsAsync: () => runSchemaAsync(schema, values).then((result) => fieldErrors(result, field.name)),
-            validAsync: () => runSchemaAsync(schema, values).then((result) => fieldErrors(result, field.name).length === 0)
-        };
-    }
-
-    return {
-        ...formFields,
-        metadata,
-        valid: () => schema.validate(values).success,
-        errors: () => collectErrors(schema.validate(values)),
-        value: () => ({...values}),
-        submit: () => {
-            const result = schema.validate(values);
-            return result.success
-                ? {success: true, data: result.data}
-                : {success: false, errors: collectErrors(result), issues: issues(result)};
-        },
-        validAsync: () => runSchemaAsync(schema, values).then((result) => result.success),
-        errorsAsync: () => runSchemaAsync(schema, values).then((result) => collectErrors(result)),
-        submitAsync: () => runSchemaAsync(schema, values).then((result) => result.success
-            ? {success: true, data: result.data}
-            : {success: false, errors: collectErrors(result), issues: issues(result)})
-    } as DecorixSignalForm;
+    });
 }
 
+/** Prepends an implicit `required` constraint when the field is required but declares none explicitly. */
+function fieldConstraintsFor(field: FieldMetadata): ConstraintMetadata[] {
+    const hasRequiredConstraint = field.constraints.some((constraint) => constraint.name === 'required');
+    return field.required && !hasRequiredConstraint ? [{name: 'required'}, ...field.constraints] : field.constraints;
+}
 
+/** Maps one Decorix constraint onto a native Angular Signal Forms validator, or a fallback. */
+function applyConstraint(
+    constraint: ConstraintMetadata,
+    field: FieldMetadata,
+    fieldPath: AnyPath,
+    metadata: ModelMetadata,
+    rootPaths: AnyPathTree,
+    options: DecorixAngularSignalFormOptions
+): void {
+    switch (constraint.name) {
+        case 'required':
+            required(fieldPath, {message: constraint.message});
+            return;
+        case 'minLength':
+            minLength(fieldPath as SchemaPath<string>, constraint.options as number, {message: constraint.message});
+            return;
+        case 'maxLength':
+            maxLength(fieldPath as SchemaPath<string>, constraint.options as number, {message: constraint.message});
+            return;
+        case 'min':
+            min(fieldPath as SchemaPath<number>, constraint.options as number, {message: constraint.message});
+            return;
+        case 'max':
+            max(fieldPath as SchemaPath<number>, constraint.options as number, {message: constraint.message});
+            return;
+        case 'email':
+            email(fieldPath as SchemaPath<string>, {message: constraint.message});
+            return;
+        case 'pattern':
+            pattern(fieldPath as SchemaPath<string>, constraint.options as RegExp, {message: constraint.message});
+            return;
+        default:
+            break;
+    }
+
+    const definition = resolveConstraintDefinition(constraint);
+    if (definition.async) {
+        applyAsyncFallback(constraint, field, fieldPath, options);
+    } else {
+        applySyncFallback(constraint, field, fieldPath, metadata, rootPaths);
+    }
+}
+
+/** Runs a non-native sync constraint (custom or cross-field) through Angular's `validate()`. */
+function applySyncFallback(
+    constraint: ConstraintMetadata,
+    field: FieldMetadata,
+    fieldPath: AnyPath,
+    metadata: ModelMetadata,
+    rootPaths: AnyPathTree
+): void {
+    const definition = resolveConstraintDefinition(constraint);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    validate(fieldPath, (ctx: any): ValidationError | null => {
+        const value = ctx.value();
+        const object: Record<string, unknown> = {};
+        for (const sibling of metadata.fields) {
+            object[sibling.name] = sibling.name === field.name ? value : ctx.valueOf(rootPaths[sibling.name]);
+        }
+
+        const context = buildValidationContext(object, value, field.name);
+        const result = definition.validate(value, constraint.options, context);
+        if (result instanceof Promise) {
+            throw new Error(`Decorix constraint "${constraint.name}" is async and cannot run as a sync validator.`);
+        }
+        const issue = normalizeConstraintIssue(result, definition, constraint, context);
+        return issue ? {kind: constraint.name, message: issue.message} : null;
+    });
+}
+
+/** Runs an async Decorix constraint through Angular's `validateAsync()`/`resource()`. */
+function applyAsyncFallback(
+    constraint: ConstraintMetadata,
+    field: FieldMetadata,
+    fieldPath: AnyPath,
+    options: DecorixAngularSignalFormOptions
+): void {
+    const definition = resolveConstraintDefinition(constraint);
+
+    validateAsync(fieldPath, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        params: (ctx: any) => {
+            const value = ctx.value();
+            return value === undefined || value === null || value === '' ? undefined : value;
+        },
+        factory: (paramsSignal: Signal<unknown>) => resource({
+            params: () => paramsSignal(),
+            loader: async ({params}: {params: unknown}) => {
+                const context = buildValidationContext({}, params, field.name);
+                return definition.validate(params, constraint.options, context);
+            },
+            ...(options.injector ? {injector: options.injector} : {})
+        }),
+        onSuccess: (result: unknown, ctx): ValidationError | null => {
+            const context = buildValidationContext({}, ctx.value(), field.name);
+            const issue = normalizeConstraintIssue(result as boolean, definition, constraint, context);
+            return issue ? {kind: constraint.name, message: issue.message} : null;
+        },
+        onError: (): ValidationError => ({kind: constraint.name, message: 'Validation failed.'})
+    });
+}

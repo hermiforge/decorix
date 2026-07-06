@@ -52,9 +52,9 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
         const config = toTanStackForm(SignupDto, {defaultValues: {name: 'Ada'}});
 
         expect(config.defaultValues.name).toBe('Ada');
-        expect(config.validators.onSubmit({name: 'A', email: 'bad'})).toMatchObject({
-            name: ['Name too short'],
-            email: ['Invalid email']
+        // TanStack Form calls onSubmit with a context object ({value, ...}), not raw values.
+        expect(config.validators.onSubmit({value: {name: 'A', email: 'bad'}})).toEqual({
+            fields: {name: 'Name too short', email: 'Invalid email'}
         });
     });
 
@@ -68,7 +68,7 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
 
         const config = useTanStackDecorix(user);
 
-        expect(config.validators.onSubmit({name: 'Ada', email: 'ada@example.com'})).toBeUndefined();
+        expect(config.validators.onSubmit({value: {name: 'Ada', email: 'ada@example.com'}})).toBeUndefined();
     });
 
     it('throws when no validator can be resolved', () => {
@@ -88,7 +88,7 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
 
         const config = toTanStackForm(article);
 
-        expect(config.validators.onSubmit({slug: 'Bad Slug'})).toEqual({slug: ['Invalid slug']});
+        expect(config.validators.onSubmit({value: {slug: 'Bad Slug'}})).toEqual({fields: {slug: 'Invalid slug'}});
     });
 
     it('enforces V2 cross-field constraints through core validation', () => {
@@ -97,8 +97,8 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
             confirmPassword: stringField().equalsField('password', 'Passwords must match')
         });
 
-        expect(toTanStackForm(metadata).validators.onSubmit({password: 'a', confirmPassword: 'b'})).toEqual({
-            confirmPassword: ['Passwords must match']
+        expect(toTanStackForm(metadata).validators.onSubmit({value: {password: 'a', confirmPassword: 'b'}})).toEqual({
+            fields: {confirmPassword: 'Passwords must match'}
         });
     });
 
@@ -113,8 +113,10 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
         });
 
         const config = toTanStackForm(metadata);
-        await expect(config.validators.onSubmitAsync({username: 'free'})).resolves.toBeUndefined();
-        await expect(config.validators.onSubmitAsync({username: 'taken'})).resolves.toEqual({username: ['Already taken']});
+        await expect(config.validators.onSubmitAsync({value: {username: 'free'}})).resolves.toBeUndefined();
+        await expect(config.validators.onSubmitAsync({value: {username: 'taken'}})).resolves.toEqual({
+            fields: {username: 'Already taken'}
+        });
     });
 
     it('enforces a custom sync constraint in builder and decorator mode', () => {
@@ -123,8 +125,10 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
         const builder = model('TanStackCustomSyncBuilderDto', {
             code: stringField().required().constraint(TanstackStartsWithA)
         });
-        expect(toTanStackForm(builder).validators.onSubmit({code: 'Bravo'})).toEqual({code: ['Must start with A']});
-        expect(toTanStackForm(builder).validators.onSubmit({code: 'Alpha'})).toBeUndefined();
+        expect(toTanStackForm(builder).validators.onSubmit({value: {code: 'Bravo'}})).toEqual({
+            fields: {code: 'Must start with A'}
+        });
+        expect(toTanStackForm(builder).validators.onSubmit({value: {code: 'Alpha'}})).toBeUndefined();
 
         @Model('TanStackCustomSyncClassDto')
         class TanStackCustomSyncClassDto {
@@ -132,8 +136,10 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
             @TanstackStartsWithA()
             code!: string;
         }
-        expect(toTanStackForm(TanStackCustomSyncClassDto).validators.onSubmit({code: 'Bravo'})).toEqual({code: ['Must start with A']});
-        expect(toTanStackForm(TanStackCustomSyncClassDto).validators.onSubmit({code: 'Alpha'})).toBeUndefined();
+        expect(toTanStackForm(TanStackCustomSyncClassDto).validators.onSubmit({value: {code: 'Bravo'}})).toEqual({
+            fields: {code: 'Must start with A'}
+        });
+        expect(toTanStackForm(TanStackCustomSyncClassDto).validators.onSubmit({value: {code: 'Alpha'}})).toBeUndefined();
     });
 
     it('resolves a custom async constraint declared in decorator mode', async () => {
@@ -147,8 +153,10 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
         }
 
         const config = toTanStackForm(TanStackAsyncClassDto);
-        await expect(config.validators.onSubmitAsync({username: 'free'})).resolves.toBeUndefined();
-        await expect(config.validators.onSubmitAsync({username: 'taken'})).resolves.toEqual({username: ['Already taken']});
+        await expect(config.validators.onSubmitAsync({value: {username: 'free'}})).resolves.toBeUndefined();
+        await expect(config.validators.onSubmitAsync({value: {username: 'taken'}})).resolves.toEqual({
+            fields: {username: 'Already taken'}
+        });
     });
 
     it('enforces a cross-field constraint declared in decorator mode', () => {
@@ -163,9 +171,9 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
             confirmPassword?: string;
         }
 
-        expect(toTanStackForm(TanStackCrossFieldClassDto).validators.onSubmit({password: 'a', confirmPassword: 'b'})).toEqual({
-            confirmPassword: ['Passwords must match']
-        });
+        expect(
+            toTanStackForm(TanStackCrossFieldClassDto).validators.onSubmit({value: {password: 'a', confirmPassword: 'b'}})
+        ).toEqual({fields: {confirmPassword: 'Passwords must match'}});
     });
 
     it('enforces native number and date constraints in builder and decorator mode', () => {
@@ -177,10 +185,16 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
             age: numberField().min(18).max(65).integer(),
             createdAt: dateField().past()
         });
-        expect(toTanStackForm(builder).validators.onSubmit({age: 30, createdAt: past})).toBeUndefined();
-        expect(toTanStackForm(builder).validators.onSubmit({age: 10, createdAt: past})).toMatchObject({age: expect.any(Array)});
-        expect(toTanStackForm(builder).validators.onSubmit({age: 30.5, createdAt: past})).toMatchObject({age: expect.any(Array)});
-        expect(toTanStackForm(builder).validators.onSubmit({age: 30, createdAt: future})).toMatchObject({createdAt: expect.any(Array)});
+        expect(toTanStackForm(builder).validators.onSubmit({value: {age: 30, createdAt: past}})).toBeUndefined();
+        expect(toTanStackForm(builder).validators.onSubmit({value: {age: 10, createdAt: past}})).toMatchObject({
+            fields: {age: expect.any(String)}
+        });
+        expect(toTanStackForm(builder).validators.onSubmit({value: {age: 30.5, createdAt: past}})).toMatchObject({
+            fields: {age: expect.any(String)}
+        });
+        expect(toTanStackForm(builder).validators.onSubmit({value: {age: 30, createdAt: future}})).toMatchObject({
+            fields: {createdAt: expect.any(String)}
+        });
 
         @Model('TanStackNativeClassDto')
         class TanStackNativeClassDto {
@@ -192,10 +206,12 @@ describe('@hermiforge-decorix/react-tanstack-form', () => {
             @Past()
             createdAt!: Date;
         }
-        expect(toTanStackForm(TanStackNativeClassDto).validators.onSubmit({age: 30, createdAt: past})).toBeUndefined();
-        expect(toTanStackForm(TanStackNativeClassDto).validators.onSubmit({age: 10, createdAt: past})).toMatchObject({age: expect.any(Array)});
-        expect(toTanStackForm(TanStackNativeClassDto).validators.onSubmit({age: 30, createdAt: future})).toMatchObject({createdAt: expect.any(Array)});
-    });});
-
-
-
+        expect(toTanStackForm(TanStackNativeClassDto).validators.onSubmit({value: {age: 30, createdAt: past}})).toBeUndefined();
+        expect(toTanStackForm(TanStackNativeClassDto).validators.onSubmit({value: {age: 10, createdAt: past}})).toMatchObject({
+            fields: {age: expect.any(String)}
+        });
+        expect(
+            toTanStackForm(TanStackNativeClassDto).validators.onSubmit({value: {age: 30, createdAt: future}})
+        ).toMatchObject({fields: {createdAt: expect.any(String)}});
+    });
+});

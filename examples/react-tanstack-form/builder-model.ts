@@ -17,4 +17,4 @@ const config = useTanStackDecorix(RegisterUserDto, {
 });
 
 console.log('default values:', config.defaultValues);
-console.log('invalid payload:', config.validators.onSubmit({name: 'A', email: 'not-an-email', age: 12, password: 'short', confirmPassword: 'different'}));
+console.log('invalid payload:', config.validators.onSubmit({value: {name: 'A', email: 'not-an-email', age: 12, password: 'short', confirmPassword: 'different'}}));

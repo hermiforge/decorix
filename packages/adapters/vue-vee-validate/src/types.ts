@@ -1,4 +1,4 @@
-import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef, ValidatorSchema} from '@hermiforge-decorix/core';
+import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef} from '@hermiforge-decorix/core';
 
 /**
  * Options used by the VeeValidate adapter.
@@ -9,12 +9,19 @@ export type DecorixVeeValidateOptions = {
 };
 
 /**
+ * Per-field validation function map, the generic `validationSchema` shape
+ * `useForm`/`useField` recognize natively: `true` when valid, otherwise the
+ * error message (sync or resolved via a Promise).
+ */
+export type DecorixVeeValidateFieldSchema = Record<string, (value: unknown) => Promise<true | string>>;
+
+/**
  * VeeValidate-oriented configuration generated from Decorix metadata.
  */
 export type DecorixVeeValidateConfig = {
     metadata: ModelMetadata;
     initialValues: Record<string, unknown>;
-    validationSchema: ValidatorSchema;
+    validationSchema: DecorixVeeValidateFieldSchema;
     fields: FieldMetadata[];
     validate(value: unknown): ValidationResult;
     /** Async validation entry resolving async constraints; falls back to the sync result otherwise. */

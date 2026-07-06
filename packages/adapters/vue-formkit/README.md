@@ -63,6 +63,8 @@ const result = config.validate?.({name: 'Ada', email: 'ada@example.com'});
 
 This is a configuration-only adapter. It can emit FormKit schema without a `ValidatorAdapter`. Pass `options.validator` or call `registerZodValidator()` when you also want the returned config to include `validate`.
 
+**Known limitation**: the `validation` string on each schema node only carries constraints that map to a real FormKit rule (`required`, `email`, `url`, `min`, `max`, `length`, `matches`). Constraints without a FormKit-native equivalent (e.g. `slug`, `integer`, `past`, `future`, `equalsField`, custom constraints) are omitted from that string — FormKit would otherwise silently ignore unrecognized rule names. Those constraints remain enforced through `config.validate()` / `config.validateAsync()`; they just aren't surfaced as inline FormKit validation messages.
+
 
 ## License
 
