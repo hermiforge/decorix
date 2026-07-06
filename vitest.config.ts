@@ -22,6 +22,13 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['packages/*/test/**/*.test.ts', 'packages/adapters/*/test/**/*.test.ts'],
-    exclude: ['node_modules/**', 'dist/**', '**/dist/**']
+    exclude: ['node_modules/**', 'dist/**', '**/dist/**'],
+    // The cli-e2e suite drives tsx's real esbuild transform service against
+    // on-disk fixtures; on GitHub Actions' constrained Linux runners this has
+    // been observed to hang (not just run slowly) on later calls within the
+    // same run, specifically when many test files execute concurrently and
+    // compete for CPU. Serializing file execution removes that contention;
+    // the whole suite is small enough (~2s locally) that this costs little.
+    fileParallelism: false
   }
 });

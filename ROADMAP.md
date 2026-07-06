@@ -15,7 +15,7 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 - Commit after each completed implementation pass so handoffs always have a clean recorded checkpoint.
 - License: LGPL-3.0-or-later (chosen over plain GPL v3 so applications that merely depend on `@hermiforge-decorix/*` are not forced into the same copyleft; modifications to Decorix itself remain copyleft).
 - Hosting: GitLab (`gitlab.com/hermiforge/decorix`) is the private source of truth; GitHub (`github.com/hermiforge/decorix`) is the public mirror/showcase. `package.json` `repository`/`homepage`/`bugs` fields point to GitHub.
-- npm publishing stays manual for v1 (`pnpm changeset` → `pnpm version` → `pnpm release`, run from a maintainer's machine). No CI release automation (`changesets/action` + `NPM_TOKEN`) yet.
+- Release automation lives in GitLab CI (`.gitlab-ci.yml`), not GitHub Actions, since merges to `main` happen on GitLab (the source of truth): merging `dev` → `main` automatically bumps versions from pending changesets, tags, and pushes to GitLab `main`/`dev` and GitHub `main`. The actual `npm publish` step stays a manual "play" button in the GitLab pipeline (irreversible, so never automatic). `pnpm changeset` (creating a changeset) and `pnpm tag:release` (ad hoc local tag/push) remain available for manual use alongside the pipeline.
 - Internal workspace dependencies use pinned `workspace:0.1.0` (not `workspace:*`/`workspace:^`). This only stays safe if version bumps always go through `pnpm changeset` + `pnpm version` (which rewrites all internal `workspace:` refs together, per `.changeset/config.json`'s `fixed`/`updateInternalDependencies: "patch"`) — never bump a package version by hand.
 
 ## Documentation and Constraint Coverage Standard
@@ -29,9 +29,9 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## Quality Gate (run every pass)
 
-- Before committing any implementation pass, run and pass all of: `pnpm lint` (ESLint + SonarJS), `pnpm typecheck` (strict flags), `pnpm examples:typecheck`, `pnpm test`, and `pnpm build`.
+- Before committing any implementation pass, run and pass all of: `pnpm lint` (ESLint + SonarJS), `pnpm typecheck` (strict flags), `pnpm examples:typecheck`, `pnpm build`, and `pnpm test`, **in that order** — `packages/cli/test/cli-e2e.test.ts` loads real on-disk fixtures via tsx's own Node module resolution (not Vitest's aliases), which needs `packages/core/dist/` to exist to resolve `@hermiforge-decorix/core`. Running `test` before `build` fails those tests with `Cannot find module ... dist/index.js` (discovered via a fresh CI checkout, masked locally by leftover `dist/` from prior builds).
 - Fix every lint/type finding. If a rule is genuinely inapplicable, disable it narrowly (inline `eslint-disable-next-line` or a scoped override in `eslint.config.mjs`) with a one-line rationale — never silence findings broadly or leave them unresolved.
-- CI enforces `lint`, `typecheck`, `test`, and `build`; keep the tree green so every handoff is a clean checkpoint.
+- CI enforces `lint`, `typecheck`, `build`, then `test` (see `.github/workflows/ci.yml`) — build must precede test; keep the tree green so every handoff is a clean checkpoint.
 - `pnpm examples:run` actually executes every example (not just typechecks it) — run it after touching anything in `examples/` to confirm the printed output still shows real validation results, not just a clean compile.
 
 ## IN_PROGRESS
@@ -48,6 +48,20 @@ Backlog post-v1 (deliberately deferred, decided during the pre-v1 code/security/
 - **`@hermiforge-decorix/cli` coverage.** Only `json-schema`, `zod`, and `angular-validators` have a dedicated command; `react-hook-form`, `react-tanstack-form`, `vue-formkit`, `vue-vee-validate`, `angular-signal`, and `nest` have no CLI codegen command (consumers import the adapter's `toXxx()` directly instead — documented as a current limitation in `packages/cli/README.md`).
 
 ## DONE
+
+### Automated Release Pipeline (GitLab CI)
+
+Tagging and publishing were fully manual (`pnpm tag:release`, `pnpm changeset publish` from a maintainer's machine). Automated the bump/tag/mirror-push sequence on merge to `main`, keeping the irreversible `npm publish` step behind a manual gate.
+
+- **New `.gitlab-ci.yml`** (GitLab had no CI config before this; `.github/workflows/ci.yml` only covers the public mirror). Three stages:
+  1. `verify` — same gate as GitHub's CI (`lint`, `typecheck`, `build`, `test`, in that order — build before test, per the CI bug fixed earlier this pass), runs on MRs and pushes to `dev`/`main`.
+  2. `version-and-tag` (automatic on push to `main`) — runs the new `scripts/ci-release.mjs`.
+  3. `publish-npm` (`when: manual`, needs `version-and-tag`) — reuses the previous job's artifact (bumped `package.json`s + built `dist/`) and runs `pnpm changeset publish`. Never runs automatically.
+- **New `scripts/ci-release.mjs`** — distinct from `scripts/tag-release.mjs` (which stays for local/manual use; different credential model). Detects pending changesets (`.changeset/*.md` other than `README.md`); if none, exits 0 as a clean no-op (a merge with no changeset releases nothing). Otherwise: `pnpm changeset version` → commit `chore: release vX.Y.Z` → `pnpm build` → tag → push the commit+tag to GitLab `main` and GitHub `main` (authenticated remote URLs built from CI env vars, not a pre-configured git remote) → best-effort fast-forward push of the same commit onto GitLab `dev` (never force-pushed; a failed fast-forward is logged as a warning, not a pipeline failure — `dev` having diverged needs a manual resync).
+- **Required GitLab CI/CD variables** (Settings → CI/CD → Variables, masked + protected — created by the maintainer, not by this pass): `NPM_TOKEN` (the granular automation token already used for manual publishing), `GITLAB_PUSH_TOKEN` (a token with `write_repository` scope, for the CI job to push back to GitLab), `GITHUB_PUSH_TOKEN` (a GitHub PAT with write access to `hermiforge/decorix`, for pushing the mirror).
+- `publish-npm` writes the npm auth token to `.npmrc` at CI runtime only (`echo ... > .npmrc` in the job script) rather than committing a project `.npmrc` referencing `${NPM_TOKEN}` — npm resolves project-level `.npmrc` before the user-level one, so a committed reference would have shadowed a maintainer's already-configured local token (and some npm versions error outright on an unresolved `${VAR}` in `.npmrc`, which would have broken local `pnpm install`/`build` whenever `NPM_TOKEN` isn't set in a dev's shell).
+
+Verified locally (no access to a real GitLab pipeline run from this environment): the no-pending-changeset path exits cleanly; the changeset/bump/commit/build/tag mechanics were verified end-to-end in an isolated throwaway clone (remote removed before running, to guarantee no network reach) using a fake changeset — correctly bumped all 11 packages, generated changelogs, committed, rebuilt `dist/`, and tagged. The actual multi-remote push (real GitLab/GitHub tokens, real merge trigger) is the remaining integration test, to run for real on the next `dev` → `main` merge.
 
 ### npm Scope Rename: `@decorix/*` → `@hermiforge-decorix/*`
 
