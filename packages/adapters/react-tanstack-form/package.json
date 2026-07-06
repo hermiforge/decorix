@@ -40,7 +40,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --config ../../../tsup.config.ts",
+    "build": "tsdown --config ../../../tsdown.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
     "clean": "rimraf dist"
