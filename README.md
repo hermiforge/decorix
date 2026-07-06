@@ -83,6 +83,10 @@ const form = toSignalForm(RegisterUserDto, {validator});
 
 Adapters that perform runtime validation, such as signal forms, React Hook Form, TanStack Form, VeeValidate, and Nest, require a validator adapter. Configuration-only adapters such as Angular Reactive Forms and FormKit can still emit field metadata without one and attach validation when an adapter is available.
 
+## Positioning: Validation, Not Transformation
+
+Decorix is a pure validator: it checks whether a value satisfies a constraint and reports issues, but it never mutates or coerces the input (no automatic trimming, no string→number coercion, no date parsing). If you need that, pre-process the value yourself (or through your form library) before it reaches Decorix — a Decorix model always validates exactly the value it is given.
+
 ## Package READMEs
 
 Each published package has a short package-level README in `packages/core/README.md`, `packages/cli/README.md`, and `packages/adapters/*/README.md` with installation, peer dependencies, and direct usage examples.

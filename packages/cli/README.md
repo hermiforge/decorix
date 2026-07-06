@@ -62,6 +62,24 @@ const models = discoverModels(await import('./src/dtos.ts'));
 const json = renderJsonSchema(selectModel(models, 'UserDto'));
 ```
 
+## Security Note
+
+`scan`, `json-schema`, `zod`, and `angular-validators` all **execute** the
+entry module you point them at (via `tsx`/esbuild), the same way `node` or
+`import()` would — this is not a static parser. Only run the CLI against DTO
+files you trust; do not point it at an entry from an unreviewed third-party
+source (e.g. an unmerged PR, a downloaded template) without reading it first,
+since any top-level code in that file runs with your local Node permissions.
+
+## Coverage
+
+Only 3 of the 9 `@decorix/*` adapters have a dedicated CLI command today
+(`json-schema`, `zod` via `decorix zod`, and Angular Reactive Forms via
+`decorix angular-validators`). For React Hook Form, TanStack Form, VeeValidate,
+FormKit, Angular Signal Forms, or Nest, import the adapter's `toXxx()` function
+directly in your code instead of going through the CLI — see each package's
+README under `packages/adapters/<name>/README.md`.
+
 ## License
 
 LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

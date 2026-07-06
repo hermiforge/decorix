@@ -105,6 +105,77 @@ const result = hasAsyncConstraints(metadata)
   : schema.validate(value);
 ```
 
+## Constraint Reference
+
+Every native constraint follows the same three-name convention: a PascalCase
+decorator, a same-named camelCase builder method, and the registered
+constraint name (used as `issue.constraint` and, by default, the
+`decorix.<name>` issue code — e.g. `@MinLength(2)` / `.minLength(2)` produce
+`constraint: 'minLength'` and `code: 'decorix.minLength'`). Type mismatches
+(e.g. a non-string given to `minLength`) produce `code: 'decorix.type'`
+instead, with `params: {expected: '<type>'}`.
+
+| Category | Decorator | Builder method | Registered name |
+| --- | --- | --- | --- |
+| Presence/nullity | `@Required` | `.required()` | `required` |
+| | `@Optional` | `.optional()` | `optional` |
+| | `@Nullable` | `.nullable()` | `nullable` |
+| | `@NotNull` | `.notNull()` | `notNull` |
+| | `@NotUndefined` | `.notUndefined()` | `notUndefined` |
+| | `@NotEmpty` | `.notEmpty()` | `notEmpty` |
+| | `@NotBlank` | `.notBlank()` | `notBlank` |
+| Cross-field | `@EqualsField` | `.equalsField(path)` | `equalsField` |
+| | `@NotEqualsField` | `.notEqualsField(path)` | `notEqualsField` |
+| | `@GreaterThanField` | `.greaterThanField(path)` | `greaterThanField` |
+| | `@GreaterOrEqualField` | `.greaterOrEqualField(path)` | `greaterOrEqualField` |
+| | `@LessThanField` | `.lessThanField(path)` | `lessThanField` |
+| | `@LessOrEqualField` | `.lessOrEqualField(path)` | `lessOrEqualField` |
+| | `@BeforeField` | `.beforeField(path)` | `beforeField` |
+| | `@AfterField` | `.afterField(path)` | `afterField` |
+| | `@RequiredIf` | `.requiredIf(predicate)` | `requiredIf` |
+| | `@ForbiddenIf` | `.forbiddenIf(predicate)` | `forbiddenIf` |
+| Strings | `@MinLength` | `.minLength(n)` | `minLength` |
+| | `@MaxLength` | `.maxLength(n)` | `maxLength` |
+| | `@Length` | `.length(min, max)` | `length` |
+| | `@Pattern` | `.pattern(regex)` | `pattern` |
+| | `@Email` | `.email()` | `email` |
+| | `@Url` | `.url()` | `url` |
+| | `@Uuid` | `.uuid()` | `uuid` |
+| | `@Slug` | `.slug()` | `slug` |
+| | `@StartsWith` | `.startsWith(prefix)` | `startsWith` |
+| | `@EndsWith` | `.endsWith(suffix)` | `endsWith` |
+| | `@Contains` | `.contains(needle)` | `contains` |
+| | `@Lowercase` | `.lowercase()` | `lowercase` |
+| | `@Uppercase` | `.uppercase()` | `uppercase` |
+| Numbers | `@Min` | `.min(n)` | `min` |
+| | `@Max` | `.max(n)` | `max` |
+| | `@Between` | `.between(min, max)` | `between` |
+| | `@Positive` | `.positive()` | `positive` |
+| | `@PositiveOrZero` | `.positiveOrZero()` | `positiveOrZero` |
+| | `@Negative` | `.negative()` | `negative` |
+| | `@NegativeOrZero` | `.negativeOrZero()` | `negativeOrZero` |
+| | `@Integer` | `.integer()` | `integer` |
+| | `@Finite` | `.finite()` | `finite` |
+| | `@MultipleOf` | `.multipleOf(n)` | `multipleOf` |
+| Dates | `@Past` | `.past()` | `past` |
+| | `@PastOrPresent` | `.pastOrPresent()` | `pastOrPresent` |
+| | `@Future` | `.future()` | `future` |
+| | `@FutureOrPresent` | `.futureOrPresent()` | `futureOrPresent` |
+| | `@Before` | `.before(date)` | `before` |
+| | `@After` | `.after(date)` | `after` |
+| | `@BetweenDates` | `.betweenDates(min, max)` | `betweenDates` |
+| Collections | `@MinItems` | `.minItems(n)` | `minItems` |
+| | `@MaxItems` | `.maxItems(n)` | `maxItems` |
+| | `@Size` | `.size(min, max)` | `size` |
+| | `@UniqueItems` | `.uniqueItems()` | `uniqueItems` |
+| | `@NotEmptyArray` | `.notEmptyArray()` | `notEmptyArray` |
+| Enums | `@Enum` | `.enum(values)` | `enum` |
+| | `@OneOf` | `.oneOf(values)` | `oneOf` |
+| | `@NotOneOf` | `.notOneOf(values)` | `notOneOf` |
+| Object-level | `@ObjectConstraint` | `objectConstraint(...)` (top-level helper) | `objectConstraint` |
+
+Source of truth: `packages/core/src/validation/native-constraints.ts` (registration) and `packages/core/src/decorators/constraints.ts` / `packages/core/src/builder/field-builders.ts` (surface).
+
 ## Validator Notes
 
 `@decorix/core` only defines the `ValidatorAdapter` contract and global registry. Register a custom adapter with `registerValidatorAdapter`, or use `registerZodValidator()` from `@decorix/zod` before calling adapters that require runtime validation.
