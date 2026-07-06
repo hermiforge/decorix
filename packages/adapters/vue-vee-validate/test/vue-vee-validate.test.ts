@@ -16,8 +16,8 @@ import {
     Past,
     Required,
     stringField
-} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
+} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toVeeValidate, useVeeDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
@@ -34,7 +34,7 @@ const VeeAsyncDeco = defineAsyncConstraint<string, undefined>({
     message: 'Already taken'
 });
 
-describe('@decorix/vue-vee-validate', () => {
+describe('@hermiforge-decorix/vue-vee-validate', () => {
     it('creates VeeValidate config from decorators', () => {
         registerZodValidator({name: 'zod-vee-class'});
 

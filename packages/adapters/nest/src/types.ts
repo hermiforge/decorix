@@ -1,4 +1,4 @@
-import type {ModelMetadata, ModelTarget, ValidatorAdapterRef} from '@decorix/core';
+import type {ModelMetadata, ModelTarget, ValidatorAdapterRef} from '@hermiforge-decorix/core';
 
 /**
  * Normalized validation issue returned by the Decorix Nest pipe.

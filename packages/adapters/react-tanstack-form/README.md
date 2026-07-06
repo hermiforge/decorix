@@ -1,11 +1,11 @@
-# @decorix/react-tanstack-form
+# @hermiforge-decorix/react-tanstack-form
 
 TanStack Form adapter for Decorix metadata. It generates default values and submit validators backed by a Decorix validator.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core @decorix/react-tanstack-form @decorix/zod zod react @tanstack/react-form
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/react-tanstack-form @hermiforge-decorix/zod zod react @tanstack/react-form
 ```
 
 Peer dependencies: `react@19.2.7`, `@tanstack/react-form@1.33.0`.
@@ -13,9 +13,9 @@ Peer dependencies: `react@19.2.7`, `@tanstack/react-form@1.33.0`.
 ## Decorated Class
 
 ```ts
-import {Email, Label, MinLength, Model, Required} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toTanStackForm} from '@decorix/react-tanstack-form';
+import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toTanStackForm} from '@hermiforge-decorix/react-tanstack-form';
 
 registerZodValidator();
 
@@ -41,9 +41,9 @@ const errors = config.validators.onSubmit({name: 'A', email: 'bad'});
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
-import {createZodValidatorAdapter} from '@decorix/zod';
-import {useTanStackDecorix} from '@decorix/react-tanstack-form';
+import {model, stringField} from '@hermiforge-decorix/core';
+import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
+import {useTanStackDecorix} from '@hermiforge-decorix/react-tanstack-form';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').label('Name'),

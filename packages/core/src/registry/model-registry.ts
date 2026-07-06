@@ -6,10 +6,10 @@ const modelRegistry = new WeakMap<ModelTarget, ModelMetadata>();
 /**
  * Global-symbol key mirroring model metadata directly on the target class.
  *
- * The `WeakMap` above is private to a single loaded `@decorix/core` instance.
+ * The `WeakMap` above is private to a single loaded `@hermiforge-decorix/core` instance.
  * When a model is declared under one instance (for example a DTO transpiled by
  * a tsx/tsconfig loader) but inspected under another (a natively-loaded copy of
- * core, as in `@decorix/cli`), the two WeakMaps differ and metadata appears
+ * core, as in `@hermiforge-decorix/cli`), the two WeakMaps differ and metadata appears
  * missing. A `Symbol.for` key is shared across every core instance and lives on
  * the class object itself, so metadata written by one instance is readable by
  * any other — matching the boundary-safe behavior builder metadata already has

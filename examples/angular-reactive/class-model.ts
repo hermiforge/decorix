@@ -1,6 +1,6 @@
-import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toReactiveFormConfig} from '@decorix/angular-reactive';
+import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toReactiveFormConfig} from '@hermiforge-decorix/angular-reactive';
 
 registerZodValidator();
 

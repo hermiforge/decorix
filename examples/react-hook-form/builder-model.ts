@@ -1,6 +1,6 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {useReactHookDecorix} from '@decorix/react-hook-form';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {useReactHookDecorix} from '@hermiforge-decorix/react-hook-form';
 
 registerZodValidator();
 

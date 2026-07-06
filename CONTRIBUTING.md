@@ -24,7 +24,7 @@ Fix every lint/type finding rather than disabling rules broadly. If a rule is ge
 ## Repository layout
 
 - `packages/core` — framework-neutral metadata, decorators, builder API, validation engine.
-- `packages/cli` — `@decorix/cli`, the `decorix` command-line tool.
+- `packages/cli` — `@hermiforge-decorix/cli`, the `decorix` command-line tool.
 - `packages/adapters/*` — one package per target framework/format (Zod, JSON Schema, Angular, React, Vue, Nest).
 - `examples/*` — minimal typechecked usage examples per package, used by `pnpm examples:typecheck`.
 

@@ -18,7 +18,7 @@ import {
     Past,
     Required,
     stringField
-} from '@decorix/core';
+} from '@hermiforge-decorix/core';
 import {createZodValidatorAdapter, registerZodValidator, toZod} from '../src/index';
 
 /** Reusable custom sync constraint registered once for the decorator/builder symmetry tests. */
@@ -35,7 +35,7 @@ defineConstraint<string, {prefix: string}>({
     message: (options) => `Must start with "${options.prefix}"`
 });
 
-describe('@decorix/zod', () => {
+describe('@hermiforge-decorix/zod', () => {
     it('validates builder-declared schemas', () => {
         const user = model('UserDto', {
             name: stringField().required('Name required').minLength(2, 'Name too short'),

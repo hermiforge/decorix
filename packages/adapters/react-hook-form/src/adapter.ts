@@ -1,11 +1,11 @@
-import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
+import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@hermiforge-decorix/core';
 import {hookFormErrors} from './errors';
 import type {
     DecorixReactHookFormConfig,
     DecorixReactHookFormModel,
     DecorixReactHookFormOptions
 } from './types';
-import type {FieldMetadata} from '@decorix/core';
+import type {FieldMetadata} from '@hermiforge-decorix/core';
 
 /**
  * Creates React Hook Form configuration from Decorix metadata.

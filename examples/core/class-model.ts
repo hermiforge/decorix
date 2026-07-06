@@ -1,4 +1,4 @@
-import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required, validate} from '@decorix/core';
+import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required, validate} from '@hermiforge-decorix/core';
 
 @Model('RegisterUserDto')
 class RegisterUserDto {

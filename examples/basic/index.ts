@@ -1,5 +1,5 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {toZod} from '@decorix/zod';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {toZod} from '@hermiforge-decorix/zod';
 
 const RegisterUserDto = model('RegisterUserDto', {
     name: stringField().required('Name is required').minLength(2).maxLength(50).label('Name'),

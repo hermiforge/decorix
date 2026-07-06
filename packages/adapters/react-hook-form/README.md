@@ -1,11 +1,11 @@
-# @decorix/react-hook-form
+# @hermiforge-decorix/react-hook-form
 
 React Hook Form adapter for Decorix metadata. It generates default values, field rules, and a resolver backed by a Decorix validator.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core @decorix/react-hook-form @decorix/zod zod react react-hook-form
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/react-hook-form @hermiforge-decorix/zod zod react react-hook-form
 ```
 
 Peer dependencies: `react@19.2.7`, `react-hook-form@7.80.0`.
@@ -13,9 +13,9 @@ Peer dependencies: `react@19.2.7`, `react-hook-form@7.80.0`.
 ## Decorated Class
 
 ```ts
-import {Email, Label, MinLength, Model, Required} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toReactHookForm} from '@decorix/react-hook-form';
+import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toReactHookForm} from '@hermiforge-decorix/react-hook-form';
 
 registerZodValidator();
 
@@ -39,9 +39,9 @@ const config = toReactHookForm(SignupDto, {
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
-import {createZodValidatorAdapter} from '@decorix/zod';
-import {useReactHookDecorix} from '@decorix/react-hook-form';
+import {model, stringField} from '@hermiforge-decorix/core';
+import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
+import {useReactHookDecorix} from '@hermiforge-decorix/react-hook-form';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').label('Name'),

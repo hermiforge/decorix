@@ -16,8 +16,8 @@ import {
     Past,
     Required,
     stringField
-} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
+} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {DecorixPipe, DecorixValidationException} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
@@ -34,7 +34,7 @@ const NestAsyncDeco = defineAsyncConstraint<string, undefined>({
     message: 'Already taken'
 });
 
-describe('@decorix/nest', () => {
+describe('@hermiforge-decorix/nest', () => {
     it('creates a Nest-compatible pipe from decorators', () => {
         registerZodValidator({name: 'zod-nest-class'});
 

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Email, Model, model, Required, stringField} from '@decorix/core';
+import {Email, Model, model, Required, stringField} from '@hermiforge-decorix/core';
 import {
     discoverModels,
     renderAngularValidatorsModule,
@@ -25,7 +25,7 @@ const BuilderDto = model('CliBuilderDto', {
 
 const moduleExports = {CliUserDto, BuilderDto, notAModel: 42};
 
-describe('@decorix/cli', () => {
+describe('@hermiforge-decorix/cli', () => {
     it('discovers decorator classes and builder metadata, ignoring non-models', () => {
         const models = discoverModels(moduleExports);
         expect(models.map((discovered) => [discovered.name, discovered.exportName])).toEqual([
@@ -64,7 +64,7 @@ describe('@decorix/cli', () => {
         const model = selectModel(discoverModels({CliUserDto}), 'CliUserDto');
         expect(renderZodModule('./dtos/user.ts', model)).toBe(
             [
-                `import {toZod} from '@decorix/zod';`,
+                `import {toZod} from '@hermiforge-decorix/zod';`,
                 `import {CliUserDto} from './dtos/user';`,
                 ``,
                 `export const CliUserDtoSchema = toZod(CliUserDto);`,

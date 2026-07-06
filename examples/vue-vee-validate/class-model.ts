@@ -1,6 +1,6 @@
-import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toVeeValidate} from '@decorix/vue-vee-validate';
+import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toVeeValidate} from '@hermiforge-decorix/vue-vee-validate';
 
 registerZodValidator();
 

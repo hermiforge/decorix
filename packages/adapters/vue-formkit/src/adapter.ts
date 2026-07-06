@@ -1,7 +1,7 @@
-import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
+import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@hermiforge-decorix/core';
 import {formKitType, formKitValidation} from './validation';
 import type {DecorixFormKitConfig, DecorixFormKitModel, DecorixFormKitOptions} from './types';
-import type {FieldMetadata} from '@decorix/core';
+import type {FieldMetadata} from '@hermiforge-decorix/core';
 
 /**
  * Creates FormKit schema configuration from Decorix metadata.

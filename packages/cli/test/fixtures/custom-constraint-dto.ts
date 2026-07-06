@@ -1,4 +1,4 @@
-import {Constraint, Model, model, Required, stringField} from '@decorix/core';
+import {Constraint, Model, model, Required, stringField} from '@hermiforge-decorix/core';
 
 /**
  * Fixtures carrying a custom named constraint in both authoring modes. The CLI

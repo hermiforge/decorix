@@ -1,4 +1,4 @@
-import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef, ValidatorSchema} from '@decorix/core';
+import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef, ValidatorSchema} from '@hermiforge-decorix/core';
 
 /**
  * Options used by the VeeValidate adapter.

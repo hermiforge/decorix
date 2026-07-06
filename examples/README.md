@@ -15,7 +15,7 @@ Runnable, typechecked usage examples for every published package.
 - `advanced/` — cross-cutting features not tied to one specific framework
   adapter: async validation, custom constraints (decorator and builder, sync
   and async), cross-field and object-level constraints, nested objects/arrays,
-  validation groups, and the `@decorix/cli` programmatic API.
+  validation groups, and the `@hermiforge-decorix/cli` programmatic API.
 
 ## Running
 
@@ -33,7 +33,7 @@ pnpm examples:run
 ```
 
 `examples:run` executes each `.ts` file directly with `tsx`, which resolves
-the `@decorix/*` package aliases through `tsconfig.base.json`'s `paths` —
+the `@hermiforge-decorix/*` package aliases through `tsconfig.base.json`'s `paths` —
 no build step required, and no `examples/package.json`/workspace membership
 needed (this directory is intentionally not a pnpm workspace package, just a
 collection of scripts).

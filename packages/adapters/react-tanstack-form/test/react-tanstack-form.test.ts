@@ -16,8 +16,8 @@ import {
     Past,
     Required,
     stringField
-} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
+} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toTanStackForm, useTanStackDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
@@ -34,7 +34,7 @@ const TanstackAsyncDeco = defineAsyncConstraint<string, undefined>({
     message: 'Already taken'
 });
 
-describe('@decorix/react-tanstack-form', () => {
+describe('@hermiforge-decorix/react-tanstack-form', () => {
     it('creates TanStack Form config from decorators', () => {
         registerZodValidator({name: 'zod-tanstack-class'});
 

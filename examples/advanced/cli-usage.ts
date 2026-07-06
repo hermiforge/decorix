@@ -1,7 +1,7 @@
-import {Email, MinLength, Model, Required} from '@decorix/core';
-import {discoverModels, renderJsonSchema, selectModel} from '@decorix/cli';
+import {Email, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {discoverModels, renderJsonSchema, selectModel} from '@hermiforge-decorix/cli';
 
-// `@decorix/cli`'s `scan`/`json-schema`/`zod`/`angular-validators` commands load
+// `@hermiforge-decorix/cli`'s `scan`/`json-schema`/`zod`/`angular-validators` commands load
 // a real file from disk and execute it to discover `@Model` classes; this
 // example calls the same programmatic API directly on an in-memory module
 // namespace object instead of a file, so it stays a plain, runnable script.

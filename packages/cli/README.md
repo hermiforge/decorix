@@ -1,4 +1,4 @@
-# @decorix/cli
+# @hermiforge-decorix/cli
 
 Command-line interface for generating artifacts from Decorix models. It loads a
 DTO entry module (TypeScript or JavaScript), discovers `@Model` classes and
@@ -7,7 +7,7 @@ builder metadata, and emits schemas or framework re-export modules.
 ## Install
 
 ```sh
-pnpm add -D @decorix/cli
+pnpm add -D @hermiforge-decorix/cli
 ```
 
 ## Usage
@@ -56,7 +56,7 @@ decorix scan ./src/dtos.ts --tsconfig ./tsconfig.json
 ## Programmatic API
 
 ```ts
-import {discoverModels, renderJsonSchema, selectModel} from '@decorix/cli';
+import {discoverModels, renderJsonSchema, selectModel} from '@hermiforge-decorix/cli';
 
 const models = discoverModels(await import('./src/dtos.ts'));
 const json = renderJsonSchema(selectModel(models, 'UserDto'));
@@ -73,7 +73,7 @@ since any top-level code in that file runs with your local Node permissions.
 
 ## Coverage
 
-Only 3 of the 9 `@decorix/*` adapters have a dedicated CLI command today
+Only 3 of the 9 `@hermiforge-decorix/*` adapters have a dedicated CLI command today
 (`json-schema`, `zod` via `decorix zod`, and Angular Reactive Forms via
 `decorix angular-validators`). For React Hook Form, TanStack Form, VeeValidate,
 FormKit, Angular Signal Forms, or Nest, import the adapter's `toXxx()` function

@@ -17,8 +17,8 @@ import {
     Past,
     Required,
     stringField
-} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
+} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toFormKit, useFormKitDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
@@ -35,7 +35,7 @@ const FormkitAsyncDeco = defineAsyncConstraint<string, undefined>({
     message: 'Already taken'
 });
 
-describe('@decorix/vue-formkit', () => {
+describe('@hermiforge-decorix/vue-formkit', () => {
     it('creates FormKit schema from decorators with core runtime validation', () => {
         @Model('SignupDto')
         class SignupDto {

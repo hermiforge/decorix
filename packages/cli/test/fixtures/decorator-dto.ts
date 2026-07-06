@@ -1,4 +1,4 @@
-import {Email, Label, MaxLength, Min, MinLength, Model, Required} from '@decorix/core';
+import {Email, Label, MaxLength, Min, MinLength, Model, Required} from '@hermiforge-decorix/core';
 
 /**
  * Decorator-based DTO fixture. Exported so the CLI loader can discover it, and

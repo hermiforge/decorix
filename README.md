@@ -9,24 +9,24 @@ Decorix describes TypeScript business models once and adapts the same neutral me
 
 Install only the packages required by your target surface:
 
-- `@decorix/core` provides decorators, the builder API, model metadata, and the generic validator registry.
-- `@decorix/cli` provides the `decorix` command-line tool for generating JSON Schema, Zod, and Angular validator artifacts from Decorix models.
-- `@decorix/zod` converts metadata to Zod schemas and can register a Zod validator adapter.
-- `@decorix/json-schema` converts metadata to JSON Schema draft 2020-12.
-- `@decorix/angular-signal` exposes `toSignalForm` for Angular Signal Forms-oriented facades.
-- `@decorix/angular-reactive` exposes `toReactiveFormConfig` for Angular Reactive Forms-oriented configuration.
-- `@decorix/react-hook-form` exposes `toReactHookForm` and `useReactHookDecorix`.
-- `@decorix/react-tanstack-form` exposes `toTanStackForm` and `useTanStackDecorix`.
-- `@decorix/vue-vee-validate` exposes `toVeeValidate` and `useVeeDecorix`.
-- `@decorix/vue-formkit` exposes `toFormKit` and `useFormKitDecorix`.
-- `@decorix/nest` exposes a Nest-compatible validation pipe.
+- `@hermiforge-decorix/core` provides decorators, the builder API, model metadata, and the generic validator registry.
+- `@hermiforge-decorix/cli` provides the `decorix` command-line tool for generating JSON Schema, Zod, and Angular validator artifacts from Decorix models.
+- `@hermiforge-decorix/zod` converts metadata to Zod schemas and can register a Zod validator adapter.
+- `@hermiforge-decorix/json-schema` converts metadata to JSON Schema draft 2020-12.
+- `@hermiforge-decorix/angular-signal` exposes `toSignalForm` for Angular Signal Forms-oriented facades.
+- `@hermiforge-decorix/angular-reactive` exposes `toReactiveFormConfig` for Angular Reactive Forms-oriented configuration.
+- `@hermiforge-decorix/react-hook-form` exposes `toReactHookForm` and `useReactHookDecorix`.
+- `@hermiforge-decorix/react-tanstack-form` exposes `toTanStackForm` and `useTanStackDecorix`.
+- `@hermiforge-decorix/vue-vee-validate` exposes `toVeeValidate` and `useVeeDecorix`.
+- `@hermiforge-decorix/vue-formkit` exposes `toFormKit` and `useFormKitDecorix`.
+- `@hermiforge-decorix/nest` exposes a Nest-compatible validation pipe.
 
-The former aggregate packages `@decorix/angular`, `@decorix/react`, and `@decorix/vue` are intentionally not used. Choose the one adapter package matching your framework library so peer dependencies stay narrow.
+The former aggregate packages `@hermiforge-decorix/angular`, `@hermiforge-decorix/react`, and `@hermiforge-decorix/vue` are intentionally not used. Choose the one adapter package matching your framework library so peer dependencies stay narrow.
 
 ## Decorator Model
 
 ```ts
-import {Email, Label, MaxLength, Min, MinLength, Model, Required} from '@decorix/core';
+import {Email, Label, MaxLength, Min, MinLength, Model, Required} from '@hermiforge-decorix/core';
 
 @Model('RegisterUserDto')
 class RegisterUserDto {
@@ -49,7 +49,7 @@ class RegisterUserDto {
 ## Builder Model
 
 ```ts
-import {model, numberField, stringField} from '@decorix/core';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
 
 const RegisterUserDto = model('RegisterUserDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').maxLength(50).label('Name'),
@@ -60,11 +60,11 @@ const RegisterUserDto = model('RegisterUserDto', {
 
 ## Validator Registry
 
-UI and Nest adapters depend on the neutral `ValidatorAdapter` contract from `@decorix/core`, not on Zod directly. Register a concrete adapter once, or pass one per adapter call.
+UI and Nest adapters depend on the neutral `ValidatorAdapter` contract from `@hermiforge-decorix/core`, not on Zod directly. Register a concrete adapter once, or pass one per adapter call.
 
 ```ts
-import {registerZodValidator} from '@decorix/zod';
-import {toReactHookForm} from '@decorix/react-hook-form';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toReactHookForm} from '@hermiforge-decorix/react-hook-form';
 
 registerZodValidator();
 
@@ -74,8 +74,8 @@ const config = toReactHookForm(RegisterUserDto);
 For explicit wiring:
 
 ```ts
-import {createZodValidatorAdapter} from '@decorix/zod';
-import {toSignalForm} from '@decorix/angular-signal';
+import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
+import {toSignalForm} from '@hermiforge-decorix/angular-signal';
 
 const validator = createZodValidatorAdapter();
 const form = toSignalForm(RegisterUserDto, {validator});
@@ -107,5 +107,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, quality gate, and ch
 
 ## License
 
-Decorix is licensed under the [GNU Lesser General Public License v3.0 or later](LICENSE) (LGPL-3.0-or-later). This copyleft applies to Decorix itself and to modifications distributed as part of it; applications that merely depend on `@decorix/*` packages through their published interfaces are not required to adopt the same license (see LICENSE, sections 0-6, and the incorporated [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.txt) for the exact terms).
+Decorix is licensed under the [GNU Lesser General Public License v3.0 or later](LICENSE) (LGPL-3.0-or-later). This copyleft applies to Decorix itself and to modifications distributed as part of it; applications that merely depend on `@hermiforge-decorix/*` packages through their published interfaces are not required to adopt the same license (see LICENSE, sections 0-6, and the incorporated [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.txt) for the exact terms).
 

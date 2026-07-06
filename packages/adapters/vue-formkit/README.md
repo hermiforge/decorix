@@ -1,11 +1,11 @@
-# @decorix/vue-formkit
+# @hermiforge-decorix/vue-formkit
 
 FormKit adapter for Decorix metadata. It generates FormKit-oriented schema nodes and optional runtime validation.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core @decorix/vue-formkit vue @formkit/vue
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/vue-formkit vue @formkit/vue
 ```
 
 Peer dependencies: `vue@3.5.39`, `@formkit/vue@2.1.0`.
@@ -13,14 +13,14 @@ Peer dependencies: `vue@3.5.39`, `@formkit/vue@2.1.0`.
 For runtime `validate` support, also install a validator adapter such as Zod:
 
 ```sh
-pnpm add @decorix/zod zod
+pnpm add @hermiforge-decorix/zod zod
 ```
 
 ## Decorated Class
 
 ```ts
-import {Email, Label, MinLength, Model, Required} from '@decorix/core';
-import {toFormKit} from '@decorix/vue-formkit';
+import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {toFormKit} from '@hermiforge-decorix/vue-formkit';
 
 @Model('SignupDto')
 class SignupDto {
@@ -42,9 +42,9 @@ const config = toFormKit(SignupDto, {
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
-import {createZodValidatorAdapter} from '@decorix/zod';
-import {useFormKitDecorix} from '@decorix/vue-formkit';
+import {model, stringField} from '@hermiforge-decorix/core';
+import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
+import {useFormKitDecorix} from '@hermiforge-decorix/vue-formkit';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').label('Name'),

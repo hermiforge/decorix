@@ -1,6 +1,6 @@
-import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toTanStackForm} from '@decorix/react-tanstack-form';
+import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toTanStackForm} from '@hermiforge-decorix/react-tanstack-form';
 
 registerZodValidator();
 

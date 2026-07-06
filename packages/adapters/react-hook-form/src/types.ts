@@ -1,4 +1,4 @@
-import type {FieldMetadata, ModelMetadata, ModelTarget, ValidatorAdapterRef} from '@decorix/core';
+import type {FieldMetadata, ModelMetadata, ModelTarget, ValidatorAdapterRef} from '@hermiforge-decorix/core';
 
 /**
  * Options used by the React Hook Form adapter.

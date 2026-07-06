@@ -16,8 +16,8 @@ import {
     Past,
     Required,
     stringField
-} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
+} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toSignalForm} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
@@ -34,7 +34,7 @@ const SignalAsyncDeco = defineAsyncConstraint<string, undefined>({
     message: 'Already taken'
 });
 
-describe('@decorix/angular-signal', () => {
+describe('@hermiforge-decorix/angular-signal', () => {
     it('creates and validates a signal form from decorators', () => {
         registerZodValidator({name: 'zod-angular-signal-class'});
 

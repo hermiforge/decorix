@@ -1,5 +1,5 @@
 {
-  "name": "@decorix/nest",
+  "name": "@hermiforge-decorix/nest",
   "version": "0.1.0",
   "description": "Nest-compatible validation pipe for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
@@ -45,7 +45,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@decorix/core": "workspace:0.1.0"
+    "@hermiforge-decorix/core": "workspace:0.1.0"
   },
   "peerDependencies": {
     "@nestjs/common": "^11.1.0"

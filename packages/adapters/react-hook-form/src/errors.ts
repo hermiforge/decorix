@@ -1,5 +1,5 @@
-import {groupIssuesByField} from '@decorix/core';
-import type {ValidationIssue} from '@decorix/core';
+import {groupIssuesByField} from '@hermiforge-decorix/core';
+import type {ValidationIssue} from '@hermiforge-decorix/core';
 import type {DecorixReactHookFieldError} from './types';
 
 /**

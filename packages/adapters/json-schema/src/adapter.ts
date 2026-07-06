@@ -1,5 +1,5 @@
-import type {ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget, UiMetadata} from '@decorix/core';
-import {getConstraint, getModelMetadata} from '@decorix/core';
+import type {ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget, UiMetadata} from '@hermiforge-decorix/core';
+import {getConstraint, getModelMetadata} from '@hermiforge-decorix/core';
 import type {JsonSchema} from './types';
 
 /**

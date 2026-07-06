@@ -1,4 +1,4 @@
-import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
+import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@hermiforge-decorix/core';
 import type {DecorixVeeValidateConfig, DecorixVeeValidateModel, DecorixVeeValidateOptions} from './types';
 
 /**

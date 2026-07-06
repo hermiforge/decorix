@@ -16,8 +16,8 @@ import {
     Past,
     Required,
     stringField
-} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
+} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toReactHookForm, useReactHookDecorix} from '../src/index';
 
 /** Reusable custom sync constraint for the builder/decorator symmetry tests. */
@@ -34,7 +34,7 @@ const RhfAsyncDeco = defineAsyncConstraint<string, undefined>({
     message: 'Already taken'
 });
 
-describe('@decorix/react-hook-form', () => {
+describe('@hermiforge-decorix/react-hook-form', () => {
     it('creates React Hook Form config from decorators', async () => {
         registerZodValidator({name: 'zod-react-hook-class'});
 

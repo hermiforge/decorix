@@ -9,7 +9,7 @@ import {
     stringField,
     validate,
     validateAsync
-} from '@decorix/core';
+} from '@hermiforge-decorix/core';
 
 // `defineConstraint` registers a constraint once and returns a callable
 // `ReusableConstraint`: use it directly as a decorator (`@StartsWithA()`) or

@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {createAsyncConstraint, defineAsyncConstraint, defineConstraint, Email, EqualsField, MinLength, Model, model, numberField, Required, stringField} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
+import {createAsyncConstraint, defineAsyncConstraint, defineConstraint, Email, EqualsField, MinLength, Model, model, numberField, Required, stringField} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toReactiveFormConfig} from '../src/index';
 import type {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
 
@@ -28,7 +28,7 @@ function runValidators(validators: ValidatorFn[], value: unknown): ValidationErr
         .filter((error): error is ValidationErrors => error !== null);
 }
 
-describe('@decorix/angular-reactive', () => {
+describe('@hermiforge-decorix/angular-reactive', () => {
     it('creates Angular ValidatorFn field config by default without a runtime validator', () => {
         @Model('SignupDtoAngularValidators')
         class SignupDto {

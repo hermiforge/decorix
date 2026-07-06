@@ -1,5 +1,5 @@
-import {EqualsField, Email, Label, MaxLength, Min, MinLength, Model, Optional, Required, validate} from '@decorix/core';
-import {toJsonSchema} from '@decorix/json-schema';
+import {EqualsField, Email, Label, MaxLength, Min, MinLength, Model, Optional, Required, validate} from '@hermiforge-decorix/core';
+import {toJsonSchema} from '@hermiforge-decorix/json-schema';
 
 @Model('RegisterUserDto')
 class RegisterUserDto {

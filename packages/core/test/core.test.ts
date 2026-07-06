@@ -126,7 +126,7 @@ const absentSkipConstraints = nativeCases
     .map((testCase) => testCase.name)
     .filter((name) => !['required', 'notNull', 'notUndefined', 'optional', 'nullable'].includes(name));
 
-describe('@decorix/core', () => {
+describe('@hermiforge-decorix/core', () => {
     it('creates metadata with the builder API', () => {
         const user = model('UserDto', {
             name: stringField().required().minLength(2).maxLength(50).label('Name'),

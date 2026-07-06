@@ -1,5 +1,5 @@
-import type {ConstraintMetadata, FieldMetadata, FieldType, ModelMetadata, UiMetadata} from '@decorix/core';
-import {createConstraintMetadata} from '@decorix/core';
+import type {ConstraintMetadata, FieldMetadata, FieldType, ModelMetadata, UiMetadata} from '@hermiforge-decorix/core';
+import {createConstraintMetadata} from '@hermiforge-decorix/core';
 import type {JsonSchema} from './types';
 
 /** Serialized constraint entry shape emitted under `x-decorix-constraints` by the exporter. */

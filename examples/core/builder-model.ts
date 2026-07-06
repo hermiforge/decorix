@@ -1,4 +1,4 @@
-import {model, numberField, stringField, validate} from '@decorix/core';
+import {model, numberField, stringField, validate} from '@hermiforge-decorix/core';
 
 const RegisterUserDto = model('RegisterUserDto', {
     name: stringField().required('Name is required').minLength(2, 'Name is too short').maxLength(50),
