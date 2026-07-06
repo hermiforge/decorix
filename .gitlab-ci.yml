@@ -1,0 +1,91 @@
+image: node:22
+
+variables:
+  PNPM_VERSION: "9.15.9"
+
+default:
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@${PNPM_VERSION} --activate
+    - pnpm config set store-dir .pnpm-store
+
+stages:
+  - verify
+  - release
+  - publish
+
+# Same quality gate as the public GitHub mirror's CI (.github/workflows/ci.yml),
+# but this is what actually gates the release stages below — GitHub's CI only
+# runs after code already landed there. Build must precede test: the CLI's
+# end-to-end tests resolve @hermiforge-decorix/core through real Node module
+# resolution (not Vitest's aliases), which needs packages/core/dist/ to exist.
+verify:
+  stage: verify
+  cache:
+    key: pnpm-store
+    paths:
+      - .pnpm-store
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm lint
+    - pnpm typecheck
+    - pnpm build
+    - pnpm test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# Runs automatically after a dev -> main merge. Bumps versions from any
+# pending changesets, commits, builds, tags, and pushes the release commit +
+# tag to GitLab main, GitHub main, and (best-effort) GitLab dev. A merge with
+# no pending changesets is a clean no-op (see scripts/ci-release.mjs).
+# Publishing to npm itself is a separate, manually-triggered job below.
+version-and-tag:
+  stage: release
+  needs: ["verify"]
+  cache:
+    key: pnpm-store
+    paths:
+      - .pnpm-store
+  script:
+    - pnpm install --frozen-lockfile
+    - node scripts/ci-release.mjs
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - packages/core/dist/
+      - packages/core/package.json
+      - packages/core/CHANGELOG.md
+      - packages/cli/dist/
+      - packages/cli/package.json
+      - packages/cli/CHANGELOG.md
+      - packages/adapters/*/dist/
+      - packages/adapters/*/package.json
+      - packages/adapters/*/CHANGELOG.md
+
+# Manual gate: npm publishing is irreversible, so this never runs
+# automatically — click "play" on this job in the GitLab pipeline view once
+# you're ready. Reuses the already-bumped package.json files and already-built
+# dist/ from version-and-tag's artifact instead of rebuilding.
+#
+# The npm auth token is written to .npmrc here, at CI runtime only — it is
+# never committed to the repo, so it can't shadow a maintainer's own
+# ~/.npmrc token (npm resolves project-level .npmrc before the user-level
+# one) or break local npm/pnpm commands when NPM_TOKEN isn't set locally.
+publish-npm:
+  stage: publish
+  needs: ["version-and-tag"]
+  when: manual
+  cache:
+    key: pnpm-store
+    paths:
+      - .pnpm-store
+  script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - pnpm install --frozen-lockfile
+    - pnpm changeset publish
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
