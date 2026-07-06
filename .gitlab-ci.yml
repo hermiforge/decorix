@@ -86,6 +86,6 @@ publish-npm:
   script:
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     - pnpm install --frozen-lockfile
-    - pnpm changeset publish
+    - pnpm changeset publish --no-git-tag
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
