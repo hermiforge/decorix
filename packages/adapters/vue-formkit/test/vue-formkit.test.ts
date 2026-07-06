@@ -56,7 +56,7 @@ describe('@hermiforge-decorix/vue-formkit', () => {
             $formkit: 'text',
             name: 'name',
             label: 'Name',
-            validation: 'required|minLength:2'
+            validation: 'required|length:2'
         });
     });
 
@@ -102,20 +102,40 @@ describe('@hermiforge-decorix/vue-formkit', () => {
   {
     "formkit": "text",
     "name": "title",
-    "validation": "required|minLength:3|maxLength:20",
+    "validation": "required|length:3,20",
   },
   {
     "formkit": "text",
     "name": "email",
-    "validation": "email|optional",
+    "validation": "email",
   },
   {
     "formkit": "number",
     "name": "age",
-    "validation": "min:18|max:65|optional",
+    "validation": "min:18|max:65",
   },
 ]
 `);
+    });
+
+    it('translates constraints into FormKit-native rule names, omitting unmapped ones', () => {
+        const metadata = model('FormKitVocabularyDto', {
+            slug: stringField().required().slug(),
+            code: stringField().pattern(/^[A-Z]+$/),
+            age: numberField().integer().optional(),
+            createdAt: dateField().past()
+        });
+
+        const config = toFormKit(metadata);
+
+        // `slug` has no FormKit-native rule; it stays enforced via config.validate(), not the schema string.
+        expect(config.schema[0]?.validation).toBe('required');
+        // `pattern` maps to FormKit's `matches:/regex/` rule.
+        expect(config.schema[1]?.validation).toBe('required|matches:/^[A-Z]+$/');
+        // `integer` and `optional` have no FormKit-native rule and are omitted.
+        expect(config.schema[2]?.validation).toBe('');
+        // `past` has no FormKit-native rule (no relative-to-now date rule) and is omitted.
+        expect(config.schema[3]?.validation).toBe('required');
     });
 
     it('enforces V2 cross-field constraints through core validation', () => {

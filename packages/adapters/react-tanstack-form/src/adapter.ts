@@ -20,14 +20,19 @@ export function toTanStackForm(
         metadata,
         defaultValues: defaultValuesFor(metadata, options.defaultValues),
         validators: {
-            onSubmit(value) {
+            // TanStack Form calls form-level validators with a context object
+            // (`{value, ...}`), not the raw values — destructuring `value` here
+            // is required, not cosmetic. The return must be wrapped in `{fields}`
+            // (or `undefined`/`null` when valid); a bare error map is not a
+            // shape TanStack Form recognizes.
+            onSubmit({value}) {
                 const result = schema.validate(value);
-                return result.success ? undefined : collectErrors(result.issues);
+                return result.success ? undefined : {fields: collectErrors(result.issues)};
             },
-            async onSubmitAsync(value) {
+            async onSubmitAsync({value}) {
                 // The async submit path resolves async constraints before reporting errors.
                 const result = await runSchemaAsync(schema, value);
-                return result.success ? undefined : collectErrors(result.issues);
+                return result.success ? undefined : {fields: collectErrors(result.issues)};
             }
         }
     };

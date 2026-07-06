@@ -60,6 +60,72 @@ export function renderAngularValidatorsModule(entry: string, model: DiscoveredMo
     ].join('\n');
 }
 
+/** Renders a thin TypeScript module re-exporting the model's Angular Signal Forms facade. */
+export function renderAngularSignalModule(entry: string, model: DiscoveredModel): string {
+    return [
+        `import {toSignalForm} from '@hermiforge-decorix/angular-signal';`,
+        `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
+        ``,
+        `export const ${model.exportName}Form = toSignalForm(${model.exportName});`,
+        ``
+    ].join('\n');
+}
+
+/** Renders a thin TypeScript module re-exporting the model's React Hook Form config. */
+export function renderReactHookFormModule(entry: string, model: DiscoveredModel): string {
+    return [
+        `import {toReactHookForm} from '@hermiforge-decorix/react-hook-form';`,
+        `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
+        ``,
+        `export const ${model.exportName}Config = toReactHookForm(${model.exportName});`,
+        ``
+    ].join('\n');
+}
+
+/** Renders a thin TypeScript module re-exporting the model's TanStack Form config. */
+export function renderReactTanStackFormModule(entry: string, model: DiscoveredModel): string {
+    return [
+        `import {toTanStackForm} from '@hermiforge-decorix/react-tanstack-form';`,
+        `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
+        ``,
+        `export const ${model.exportName}Config = toTanStackForm(${model.exportName});`,
+        ``
+    ].join('\n');
+}
+
+/** Renders a thin TypeScript module re-exporting the model's FormKit schema config. */
+export function renderVueFormKitModule(entry: string, model: DiscoveredModel): string {
+    return [
+        `import {toFormKit} from '@hermiforge-decorix/vue-formkit';`,
+        `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
+        ``,
+        `export const ${model.exportName}Config = toFormKit(${model.exportName});`,
+        ``
+    ].join('\n');
+}
+
+/** Renders a thin TypeScript module re-exporting the model's VeeValidate config. */
+export function renderVueVeeValidateModule(entry: string, model: DiscoveredModel): string {
+    return [
+        `import {toVeeValidate} from '@hermiforge-decorix/vue-vee-validate';`,
+        `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
+        ``,
+        `export const ${model.exportName}Config = toVeeValidate(${model.exportName});`,
+        ``
+    ].join('\n');
+}
+
+/** Renders a thin TypeScript module re-exporting the model's Nest validation pipe. */
+export function renderNestModule(entry: string, model: DiscoveredModel): string {
+    return [
+        `import {DecorixPipe} from '@hermiforge-decorix/nest';`,
+        `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
+        ``,
+        `export const ${model.exportName}Pipe = DecorixPipe(${model.exportName});`,
+        ``
+    ].join('\n');
+}
+
 /** Normalizes an entry path into an import specifier, dropping a TypeScript extension. */
 function moduleSpecifier(entry: string): string {
     const normalized = entry.replace(/\\/g, '/').replace(/\.(ts|tsx|mts|cts)$/, '');

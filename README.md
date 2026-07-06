@@ -10,7 +10,7 @@ Decorix describes TypeScript business models once and adapts the same neutral me
 Install only the packages required by your target surface:
 
 - `@hermiforge-decorix/core` provides decorators, the builder API, model metadata, and the generic validator registry.
-- `@hermiforge-decorix/cli` provides the `decorix` command-line tool for generating JSON Schema, Zod, and Angular validator artifacts from Decorix models.
+- `@hermiforge-decorix/cli` provides the `decorix` command-line tool for generating JSON Schema, Zod, and framework re-export artifacts (one command per adapter) from Decorix models.
 - `@hermiforge-decorix/zod` converts metadata to Zod schemas and can register a Zod validator adapter.
 - `@hermiforge-decorix/json-schema` converts metadata to JSON Schema draft 2020-12.
 - `@hermiforge-decorix/angular-signal` exposes `toSignalForm` for Angular Signal Forms-oriented facades.

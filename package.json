@@ -1,6 +1,6 @@
 {
   "name": "decorix",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-neutral TypeScript model metadata with adapters for validation, forms, and documentation.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -35,6 +35,7 @@
     "tag:release": "node scripts/tag-release.mjs"
   },
   "devDependencies": {
+    "@angular/compiler": "22.0.3",
     "@changesets/cli": "2.31.0",
     "@types/node": "^22",
     "eslint": "^9",

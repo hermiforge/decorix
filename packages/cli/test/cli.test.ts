@@ -2,9 +2,15 @@ import {describe, expect, it} from 'vitest';
 import {Email, Model, model, Required, stringField} from '@hermiforge-decorix/core';
 import {
     discoverModels,
+    renderAngularSignalModule,
     renderAngularValidatorsModule,
     renderJsonSchema,
+    renderNestModule,
+    renderReactHookFormModule,
+    renderReactTanStackFormModule,
     renderScan,
+    renderVueFormKitModule,
+    renderVueVeeValidateModule,
     renderZodModule,
     selectModel
 } from '../src/index';
@@ -76,6 +82,70 @@ describe('@hermiforge-decorix/cli', () => {
         );
         expect(renderAngularValidatorsModule('dtos/user.ts', model)).toContain(
             `export const CliUserDtoFormConfig = toReactiveFormConfig(CliUserDto);`
+        );
+    });
+
+    it('renders thin re-export modules for the remaining 6 adapters', () => {
+        const model = selectModel(discoverModels({CliUserDto}), 'CliUserDto');
+
+        expect(renderAngularSignalModule('dtos/user.ts', model)).toBe(
+            [
+                `import {toSignalForm} from '@hermiforge-decorix/angular-signal';`,
+                `import {CliUserDto} from './dtos/user';`,
+                ``,
+                `export const CliUserDtoForm = toSignalForm(CliUserDto);`,
+                ``
+            ].join('\n')
+        );
+
+        expect(renderReactHookFormModule('dtos/user.ts', model)).toBe(
+            [
+                `import {toReactHookForm} from '@hermiforge-decorix/react-hook-form';`,
+                `import {CliUserDto} from './dtos/user';`,
+                ``,
+                `export const CliUserDtoConfig = toReactHookForm(CliUserDto);`,
+                ``
+            ].join('\n')
+        );
+
+        expect(renderReactTanStackFormModule('dtos/user.ts', model)).toBe(
+            [
+                `import {toTanStackForm} from '@hermiforge-decorix/react-tanstack-form';`,
+                `import {CliUserDto} from './dtos/user';`,
+                ``,
+                `export const CliUserDtoConfig = toTanStackForm(CliUserDto);`,
+                ``
+            ].join('\n')
+        );
+
+        expect(renderVueFormKitModule('dtos/user.ts', model)).toBe(
+            [
+                `import {toFormKit} from '@hermiforge-decorix/vue-formkit';`,
+                `import {CliUserDto} from './dtos/user';`,
+                ``,
+                `export const CliUserDtoConfig = toFormKit(CliUserDto);`,
+                ``
+            ].join('\n')
+        );
+
+        expect(renderVueVeeValidateModule('dtos/user.ts', model)).toBe(
+            [
+                `import {toVeeValidate} from '@hermiforge-decorix/vue-vee-validate';`,
+                `import {CliUserDto} from './dtos/user';`,
+                ``,
+                `export const CliUserDtoConfig = toVeeValidate(CliUserDto);`,
+                ``
+            ].join('\n')
+        );
+
+        expect(renderNestModule('dtos/user.ts', model)).toBe(
+            [
+                `import {DecorixPipe} from '@hermiforge-decorix/nest';`,
+                `import {CliUserDto} from './dtos/user';`,
+                ``,
+                `export const CliUserDtoPipe = DecorixPipe(CliUserDto);`,
+                ``
+            ].join('\n')
         );
     });
 });

@@ -32,5 +32,5 @@ const config = toTanStackForm(RegisterUserDto, {
     defaultValues: {name: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}
 });
 
-console.log('valid payload:', config.validators.onSubmit({name: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}));
-console.log('invalid payload:', config.validators.onSubmit({name: 'A', email: 'not-an-email', age: 12, password: 'short', confirmPassword: 'different'}));
+console.log('valid payload:', config.validators.onSubmit({value: {name: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}}));
+console.log('invalid payload:', config.validators.onSubmit({value: {name: 'A', email: 'not-an-email', age: 12, password: 'short', confirmPassword: 'different'}}));

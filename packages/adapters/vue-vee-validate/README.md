@@ -35,6 +35,14 @@ const config = toVeeValidate(SignupDto, {
   initialValues: {name: 'Ada'}
 });
 
+// `validationSchema` is a plain per-field function map — the generic shape
+// vee-validate's `useForm`/`useField` recognize natively.
+const {values, errors} = useForm({
+  initialValues: config.initialValues,
+  validationSchema: config.validationSchema
+});
+
+// Full-object validation (e.g. on submit) is still available directly:
 const result = config.validate({name: 'Ada', email: 'ada@example.com'});
 ```
 
@@ -59,6 +67,8 @@ const config = useVeeDecorix(SignupDto, {
 ## Validator Notes
 
 `toVeeValidate` and `useVeeDecorix` create a runtime validation schema and require a `ValidatorAdapter`. Call `registerZodValidator()` once, or pass an adapter through `options.validator`.
+
+**Known limitation**: `validationSchema` validates each field independently by re-running Decorix validation against `initialValues` merged with the field under test. Cross-field constraints (e.g. `EqualsField`) are therefore best-effort at the field level — they see the last known snapshot of sibling fields, not their live values. For a fully accurate cross-field check, call `config.validate(values)` or `config.validateAsync(values)` with the complete current form values (e.g. on submit).
 
 
 ## License
