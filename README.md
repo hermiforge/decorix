@@ -81,7 +81,7 @@ Adapters that perform runtime validation, such as signal forms, React Hook Form,
 
 ## Package READMEs
 
-Each published package has a short package-level README in `packages/*/README.md` with installation, peer dependencies, and direct usage examples.
+Each published package has a short package-level README in `packages/core/README.md`, `packages/cli/README.md`, and `packages/adapters/*/README.md` with installation, peer dependencies, and direct usage examples.
 
 ## Examples
 

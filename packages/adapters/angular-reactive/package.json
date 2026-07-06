@@ -1,7 +1,7 @@
 {
-  "name": "@decorix/vue-formkit",
+  "name": "@decorix/angular-reactive",
   "version": "0.1.0",
-  "description": "FormKit adapter for Decorix metadata.",
+  "description": "Angular Reactive Forms adapter for Decorix metadata.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,23 +17,27 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --config ../../tsup.config.ts",
+    "build": "tsup --config ../../../tsup.config.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@decorix/core": "workspace:0.1.0"
   },
+  "devDependencies": {
+    "@angular/core": "22.0.3",
+    "@angular/forms": "22.0.3"
+  },
   "peerDependencies": {
-    "@formkit/vue": "2.1.0",
-    "vue": "3.5.39"
+    "@angular/core": "22.0.3",
+    "@angular/forms": "22.0.3"
   },
   "peerDependenciesMeta": {
-    "@formkit/vue": {
+    "@angular/core": {
       "optional": true
     },
-    "vue": {
+    "@angular/forms": {
       "optional": true
     }
   }

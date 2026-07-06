@@ -1,7 +1,7 @@
 {
-  "name": "@decorix/angular-signal",
+  "name": "@decorix/zod",
   "version": "0.1.0",
-  "description": "Angular Signal Forms adapter for Decorix metadata.",
+  "description": "Zod adapter for Decorix metadata.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,24 +17,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --config ../../tsup.config.ts",
+    "build": "tsup --config ../../../tsup.config.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@decorix/core": "workspace:0.1.0"
   },
   "peerDependencies": {
-    "@angular/core": "22.0.3",
-    "@angular/forms": "22.0.3"
-  },
-  "peerDependenciesMeta": {
-    "@angular/core": {
-      "optional": true
-    },
-    "@angular/forms": {
-      "optional": true
-    }
+    "zod": "4.4.3"
   }
 }

@@ -100,8 +100,8 @@ function applyUnsupportedConstraints(schema: JsonSchema, constraints: Constraint
 function toConstraintExtension(constraint: ConstraintMetadata, async: boolean): DecorixConstraintExtension {
     return {
         name: constraint.name,
-        ...(constraint.options !== undefined ? {options: serializeOption(constraint.options)} : {}),
-        ...(constraint.message !== undefined ? {message: constraint.message} : {}),
+        ...(constraint.options === undefined ? {} : {options: serializeOption(constraint.options)}),
+        ...(constraint.message === undefined ? {} : {message: constraint.message}),
         ...(constraint.groups?.length ? {groups: constraint.groups} : {}),
         ...(async ? {async: true} : {})
     };

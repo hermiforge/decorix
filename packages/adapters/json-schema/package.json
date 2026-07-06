@@ -1,7 +1,7 @@
 {
-  "name": "@decorix/vue-vee-validate",
+  "name": "@decorix/json-schema",
   "version": "0.1.0",
-  "description": "VeeValidate adapter for Decorix metadata.",
+  "description": "JSON Schema adapter for Decorix metadata.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,24 +17,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --config ../../tsup.config.ts",
+    "build": "tsup --config ../../../tsup.config.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@decorix/core": "workspace:0.1.0"
-  },
-  "peerDependencies": {
-    "vee-validate": "4.15.1",
-    "vue": "3.5.39"
-  },
-  "peerDependenciesMeta": {
-    "vee-validate": {
-      "optional": true
-    },
-    "vue": {
-      "optional": true
-    }
   }
 }

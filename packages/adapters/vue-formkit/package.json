@@ -1,7 +1,7 @@
 {
-  "name": "@decorix/nest",
+  "name": "@decorix/vue-formkit",
   "version": "0.1.0",
-  "description": "Nest-compatible validation pipe for Decorix metadata.",
+  "description": "FormKit adapter for Decorix metadata.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,19 +17,23 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --config ../../tsup.config.ts",
+    "build": "tsup --config ../../../tsup.config.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@decorix/core": "workspace:0.1.0"
   },
   "peerDependencies": {
-    "@nestjs/common": "11.1.27"
+    "@formkit/vue": "2.1.0",
+    "vue": "3.5.39"
   },
   "peerDependenciesMeta": {
-    "@nestjs/common": {
+    "@formkit/vue": {
+      "optional": true
+    },
+    "vue": {
       "optional": true
     }
   }

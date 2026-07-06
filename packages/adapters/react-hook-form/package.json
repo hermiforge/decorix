@@ -1,7 +1,7 @@
 {
-  "name": "@decorix/angular-reactive",
+  "name": "@decorix/react-hook-form",
   "version": "0.1.0",
-  "description": "Angular Reactive Forms adapter for Decorix metadata.",
+  "description": "React Hook Form adapter for Decorix metadata.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,27 +17,23 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --config ../../tsup.config.ts",
+    "build": "tsup --config ../../../tsup.config.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@decorix/core": "workspace:0.1.0"
   },
-  "devDependencies": {
-    "@angular/core": "22.0.3",
-    "@angular/forms": "22.0.3"
-  },
   "peerDependencies": {
-    "@angular/core": "22.0.3",
-    "@angular/forms": "22.0.3"
+    "react": "19.2.7",
+    "react-hook-form": "7.80.0"
   },
   "peerDependenciesMeta": {
-    "@angular/core": {
+    "react": {
       "optional": true
     },
-    "@angular/forms": {
+    "react-hook-form": {
       "optional": true
     }
   }

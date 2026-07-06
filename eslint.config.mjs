@@ -8,7 +8,13 @@ import sonarjs from 'eslint-plugin-sonarjs';
 export default defineConfig([
     globalIgnores(['**/dist/**', '**/node_modules/**', '**/*.d.ts']),
     {
-        files: ['packages/*/src/**/*.ts', 'packages/*/test/**/*.ts', 'examples/**/*.ts'],
+        files: [
+            'packages/*/src/**/*.ts',
+            'packages/*/test/**/*.ts',
+            'packages/adapters/*/src/**/*.ts',
+            'packages/adapters/*/test/**/*.ts',
+            'examples/**/*.ts'
+        ],
         extends: [tseslint.configs.recommended, sonarjs.configs.recommended],
         languageOptions: {
             ecmaVersion: 2022,
@@ -18,7 +24,7 @@ export default defineConfig([
     {
         // Tests and examples favor readability over deduplication, and use literal
         // "password" fixtures for password-match validation scenarios.
-        files: ['packages/*/test/**/*.ts', 'examples/**/*.ts'],
+        files: ['packages/*/test/**/*.ts', 'packages/adapters/*/test/**/*.ts', 'examples/**/*.ts'],
         rules: {
             'sonarjs/no-duplicate-string': 'off',
             'sonarjs/cognitive-complexity': 'off',

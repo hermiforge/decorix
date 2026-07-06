@@ -1,7 +1,7 @@
 {
-  "name": "@decorix/zod",
+  "name": "@decorix/react-tanstack-form",
   "version": "0.1.0",
-  "description": "Zod adapter for Decorix metadata.",
+  "description": "TanStack Form adapter for Decorix metadata.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,15 +17,24 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --config ../../tsup.config.ts",
+    "build": "tsup --config ../../../tsup.config.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
     "clean": "rimraf dist"
   },
   "dependencies": {
     "@decorix/core": "workspace:0.1.0"
   },
   "peerDependencies": {
-    "zod": "4.4.3"
+    "@tanstack/react-form": "1.33.0",
+    "react": "19.2.7"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-form": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
   }
 }

@@ -39,11 +39,11 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
 
-  packages/angular-reactive:
+  packages/adapters/angular-reactive:
     dependencies:
       '@decorix/core':
         specifier: workspace:0.1.0
-        version: link:../core
+        version: link:../../core
     devDependencies:
       '@angular/core':
         specifier: 22.0.3
@@ -52,7 +52,7 @@ importers:
         specifier: 22.0.3
         version: 22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2))(@angular/platform-browser@22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2)))(rxjs@7.8.2)
 
-  packages/angular-signal:
+  packages/adapters/angular-signal:
     dependencies:
       '@angular/core':
         specifier: 22.0.3
@@ -62,7 +62,79 @@ importers:
         version: 22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2))(@angular/platform-browser@22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2)))(rxjs@7.8.2)
       '@decorix/core':
         specifier: workspace:0.1.0
-        version: link:../core
+        version: link:../../core
+
+  packages/adapters/json-schema:
+    dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
+
+  packages/adapters/nest:
+    dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
+      '@nestjs/common':
+        specifier: 11.1.27
+        version: 11.1.27(reflect-metadata@0.2.2)(rxjs@7.8.2)
+
+  packages/adapters/react-hook-form:
+    dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
+      react:
+        specifier: 19.2.7
+        version: 19.2.7
+      react-hook-form:
+        specifier: 7.80.0
+        version: 7.80.0(react@19.2.7)
+
+  packages/adapters/react-tanstack-form:
+    dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
+      '@tanstack/react-form':
+        specifier: 1.33.0
+        version: 1.33.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: 19.2.7
+        version: 19.2.7
+
+  packages/adapters/vue-formkit:
+    dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
+      '@formkit/vue':
+        specifier: 2.1.0
+        version: 2.1.0(vue@3.5.39(typescript@5.9.3))
+      vue:
+        specifier: 3.5.39
+        version: 3.5.39(typescript@5.9.3)
+
+  packages/adapters/vue-vee-validate:
+    dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
+      vee-validate:
+        specifier: 4.15.1
+        version: 4.15.1(vue@3.5.39(typescript@5.9.3))
+      vue:
+        specifier: 3.5.39
+        version: 3.5.39(typescript@5.9.3)
+
+  packages/adapters/zod:
+    dependencies:
+      '@decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   packages/cli:
     dependencies:
@@ -71,7 +143,7 @@ importers:
         version: link:../core
       '@decorix/json-schema':
         specifier: workspace:0.1.0
-        version: link:../json-schema
+        version: link:../adapters/json-schema
       cac:
         specifier: ^7.0.0
         version: 7.0.0
@@ -84,78 +156,6 @@ importers:
         version: 22.20.0
 
   packages/core: {}
-
-  packages/json-schema:
-    dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
-
-  packages/nest:
-    dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
-      '@nestjs/common':
-        specifier: 11.1.27
-        version: 11.1.27(reflect-metadata@0.2.2)(rxjs@7.8.2)
-
-  packages/react-hook-form:
-    dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
-      react:
-        specifier: 19.2.7
-        version: 19.2.7
-      react-hook-form:
-        specifier: 7.80.0
-        version: 7.80.0(react@19.2.7)
-
-  packages/react-tanstack-form:
-    dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
-      '@tanstack/react-form':
-        specifier: 1.33.0
-        version: 1.33.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      react:
-        specifier: 19.2.7
-        version: 19.2.7
-
-  packages/vue-formkit:
-    dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
-      '@formkit/vue':
-        specifier: 2.1.0
-        version: 2.1.0(vue@3.5.39(typescript@5.9.3))
-      vue:
-        specifier: 3.5.39
-        version: 3.5.39(typescript@5.9.3)
-
-  packages/vue-vee-validate:
-    dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
-      vee-validate:
-        specifier: 4.15.1
-        version: 4.15.1(vue@3.5.39(typescript@5.9.3))
-      vue:
-        specifier: 3.5.39
-        version: 3.5.39(typescript@5.9.3)
-
-  packages/zod:
-    dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../core
-      zod:
-        specifier: 4.4.3
-        version: 4.4.3
 
 packages:
 

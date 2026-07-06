@@ -39,6 +39,17 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## DONE
 
+### Repo Layout: Adapters Grouped Under `packages/adapters/`
+
+Moved the 9 framework/format adapter packages (`angular-reactive`, `angular-signal`, `json-schema`, `nest`, `react-hook-form`, `react-tanstack-form`, `vue-formkit`, `vue-vee-validate`, `zod`) from `packages/<name>` to `packages/adapters/<name>`, so the layout reflects the split between foundations (`core`, `cli`, staying directly under `packages/`) and framework adapters. Published npm package names (`@decorix/zod`, etc.) and internal `src`/`test` layout are unchanged — only the on-disk location moved.
+
+- Updated workspace globs (`pnpm-workspace.yaml`, root `package.json` `workspaces`) to add `packages/adapters/*`.
+- Updated `tsconfig.base.json` path aliases, `vitest.config.ts` aliases + `test.include`, and `eslint.config.mjs` `files` globs to cover the new location alongside the existing `packages/*` pattern.
+- Each moved package's `package.json` (`build`/`test` scripts) and `tsconfig.json` (`extends`) now point one level deeper (`../../../` instead of `../../`).
+- Regenerated `pnpm-lock.yaml` via `pnpm install` after the move.
+
+Verification: `pnpm lint` clean, typecheck 11 packages + `examples:typecheck`, `vitest run` 204 tests (12 files), build 11 packages — all green.
+
 ### V5.3 Callable Custom-Constraint API (DX, pre-publish breaking change)
 
 Improved custom-constraint ergonomics before publish (no back-compat kept — not yet released). `defineConstraint`/`defineAsyncConstraint` now return a **callable** `ReusableConstraint`: it applies directly as a decorator (`@StartsWithA()` / `@StartsWithA('override')`, like the native `@Required()`), and the builder `.constraint(...)` accepts it **by reference** (`stringField().constraint(StartsWithA)`) — removing magic strings and gaining type-safety/refactorability. The old `.decorator()` method and `ReusableConstraint.decorator` were removed. `constraint.name` and `constraint.constraint(...)` (metadata factory) are retained.
