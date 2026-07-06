@@ -29,6 +29,11 @@ function captureIO(): CliIO & {output: string; files: Map<string, string>} {
     };
 }
 
+// Each test here drives the real tsx-based loader (on-disk transpilation via
+// esbuild), which is markedly slower on a cold CI runner than locally — the
+// default 5s vitest timeout was occasionally exceeded in GitHub Actions.
+const E2E_TIMEOUT = 20_000;
+
 describe('@hermiforge-decorix/cli end-to-end', () => {
     it('scans a decorator DTO loaded from disk (regression: legacy-decorator emit + cross-instance registry)', async () => {
         const io = captureIO();
@@ -37,7 +42,7 @@ describe('@hermiforge-decorix/cli end-to-end', () => {
         expect(io.output).toContain('name: string [maxLength, minLength, required]');
         expect(io.output).toContain('email: string [email, required]');
         expect(io.output).toContain('age: number [min]');
-    });
+    }, E2E_TIMEOUT);
 
     it('scans a builder DTO loaded from disk', async () => {
         const io = captureIO();
@@ -45,7 +50,7 @@ describe('@hermiforge-decorix/cli end-to-end', () => {
         expect(io.output).toContain('CliProductDto (export CliProductDto)');
         expect(io.output).toContain('title: string [required, minLength]');
         expect(io.output).toContain('price: number [min]');
-    });
+    }, E2E_TIMEOUT);
 
     it('emits JSON Schema for a decorator DTO', async () => {
         const io = captureIO();
@@ -60,20 +65,20 @@ describe('@hermiforge-decorix/cli end-to-end', () => {
                 age: {type: 'number', minimum: 18}
             }
         });
-    });
+    }, E2E_TIMEOUT);
 
     it('emits a thin Zod re-export module for a decorator DTO', async () => {
         const io = captureIO();
         await runCli(['zod', fixture('decorator-dto.ts'), '--model', 'CliUserDto'], io);
         expect(io.output).toContain(`import {toZod} from '@hermiforge-decorix/zod';`);
         expect(io.output).toContain(`export const CliUserDtoSchema = toZod(CliUserDto);`);
-    });
+    }, E2E_TIMEOUT);
 
     it('honors an explicit --tsconfig override', async () => {
         const io = captureIO();
         await runCli(['scan', fixture('decorator-dto.ts'), '--tsconfig', fixture('tsconfig.json')], io);
         expect(io.output).toContain('CliUserDto (export CliUserDto)');
-    });
+    }, E2E_TIMEOUT);
 
     it('surfaces custom named constraints from decorator and builder models', async () => {
         const io = captureIO();
@@ -82,5 +87,5 @@ describe('@hermiforge-decorix/cli end-to-end', () => {
         expect(io.output).toContain('CliCustomBuilderDto (export CliCustomBuilderDto)');
         // The custom constraint name appears for both authoring modes.
         expect(io.output.match(/startsWithA/g)).toHaveLength(2);
-    });
+    }, E2E_TIMEOUT);
 });
