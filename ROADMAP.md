@@ -45,9 +45,23 @@ Backlog post-v1 (deliberately deferred, decided during the pre-v1 code/security/
 - **i18n/locale for native messages.** `ValidationContext.locale` and `ValidationOptions.locale` already exist and propagate to every constraint context, but `messageFor()` in `packages/core/src/validation/issue-utils.ts` never reads `context.locale` — every native constraint message is hardcoded English. No locale dictionary or override hook ships today; a consumer wanting translated messages must currently override every constraint's `message` by hand.
 - **Value coercion/transformation.** Decorix is a pure validator (see README "Positioning" section) — no automatic trimming, no string→number coercion, no date parsing. Revisit only if there's real demand; would need a new pipeline stage distinct from validation.
 - **Svelte and SolidJS adapters.** Only Angular (Reactive + Signal Forms), React (Hook Form + TanStack Form), Vue (VeeValidate + FormKit), and Nest are covered today. The adapter architecture (a thin package depending only on `@hermiforge-decorix/core`) makes adding one incremental and non-breaking.
-- **`@hermiforge-decorix/cli` coverage.** Only `json-schema`, `zod`, and `angular-validators` have a dedicated command; `react-hook-form`, `react-tanstack-form`, `vue-formkit`, `vue-vee-validate`, `angular-signal`, and `nest` have no CLI codegen command (consumers import the adapter's `toXxx()` directly instead — documented as a current limitation in `packages/cli/README.md`).
 
 ## DONE
+
+### `@hermiforge-decorix/cli` Coverage: All 9 Adapters
+
+Only 3 of 9 adapters (`json-schema`, `zod`, `angular-validators`) had a dedicated CLI command; the other 6 required importing the adapter's `toXxx()` directly. Added the missing commands, all following the existing pattern exactly (discover the model, emit a thin TypeScript module re-exporting the adapter call — the CLI itself never imports the adapter, so no new dependency was needed in `packages/cli/package.json`):
+
+- `angular-signal` → `toSignalForm` (`packages/cli/src/generators.ts` `renderAngularSignalModule`)
+- `react-hook-form` → `toReactHookForm` (`renderReactHookFormModule`)
+- `react-tanstack-form` → `toTanStackForm` (`renderReactTanStackFormModule`)
+- `vue-formkit` → `toFormKit` (`renderVueFormKitModule`)
+- `vue-vee-validate` → `toVeeValidate` (`renderVueVeeValidateModule`)
+- `nest` → `DecorixPipe` (`renderNestModule`)
+
+Generated export name follows each adapter's own return type: `${exportName}Config` for the config-shaped adapters (React/Vue), `${exportName}Form` for Angular Signal Forms (`DecorixSignalForm`), `${exportName}Pipe` for Nest (`DecorixPipeTransform`). Updated `packages/cli/README.md`'s usage/coverage sections and the root `README.md`'s CLI description accordingly.
+
+Verification: `pnpm lint`, typecheck, `vitest run` (6 new unit tests covering exact generated module content), build — all green.
 
 ### Automated Release Pipeline (GitLab CI)
 

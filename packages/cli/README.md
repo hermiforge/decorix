@@ -24,14 +24,37 @@ decorix zod ./src/dtos.ts --model UserDto --out user.zod.ts
 
 # Emit an Angular reactive form config module
 decorix angular-validators ./src/dtos.ts --model UserDto --out user.form.ts
+
+# Emit an Angular Signal Forms module
+decorix angular-signal ./src/dtos.ts --model UserDto --out user.signal.ts
+
+# Emit a React Hook Form config module
+decorix react-hook-form ./src/dtos.ts --model UserDto --out user.rhf.ts
+
+# Emit a TanStack Form config module
+decorix react-tanstack-form ./src/dtos.ts --model UserDto --out user.tanstack.ts
+
+# Emit a FormKit schema config module
+decorix vue-formkit ./src/dtos.ts --model UserDto --out user.formkit.ts
+
+# Emit a VeeValidate config module
+decorix vue-vee-validate ./src/dtos.ts --model UserDto --out user.vee.ts
+
+# Emit a Nest validation pipe module
+decorix nest ./src/dtos.ts --model UserDto --out user.pipe.ts
 ```
 
 `--model` selects by model name or export name; omit it when the entry exports a
 single model. `--out` writes to a file, otherwise the artifact prints to stdout.
 
-The `zod` and `angular-validators` commands emit thin TypeScript modules that
-re-export `toZod(Model)` / `toReactiveFormConfig(Model)` from the entry, so
-constraint functions never need to be serialized.
+Every command other than `scan` and `json-schema` emits a thin TypeScript module
+that re-exports the result of calling the matching adapter function
+(`toZod(Model)`, `toReactiveFormConfig(Model)`, `toSignalForm(Model)`,
+`toReactHookForm(Model)`, `toTanStackForm(Model)`, `toFormKit(Model)`,
+`toVeeValidate(Model)`, `DecorixPipe(Model)`) from the entry, so constraint
+functions never need to be serialized. The generated module imports the target
+adapter package (e.g. `@hermiforge-decorix/zod`) — install it alongside the CLI in
+your project.
 
 ## Requirements for decorator DTOs
 
@@ -64,21 +87,27 @@ const json = renderJsonSchema(selectModel(models, 'UserDto'));
 
 ## Security Note
 
-`scan`, `json-schema`, `zod`, and `angular-validators` all **execute** the
-entry module you point them at (via `tsx`/esbuild), the same way `node` or
-`import()` would — this is not a static parser. Only run the CLI against DTO
+Every command **executes** the entry module you point it at (via `tsx`/esbuild),
+the same way `node` or `import()` would — this is not a static parser. Only run the CLI against DTO
 files you trust; do not point it at an entry from an unreviewed third-party
 source (e.g. an unmerged PR, a downloaded template) without reading it first,
 since any top-level code in that file runs with your local Node permissions.
 
 ## Coverage
 
-Only 3 of the 9 `@hermiforge-decorix/*` adapters have a dedicated CLI command today
-(`json-schema`, `zod` via `decorix zod`, and Angular Reactive Forms via
-`decorix angular-validators`). For React Hook Form, TanStack Form, VeeValidate,
-FormKit, Angular Signal Forms, or Nest, import the adapter's `toXxx()` function
-directly in your code instead of going through the CLI — see each package's
-README under `packages/adapters/<name>/README.md`.
+Every `@hermiforge-decorix/*` adapter has a dedicated CLI command:
+
+| Command | Adapter package |
+| --- | --- |
+| `json-schema` | `@hermiforge-decorix/json-schema` |
+| `zod` | `@hermiforge-decorix/zod` |
+| `angular-validators` | `@hermiforge-decorix/angular-reactive` |
+| `angular-signal` | `@hermiforge-decorix/angular-signal` |
+| `react-hook-form` | `@hermiforge-decorix/react-hook-form` |
+| `react-tanstack-form` | `@hermiforge-decorix/react-tanstack-form` |
+| `vue-formkit` | `@hermiforge-decorix/vue-formkit` |
+| `vue-vee-validate` | `@hermiforge-decorix/vue-vee-validate` |
+| `nest` | `@hermiforge-decorix/nest` |
 
 ## License
 

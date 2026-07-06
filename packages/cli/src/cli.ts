@@ -1,7 +1,19 @@
 import {writeFileSync} from 'node:fs';
 import {cac} from 'cac';
 import {discoverModels, loadEntry} from './loader';
-import {renderAngularValidatorsModule, renderJsonSchema, renderScan, renderZodModule, selectModel} from './generators';
+import {
+    renderAngularSignalModule,
+    renderAngularValidatorsModule,
+    renderJsonSchema,
+    renderNestModule,
+    renderReactHookFormModule,
+    renderReactTanStackFormModule,
+    renderScan,
+    renderVueFormKitModule,
+    renderVueVeeValidateModule,
+    renderZodModule,
+    selectModel
+} from './generators';
 
 /** Output sink for the CLI, injectable so commands can be tested without touching stdout or disk. */
 export type CliIO = {
@@ -65,6 +77,60 @@ export async function runCli(args: string[], io: CliIO = defaultIO): Promise<voi
         .action(async (entry: string, options: ArtifactOptions) => {
             const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
             emit(io, options.out, renderAngularValidatorsModule(entry, model));
+        });
+
+    cli.command('angular-signal <entry>', 'Emit an Angular Signal Forms module for a model')
+        .option('--model <name>', 'Model name or export to select')
+        .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
+        .action(async (entry: string, options: ArtifactOptions) => {
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
+            emit(io, options.out, renderAngularSignalModule(entry, model));
+        });
+
+    cli.command('react-hook-form <entry>', 'Emit a React Hook Form config module for a model')
+        .option('--model <name>', 'Model name or export to select')
+        .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
+        .action(async (entry: string, options: ArtifactOptions) => {
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
+            emit(io, options.out, renderReactHookFormModule(entry, model));
+        });
+
+    cli.command('react-tanstack-form <entry>', 'Emit a TanStack Form config module for a model')
+        .option('--model <name>', 'Model name or export to select')
+        .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
+        .action(async (entry: string, options: ArtifactOptions) => {
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
+            emit(io, options.out, renderReactTanStackFormModule(entry, model));
+        });
+
+    cli.command('vue-formkit <entry>', 'Emit a FormKit schema config module for a model')
+        .option('--model <name>', 'Model name or export to select')
+        .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
+        .action(async (entry: string, options: ArtifactOptions) => {
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
+            emit(io, options.out, renderVueFormKitModule(entry, model));
+        });
+
+    cli.command('vue-vee-validate <entry>', 'Emit a VeeValidate config module for a model')
+        .option('--model <name>', 'Model name or export to select')
+        .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
+        .action(async (entry: string, options: ArtifactOptions) => {
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
+            emit(io, options.out, renderVueVeeValidateModule(entry, model));
+        });
+
+    cli.command('nest <entry>', 'Emit a Nest validation pipe module for a model')
+        .option('--model <name>', 'Model name or export to select')
+        .option('--out <file>', 'Write output to a file instead of stdout')
+        .option('--tsconfig <file>', tsconfigHelp)
+        .action(async (entry: string, options: ArtifactOptions) => {
+            const model = selectModel(discoverModels(await loadEntry(entry, options.tsconfig)), options.model);
+            emit(io, options.out, renderNestModule(entry, model));
         });
 
     cli.help();
