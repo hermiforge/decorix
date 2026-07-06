@@ -29,9 +29,9 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 
 ## Quality Gate (run every pass)
 
-- Before committing any implementation pass, run and pass all of: `pnpm lint` (ESLint + SonarJS), `pnpm typecheck` (strict flags), `pnpm examples:typecheck`, `pnpm test`, and `pnpm build`.
+- Before committing any implementation pass, run and pass all of: `pnpm lint` (ESLint + SonarJS), `pnpm typecheck` (strict flags), `pnpm examples:typecheck`, `pnpm build`, and `pnpm test`, **in that order** — `packages/cli/test/cli-e2e.test.ts` loads real on-disk fixtures via tsx's own Node module resolution (not Vitest's aliases), which needs `packages/core/dist/` to exist to resolve `@hermiforge-decorix/core`. Running `test` before `build` fails those tests with `Cannot find module ... dist/index.js` (discovered via a fresh CI checkout, masked locally by leftover `dist/` from prior builds).
 - Fix every lint/type finding. If a rule is genuinely inapplicable, disable it narrowly (inline `eslint-disable-next-line` or a scoped override in `eslint.config.mjs`) with a one-line rationale — never silence findings broadly or leave them unresolved.
-- CI enforces `lint`, `typecheck`, `test`, and `build`; keep the tree green so every handoff is a clean checkpoint.
+- CI enforces `lint`, `typecheck`, `build`, then `test` (see `.github/workflows/ci.yml`) — build must precede test; keep the tree green so every handoff is a clean checkpoint.
 - `pnpm examples:run` actually executes every example (not just typechecks it) — run it after touching anything in `examples/` to confirm the printed output still shows real validation results, not just a clean compile.
 
 ## IN_PROGRESS
