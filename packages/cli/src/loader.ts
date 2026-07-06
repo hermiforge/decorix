@@ -2,8 +2,8 @@ import {existsSync} from 'node:fs';
 import {dirname, join, resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {tsImport} from 'tsx/esm/api';
-import {getModelMetadata, hasModelMetadata, isModelMetadata} from '@decorix/core';
-import type {ModelMetadata, ModelTarget} from '@decorix/core';
+import {getModelMetadata, hasModelMetadata, isModelMetadata} from '@hermiforge-decorix/core';
+import type {ModelMetadata, ModelTarget} from '@hermiforge-decorix/core';
 
 /** A Decorix model discovered on a loaded module, with its export name and metadata. */
 export type DiscoveredModel = {

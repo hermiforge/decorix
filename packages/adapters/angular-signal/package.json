@@ -1,5 +1,5 @@
 {
-  "name": "@decorix/angular-signal",
+  "name": "@hermiforge-decorix/angular-signal",
   "version": "0.1.0",
   "description": "Angular Signal Forms adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
@@ -46,7 +46,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@decorix/core": "workspace:0.1.0"
+    "@hermiforge-decorix/core": "workspace:0.1.0"
   },
   "peerDependencies": {
     "@angular/core": "^22.0.0",

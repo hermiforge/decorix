@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {arrayField, dateField, defineConstraint, Email, enumField, Label, Model, model, numberField, objectConstraint, ObjectConstraint, objectField, Required, RequiredIf, stringField, validate} from '@decorix/core';
+import {arrayField, dateField, defineConstraint, Email, enumField, Label, Model, model, numberField, objectConstraint, ObjectConstraint, objectField, Required, RequiredIf, stringField, validate} from '@hermiforge-decorix/core';
 import {fromJsonSchema, toJsonSchema} from '../src/index';
 
 /** Reusable custom field constraint for the decorator/builder preservation test. */
@@ -9,7 +9,7 @@ const JsonStartsWithA = defineConstraint<string, undefined>({
     message: 'Must start with A'
 });
 
-describe('@decorix/json-schema', () => {
+describe('@hermiforge-decorix/json-schema', () => {
     it('emits JSON Schema for builder-declared metadata', () => {
         const user = model('UserDto', {
             email: stringField().required().email().label('Email'),

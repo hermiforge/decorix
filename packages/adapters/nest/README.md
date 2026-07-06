@@ -1,11 +1,11 @@
-# @decorix/nest
+# @hermiforge-decorix/nest
 
 Nest-compatible validation pipe for Decorix metadata.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core @decorix/nest @decorix/zod zod @nestjs/common
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/nest @hermiforge-decorix/zod zod @nestjs/common
 ```
 
 Peer dependencies: `@nestjs/common@11.1.27`.
@@ -13,9 +13,9 @@ Peer dependencies: `@nestjs/common@11.1.27`.
 ## Decorated Class
 
 ```ts
-import {Email, MinLength, Model, Required} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {DecorixPipe} from '@decorix/nest';
+import {Email, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {DecorixPipe} from '@hermiforge-decorix/nest';
 
 registerZodValidator();
 
@@ -37,9 +37,9 @@ const value = pipe.transform({name: 'Ada', email: 'ada@example.com'});
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
-import {createZodValidatorAdapter} from '@decorix/zod';
-import {DecorixPipe} from '@decorix/nest';
+import {model, stringField} from '@hermiforge-decorix/core';
+import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
+import {DecorixPipe} from '@hermiforge-decorix/nest';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short'),

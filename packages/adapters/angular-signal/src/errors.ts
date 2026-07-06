@@ -1,5 +1,5 @@
-import {groupIssuesByField} from '@decorix/core';
-import type {ValidationIssue, ValidationResult} from '@decorix/core';
+import {groupIssuesByField} from '@hermiforge-decorix/core';
+import type {ValidationIssue, ValidationResult} from '@hermiforge-decorix/core';
 
 /**
  * Converts Decorix validation output into a field-keyed signal form error map.

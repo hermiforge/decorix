@@ -1,6 +1,6 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {useTanStackDecorix} from '@decorix/react-tanstack-form';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {useTanStackDecorix} from '@hermiforge-decorix/react-tanstack-form';
 
 registerZodValidator();
 

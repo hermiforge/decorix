@@ -1,7 +1,7 @@
-import {getModelMetadata, hasAsyncConstraints, resolveSchema, runSchemaAsync} from '@decorix/core';
+import {getModelMetadata, hasAsyncConstraints, resolveSchema, runSchemaAsync} from '@hermiforge-decorix/core';
 import {DecorixValidationException} from './errors';
 import type {DecorixPipeModel, DecorixPipeOptions, DecorixPipeTransform} from './types';
-import type {ValidationResult} from '@decorix/core';
+import type {ValidationResult} from '@hermiforge-decorix/core';
 
 /**
  * Creates a Nest-compatible validation pipe backed by a Decorix validator adapter.

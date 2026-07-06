@@ -1,5 +1,5 @@
-import {model, numberField, stringField, validate} from '@decorix/core';
-import {fromJsonSchema, toJsonSchema} from '@decorix/json-schema';
+import {model, numberField, stringField, validate} from '@hermiforge-decorix/core';
+import {fromJsonSchema, toJsonSchema} from '@hermiforge-decorix/json-schema';
 
 const RegisterUserDto = model('RegisterUserDto', {
     name: stringField().required('Name is required').minLength(2, 'Name is too short').maxLength(50).label('Name'),

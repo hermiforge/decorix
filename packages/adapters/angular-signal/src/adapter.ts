@@ -1,4 +1,4 @@
-import {getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
+import {getModelMetadata, resolveSchema, runSchemaAsync} from '@hermiforge-decorix/core';
 import {collectErrors, fieldErrors, issues} from './errors';
 import type {DecorixAngularSignalFormOptions, DecorixInitialValue, DecorixSignalField, DecorixSignalForm, DecorixSignalFormModel} from './types';
 

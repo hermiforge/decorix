@@ -8,8 +8,8 @@ import {
     resolveConstraintDefinition,
     resolveValidatorAdapter,
     runSchemaAsync
-} from '@decorix/core';
-import type {ConstraintMetadata, FieldMetadata} from '@decorix/core';
+} from '@hermiforge-decorix/core';
+import type {ConstraintMetadata, FieldMetadata} from '@hermiforge-decorix/core';
 import type {AbstractControl, AsyncValidatorFn, ValidationErrors, ValidatorFn} from '@angular/forms';
 import type {
     DecorixAngularReactiveFormOptions,

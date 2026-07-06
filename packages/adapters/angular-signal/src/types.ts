@@ -1,4 +1,4 @@
-import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationIssue, ValidatorAdapterRef} from '@decorix/core';
+import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationIssue, ValidatorAdapterRef} from '@hermiforge-decorix/core';
 
 /**
  * Initial values passed to generated Decorix signal forms.

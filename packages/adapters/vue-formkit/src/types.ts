@@ -1,4 +1,4 @@
-import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef} from '@decorix/core';
+import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef} from '@hermiforge-decorix/core';
 
 /**
  * Options used by the FormKit adapter.

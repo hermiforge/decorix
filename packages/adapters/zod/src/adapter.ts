@@ -6,7 +6,7 @@ import type {
     ValidationIssue,
     ValidationOptions,
     ValidatorAdapter
-} from '@decorix/core';
+} from '@hermiforge-decorix/core';
 import {
     buildValidationContext,
     getModelMetadata,
@@ -15,7 +15,7 @@ import {
     registerValidatorAdapter,
     resolveConstraintDefinition,
     setDefaultValidatorAdapter
-} from '@decorix/core';
+} from '@hermiforge-decorix/core';
 import {z} from 'zod';
 import type {
     DecorixZodRegistrationOptions,

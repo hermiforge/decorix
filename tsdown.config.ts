@@ -15,7 +15,7 @@ export default defineConfig({
   fixedExtension: false,
   deps: {
     neverBundle: [
-      '@decorix/core',
+      '@hermiforge-decorix/core',
       'zod',
       '@angular/core',
       '@angular/forms',

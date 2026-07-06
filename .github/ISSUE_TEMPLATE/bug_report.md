@@ -7,7 +7,7 @@ labels: bug
 
 ## Package and version
 
-<!-- e.g. @decorix/zod 0.1.0 -->
+<!-- e.g. @hermiforge-decorix/zod 0.1.0 -->
 
 ## Description
 

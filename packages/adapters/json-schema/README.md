@@ -1,11 +1,11 @@
-# @decorix/json-schema
+# @hermiforge-decorix/json-schema
 
 JSON Schema adapter for Decorix metadata. It emits JSON Schema draft 2020-12 objects from decorated classes or builder metadata.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core @decorix/json-schema
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/json-schema
 ```
 
 Peer dependencies: none.
@@ -13,8 +13,8 @@ Peer dependencies: none.
 ## Decorated Class
 
 ```ts
-import {Email, Label, MinLength, Model, Required} from '@decorix/core';
-import {toJsonSchema} from '@decorix/json-schema';
+import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {toJsonSchema} from '@hermiforge-decorix/json-schema';
 
 @Model('SignupDto')
 class SignupDto {
@@ -34,8 +34,8 @@ const schema = toJsonSchema(SignupDto);
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
-import {toJsonSchema} from '@decorix/json-schema';
+import {model, stringField} from '@hermiforge-decorix/core';
+import {toJsonSchema} from '@hermiforge-decorix/json-schema';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').label('Name'),
@@ -55,8 +55,8 @@ Arbitrary custom validator/predicate functions cannot be reconstructed and are
 preserved as the `'[function]'` sentinel.
 
 ```ts
-import {validate} from '@decorix/core';
-import {fromJsonSchema} from '@decorix/json-schema';
+import {validate} from '@hermiforge-decorix/core';
+import {fromJsonSchema} from '@hermiforge-decorix/json-schema';
 
 const metadata = fromJsonSchema({
   title: 'SignupDto',
@@ -73,7 +73,7 @@ validate({name: 'Al', email: 'al@example.com'}, metadata); // { success: true, .
 
 ## Validator Notes
 
-`@decorix/json-schema` emits schema data only and does not need a `ValidatorAdapter`.
+`@hermiforge-decorix/json-schema` emits schema data only and does not need a `ValidatorAdapter`.
 
 ## Security Note
 

@@ -1,4 +1,4 @@
-import {toJsonSchema} from '@decorix/json-schema';
+import {toJsonSchema} from '@hermiforge-decorix/json-schema';
 import type {DiscoveredModel} from './loader';
 
 /** Selects a discovered model by name, or the sole model when no name is given. */
@@ -41,7 +41,7 @@ export function renderJsonSchema(model: DiscoveredModel): string {
 /** Renders a thin TypeScript module re-exporting the model's Zod schema. */
 export function renderZodModule(entry: string, model: DiscoveredModel): string {
     return [
-        `import {toZod} from '@decorix/zod';`,
+        `import {toZod} from '@hermiforge-decorix/zod';`,
         `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
         ``,
         `export const ${model.exportName}Schema = toZod(${model.exportName});`,
@@ -52,7 +52,7 @@ export function renderZodModule(entry: string, model: DiscoveredModel): string {
 /** Renders a thin TypeScript module re-exporting the model's Angular reactive form config. */
 export function renderAngularValidatorsModule(entry: string, model: DiscoveredModel): string {
     return [
-        `import {toReactiveFormConfig} from '@decorix/angular-reactive';`,
+        `import {toReactiveFormConfig} from '@hermiforge-decorix/angular-reactive';`,
         `import {${model.exportName}} from '${moduleSpecifier(entry)}';`,
         ``,
         `export const ${model.exportName}FormConfig = toReactiveFormConfig(${model.exportName});`,

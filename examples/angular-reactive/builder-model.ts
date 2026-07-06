@@ -1,6 +1,6 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toReactiveFormConfig} from '@decorix/angular-reactive';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toReactiveFormConfig} from '@hermiforge-decorix/angular-reactive';
 
 registerZodValidator();
 

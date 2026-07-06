@@ -47,7 +47,7 @@ importers:
 
   packages/adapters/angular-reactive:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
     devDependencies:
@@ -66,19 +66,19 @@ importers:
       '@angular/forms':
         specifier: ^22.0.0
         version: 22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2))(@angular/platform-browser@22.0.3(@angular/common@22.0.3(@angular/core@22.0.3(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.3(rxjs@7.8.2)))(rxjs@7.8.2)
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
 
   packages/adapters/json-schema:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
 
   packages/adapters/nest:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
       '@nestjs/common':
@@ -87,7 +87,7 @@ importers:
 
   packages/adapters/react-hook-form:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
       react:
@@ -99,7 +99,7 @@ importers:
 
   packages/adapters/react-tanstack-form:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
       '@tanstack/react-form':
@@ -111,19 +111,19 @@ importers:
 
   packages/adapters/vue-formkit:
     dependencies:
-      '@decorix/core':
-        specifier: workspace:0.1.0
-        version: link:../../core
       '@formkit/vue':
         specifier: ^2.1.0
         version: 2.1.0(vue@3.5.39(typescript@5.9.3))
+      '@hermiforge-decorix/core':
+        specifier: workspace:0.1.0
+        version: link:../../core
       vue:
         specifier: ^3.5.0
         version: 3.5.39(typescript@5.9.3)
 
   packages/adapters/vue-vee-validate:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
       vee-validate:
@@ -135,7 +135,7 @@ importers:
 
   packages/adapters/zod:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../../core
       zod:
@@ -144,10 +144,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@decorix/core':
+      '@hermiforge-decorix/core':
         specifier: workspace:0.1.0
         version: link:../core
-      '@decorix/json-schema':
+      '@hermiforge-decorix/json-schema':
         specifier: workspace:0.1.0
         version: link:../adapters/json-schema
       cac:

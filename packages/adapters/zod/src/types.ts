@@ -1,4 +1,4 @@
-import type {ValidatorSchema} from '@decorix/core';
+import type {ValidatorSchema} from '@hermiforge-decorix/core';
 import type {z} from 'zod';
 
 /**

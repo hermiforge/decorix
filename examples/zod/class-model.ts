@@ -1,5 +1,5 @@
-import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@decorix/core';
-import {registerZodValidator, toZod} from '@decorix/zod';
+import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator, toZod} from '@hermiforge-decorix/zod';
 
 registerZodValidator();
 

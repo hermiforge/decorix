@@ -1,4 +1,4 @@
-import type {ModelMetadata, ModelTarget, ValidatorAdapterRef} from '@decorix/core';
+import type {ModelMetadata, ModelTarget, ValidatorAdapterRef} from '@hermiforge-decorix/core';
 
 /**
  * Options used by the TanStack Form adapter.

@@ -1,11 +1,11 @@
-# @decorix/vue-vee-validate
+# @hermiforge-decorix/vue-vee-validate
 
 VeeValidate adapter for Decorix metadata. It generates initial values, fields, and a validation schema backed by a Decorix validator.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core @decorix/vue-vee-validate @decorix/zod zod vue vee-validate
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/vue-vee-validate @hermiforge-decorix/zod zod vue vee-validate
 ```
 
 Peer dependencies: `vue@3.5.39`, `vee-validate@4.15.1`.
@@ -13,9 +13,9 @@ Peer dependencies: `vue@3.5.39`, `vee-validate@4.15.1`.
 ## Decorated Class
 
 ```ts
-import {Email, Label, MinLength, Model, Required} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toVeeValidate} from '@decorix/vue-vee-validate';
+import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toVeeValidate} from '@hermiforge-decorix/vue-vee-validate';
 
 registerZodValidator();
 
@@ -41,9 +41,9 @@ const result = config.validate({name: 'Ada', email: 'ada@example.com'});
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
-import {createZodValidatorAdapter} from '@decorix/zod';
-import {useVeeDecorix} from '@decorix/vue-vee-validate';
+import {model, stringField} from '@hermiforge-decorix/core';
+import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
+import {useVeeDecorix} from '@hermiforge-decorix/vue-vee-validate';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').label('Name'),

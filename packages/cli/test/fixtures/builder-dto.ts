@@ -1,4 +1,4 @@
-import {model, numberField, stringField} from '@decorix/core';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
 
 /**
  * Builder-based DTO fixture. Exported so the CLI loader can discover the raw

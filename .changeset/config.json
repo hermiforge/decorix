@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [
     [
-      "@decorix/*"
+      "@hermiforge-decorix/*"
     ]
   ],
   "linked": [],

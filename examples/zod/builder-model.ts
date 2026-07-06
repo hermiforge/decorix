@@ -1,5 +1,5 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {createZodValidatorAdapter, toZod} from '@decorix/zod';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {createZodValidatorAdapter, toZod} from '@hermiforge-decorix/zod';
 
 const RegisterUserDto = model('RegisterUserDto', {
     name: stringField().required('Name is required').minLength(2, 'Name is too short').maxLength(50),

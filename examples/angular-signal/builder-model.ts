@@ -1,6 +1,6 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {toSignalForm} from '@decorix/angular-signal';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {toSignalForm} from '@hermiforge-decorix/angular-signal';
 
 registerZodValidator();
 

@@ -1,4 +1,4 @@
-import type {ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef} from '@decorix/core';
+import type {ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, ValidatorAdapterRef} from '@hermiforge-decorix/core';
 import type {AsyncValidatorFn, ValidatorFn} from '@angular/forms';
 
 /**

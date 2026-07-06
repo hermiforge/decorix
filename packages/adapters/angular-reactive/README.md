@@ -1,11 +1,11 @@
-# @decorix/angular-reactive
+# @hermiforge-decorix/angular-reactive
 
 Angular Reactive Forms adapter for Decorix metadata.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core @decorix/angular-reactive @angular/core @angular/forms
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/angular-reactive @angular/core @angular/forms
 ```
 
 Peer dependencies: `@angular/core@22.0.3`, `@angular/forms@22.0.3`.
@@ -13,14 +13,14 @@ Peer dependencies: `@angular/core@22.0.3`, `@angular/forms@22.0.3`.
 For runtime `validate` support, also install a validator adapter such as Zod:
 
 ```sh
-pnpm add @decorix/zod zod
+pnpm add @hermiforge-decorix/zod zod
 ```
 
 ## Decorated Class
 
 ```ts
-import {Email, Label, MinLength, Model, Required} from '@decorix/core';
-import {toReactiveFormConfig} from '@decorix/angular-reactive';
+import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
+import {toReactiveFormConfig} from '@hermiforge-decorix/angular-reactive';
 
 @Model('SignupDto')
 class SignupDto {
@@ -45,9 +45,9 @@ const nameValidators = config.fields[0]?.validators;
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
-import {createZodValidatorAdapter} from '@decorix/zod';
-import {toReactiveFormConfig} from '@decorix/angular-reactive';
+import {model, stringField} from '@hermiforge-decorix/core';
+import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
+import {toReactiveFormConfig} from '@hermiforge-decorix/angular-reactive';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').label('Name'),

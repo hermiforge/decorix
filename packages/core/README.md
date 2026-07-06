@@ -1,11 +1,11 @@
-# @decorix/core
+# @hermiforge-decorix/core
 
 Framework-neutral metadata, decorators, builder API, and validator registry for Decorix models.
 
 ## Install
 
 ```sh
-pnpm add @decorix/core
+pnpm add @hermiforge-decorix/core
 ```
 
 Peer dependencies: none.
@@ -13,7 +13,7 @@ Peer dependencies: none.
 ## Decorated Class
 
 ```ts
-import {Email, Label, MinLength, Model, Required, getModelMetadata} from '@decorix/core';
+import {Email, Label, MinLength, Model, Required, getModelMetadata} from '@hermiforge-decorix/core';
 
 @Model('SignupDto')
 class SignupDto {
@@ -33,7 +33,7 @@ const metadata = getModelMetadata(SignupDto);
 ## Builder Model
 
 ```ts
-import {model, stringField} from '@decorix/core';
+import {model, stringField} from '@hermiforge-decorix/core';
 
 const SignupDto = model('SignupDto', {
   name: stringField().required('Name is required').minLength(2, 'Name is too short').label('Name'),
@@ -54,7 +54,7 @@ registered `name` stays camelCase — it surfaces as `issue.constraint` and the
 `decorix.<name>` issue code.
 
 ```ts
-import {defineConstraint, Model, model, numberField, validate} from '@decorix/core';
+import {defineConstraint, Model, model, numberField, validate} from '@hermiforge-decorix/core';
 
 const EvenNumber = defineConstraint<number, undefined>({
   name: 'evenNumber',
@@ -97,7 +97,7 @@ async models with `hasAsyncConstraints(metadata)` and run the right path with
 wrapped sync result).
 
 ```ts
-import {createCoreValidatorAdapter, hasAsyncConstraints, runSchemaAsync} from '@decorix/core';
+import {createCoreValidatorAdapter, hasAsyncConstraints, runSchemaAsync} from '@hermiforge-decorix/core';
 
 const schema = createCoreValidatorAdapter().createSchema(metadata);
 const result = hasAsyncConstraints(metadata)
@@ -178,7 +178,7 @@ Source of truth: `packages/core/src/validation/native-constraints.ts` (registrat
 
 ## Validator Notes
 
-`@decorix/core` only defines the `ValidatorAdapter` contract and global registry. Register a custom adapter with `registerValidatorAdapter`, or use `registerZodValidator()` from `@decorix/zod` before calling adapters that require runtime validation.
+`@hermiforge-decorix/core` only defines the `ValidatorAdapter` contract and global registry. Register a custom adapter with `registerValidatorAdapter`, or use `registerZodValidator()` from `@hermiforge-decorix/zod` before calling adapters that require runtime validation.
 
 
 ## License

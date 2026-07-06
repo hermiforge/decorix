@@ -1,4 +1,4 @@
-import type {FieldMetadata} from '@decorix/core';
+import type {FieldMetadata} from '@hermiforge-decorix/core';
 
 /**
  * Maps Decorix field metadata to the closest FormKit input type.

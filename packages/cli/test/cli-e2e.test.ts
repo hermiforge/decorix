@@ -29,7 +29,7 @@ function captureIO(): CliIO & {output: string; files: Map<string, string>} {
     };
 }
 
-describe('@decorix/cli end-to-end', () => {
+describe('@hermiforge-decorix/cli end-to-end', () => {
     it('scans a decorator DTO loaded from disk (regression: legacy-decorator emit + cross-instance registry)', async () => {
         const io = captureIO();
         await runCli(['scan', fixture('decorator-dto.ts')], io);
@@ -65,7 +65,7 @@ describe('@decorix/cli end-to-end', () => {
     it('emits a thin Zod re-export module for a decorator DTO', async () => {
         const io = captureIO();
         await runCli(['zod', fixture('decorator-dto.ts'), '--model', 'CliUserDto'], io);
-        expect(io.output).toContain(`import {toZod} from '@decorix/zod';`);
+        expect(io.output).toContain(`import {toZod} from '@hermiforge-decorix/zod';`);
         expect(io.output).toContain(`export const CliUserDtoSchema = toZod(CliUserDto);`);
     });
 

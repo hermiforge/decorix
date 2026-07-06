@@ -1,6 +1,6 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {DecorixPipe, DecorixValidationException} from '@decorix/nest';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {DecorixPipe, DecorixValidationException} from '@hermiforge-decorix/nest';
 
 registerZodValidator();
 

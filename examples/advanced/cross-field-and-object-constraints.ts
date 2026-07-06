@@ -1,4 +1,4 @@
-import {EqualsField, Model, ObjectConstraint, Optional, Required, model, objectConstraint, stringField, validate} from '@decorix/core';
+import {EqualsField, Model, ObjectConstraint, Optional, Required, model, objectConstraint, stringField, validate} from '@hermiforge-decorix/core';
 
 // Cross-field constraints compare a field against another root-level field by dot-path.
 // `RequiredIf`/`ForbiddenIf` (not shown here) work the same way with a predicate instead of a path.

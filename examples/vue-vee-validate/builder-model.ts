@@ -1,6 +1,6 @@
-import {model, numberField, stringField} from '@decorix/core';
-import {registerZodValidator} from '@decorix/zod';
-import {useVeeDecorix} from '@decorix/vue-vee-validate';
+import {model, numberField, stringField} from '@hermiforge-decorix/core';
+import {registerZodValidator} from '@hermiforge-decorix/zod';
+import {useVeeDecorix} from '@hermiforge-decorix/vue-vee-validate';
 
 registerZodValidator();
 

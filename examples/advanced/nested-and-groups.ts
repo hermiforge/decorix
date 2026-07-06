@@ -1,4 +1,4 @@
-import {arrayField, MinLength, Model, Required, model, numberField, objectField, stringField, validate} from '@decorix/core';
+import {arrayField, MinLength, Model, Required, model, numberField, objectField, stringField, validate} from '@hermiforge-decorix/core';
 
 // Nested objects and arrays of objects validate recursively; issue paths
 // include the full path down to the failing field (e.g. `addresses.0.city`).

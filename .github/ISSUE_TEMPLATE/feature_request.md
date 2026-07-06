@@ -7,7 +7,7 @@ labels: enhancement
 
 ## Package
 
-<!-- e.g. @decorix/core, a specific adapter, or a new adapter -->
+<!-- e.g. @hermiforge-decorix/core, a specific adapter, or a new adapter -->
 
 ## Problem
 
