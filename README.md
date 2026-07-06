@@ -1,93 +1,111 @@
-# decorix
+# Decorix
 
+[![CI](https://github.com/hermiforge/decorix/actions/workflows/ci.yml/badge.svg)](https://github.com/hermiforge/decorix/actions/workflows/ci.yml)
+[![License: LGPL-3.0-or-later](https://img.shields.io/badge/License-LGPL--3.0--or--later-blue.svg)](LICENSE)
 
+Decorix describes TypeScript business models once and adapts the same neutral metadata to validation, forms, framework, and documentation targets.
 
-## Getting started
+## Packages
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Install only the packages required by your target surface:
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- `@decorix/core` provides decorators, the builder API, model metadata, and the generic validator registry.
+- `@decorix/cli` provides the `decorix` command-line tool for generating JSON Schema, Zod, and Angular validator artifacts from Decorix models.
+- `@decorix/zod` converts metadata to Zod schemas and can register a Zod validator adapter.
+- `@decorix/json-schema` converts metadata to JSON Schema draft 2020-12.
+- `@decorix/angular-signal` exposes `toSignalForm` for Angular Signal Forms-oriented facades.
+- `@decorix/angular-reactive` exposes `toReactiveFormConfig` for Angular Reactive Forms-oriented configuration.
+- `@decorix/react-hook-form` exposes `toReactHookForm` and `useReactHookDecorix`.
+- `@decorix/react-tanstack-form` exposes `toTanStackForm` and `useTanStackDecorix`.
+- `@decorix/vue-vee-validate` exposes `toVeeValidate` and `useVeeDecorix`.
+- `@decorix/vue-formkit` exposes `toFormKit` and `useFormKitDecorix`.
+- `@decorix/nest` exposes a Nest-compatible validation pipe.
 
-## Add your files
+The former aggregate packages `@decorix/angular`, `@decorix/react`, and `@decorix/vue` are intentionally not used. Choose the one adapter package matching your framework library so peer dependencies stay narrow.
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## Decorator Model
 
+```ts
+import {Email, Label, MaxLength, Min, MinLength, Model, Required} from '@decorix/core';
+
+@Model('RegisterUserDto')
+class RegisterUserDto {
+  @Required('Name is required')
+  @MinLength(2, 'Name is too short')
+  @MaxLength(50)
+  @Label('Name')
+  name!: string;
+
+  @Required('Email is required')
+  @Email('Invalid email')
+  @Label('Email')
+  email!: string;
+
+  @Min(18, 'You must be an adult')
+  age?: number;
+}
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/hermiforge/decorix.git
-git branch -M main
-git push -uf origin main
+
+## Builder Model
+
+```ts
+import {model, numberField, stringField} from '@decorix/core';
+
+const RegisterUserDto = model('RegisterUserDto', {
+  name: stringField().required('Name is required').minLength(2, 'Name is too short').maxLength(50).label('Name'),
+  email: stringField().required('Email is required').email('Invalid email').label('Email'),
+  age: numberField().min(18, 'You must be an adult').optional()
+});
 ```
 
-## Integrate with your tools
+## Validator Registry
 
-* [Set up project integrations](https://gitlab.com/hermiforge/decorix/-/settings/integrations)
+UI and Nest adapters depend on the neutral `ValidatorAdapter` contract from `@decorix/core`, not on Zod directly. Register a concrete adapter once, or pass one per adapter call.
 
-## Collaborate with your team
+```ts
+import {registerZodValidator} from '@decorix/zod';
+import {toReactHookForm} from '@decorix/react-hook-form';
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+registerZodValidator();
 
-## Test and Deploy
+const config = toReactHookForm(RegisterUserDto);
+```
 
-Use the built-in continuous integration in GitLab.
+For explicit wiring:
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+```ts
+import {createZodValidatorAdapter} from '@decorix/zod';
+import {toSignalForm} from '@decorix/angular-signal';
 
-***
+const validator = createZodValidatorAdapter();
+const form = toSignalForm(RegisterUserDto, {validator});
+```
 
-# Editing this README
+Adapters that perform runtime validation, such as signal forms, React Hook Form, TanStack Form, VeeValidate, and Nest, require a validator adapter. Configuration-only adapters such as Angular Reactive Forms and FormKit can still emit field metadata without one and attach validation when an adapter is available.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Positioning: Validation, Not Transformation
 
-## Suggestions for a good README
+Decorix is a pure validator: it checks whether a value satisfies a constraint and reports issues, but it never mutates or coerces the input (no automatic trimming, no string→number coercion, no date parsing). If you need that, pre-process the value yourself (or through your form library) before it reaches Decorix — a Decorix model always validates exactly the value it is given.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Package READMEs
 
-## Name
-Choose a self-explaining name for your project.
+Each published package has a short package-level README in `packages/core/README.md`, `packages/cli/README.md`, and `packages/adapters/*/README.md` with installation, peer dependencies, and direct usage examples.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## Examples
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Every package has minimal typechecked examples in `examples/<package>/class-model.ts` and `examples/<package>/builder-model.ts`. They demonstrate generated configuration and validation without requiring a full Angular, React, or Vue application.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Run:
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+```sh
+pnpm examples:typecheck
+```
 
 ## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, quality gate, and changeset workflow. Security issues should be reported per [SECURITY.md](SECURITY.md) rather than as a public issue.
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Decorix is licensed under the [GNU Lesser General Public License v3.0 or later](LICENSE) (LGPL-3.0-or-later). This copyleft applies to Decorix itself and to modifications distributed as part of it; applications that merely depend on `@decorix/*` packages through their published interfaces are not required to adopt the same license (see LICENSE, sections 0-6, and the incorporated [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.txt) for the exact terms).
+

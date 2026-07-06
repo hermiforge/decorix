@@ -1,0 +1,67 @@
+{
+  "name": "@decorix/angular-reactive",
+  "version": "0.1.0",
+  "description": "Angular Reactive Forms adapter for Decorix metadata.",
+  "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/adapters/angular-reactive"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "angular",
+    "reactive-forms",
+    "validation",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --config ../../../tsdown.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@decorix/core": "workspace:0.1.0"
+  },
+  "devDependencies": {
+    "@angular/core": "22.0.3",
+    "@angular/forms": "22.0.3"
+  },
+  "peerDependencies": {
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/core": {
+      "optional": true
+    },
+    "@angular/forms": {
+      "optional": true
+    }
+  }
+}

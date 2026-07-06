@@ -1,0 +1,63 @@
+{
+  "name": "@decorix/react-tanstack-form",
+  "version": "0.1.0",
+  "description": "TanStack Form adapter for Decorix metadata.",
+  "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/adapters/react-tanstack-form"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "react",
+    "tanstack-form",
+    "validation",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --config ../../../tsdown.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@decorix/core": "workspace:0.1.0"
+  },
+  "peerDependencies": {
+    "@tanstack/react-form": "^1.33.0",
+    "react": "^19.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-form": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
+}

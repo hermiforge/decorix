@@ -1,0 +1,61 @@
+{
+  "name": "@decorix/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for generating artifacts from Decorix models.",
+  "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/cli"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "cli",
+    "typescript",
+    "json-schema",
+    "codegen"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "decorix": "./bin/decorix.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsdown --config ../../tsdown.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../vitest.config.ts --dir . --passWithNoTests",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@decorix/core": "workspace:0.1.0",
+    "@decorix/json-schema": "workspace:0.1.0",
+    "cac": "^7.0.0",
+    "tsx": "^4.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "baseUrl": ".",
+    "paths": {
+      "@decorix/angular-reactive": ["packages/adapters/angular-reactive/src/index.ts"],
+      "@decorix/angular-signal": ["packages/adapters/angular-signal/src/index.ts"],
+      "@decorix/cli": ["packages/cli/src/index.ts"],
+      "@decorix/core": ["packages/core/src/index.ts"],
+      "@decorix/json-schema": ["packages/adapters/json-schema/src/index.ts"],
+      "@decorix/nest": ["packages/adapters/nest/src/index.ts"],
+      "@decorix/react-hook-form": ["packages/adapters/react-hook-form/src/index.ts"],
+      "@decorix/react-tanstack-form": ["packages/adapters/react-tanstack-form/src/index.ts"],
+      "@decorix/vue-formkit": ["packages/adapters/vue-formkit/src/index.ts"],
+      "@decorix/vue-vee-validate": ["packages/adapters/vue-vee-validate/src/index.ts"],
+      "@decorix/zod": ["packages/adapters/zod/src/index.ts"]
+    }
+  }
+}
