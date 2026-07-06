@@ -1,16 +1,36 @@
-import {MinLength, Model, Required} from '@decorix/core';
+import {EqualsField, Email, MaxLength, Min, MinLength, Model, Optional, Required} from '@decorix/core';
 import {registerZodValidator} from '@decorix/zod';
 import {toTanStackForm} from '@decorix/react-tanstack-form';
 
 registerZodValidator();
 
-@Model('ProfileDto')
-class ProfileDto {
+@Model('RegisterUserDto')
+class RegisterUserDto {
     @Required('Name is required')
     @MinLength(2, 'Name is too short')
+    @MaxLength(50)
     name!: string;
+
+    @Required('Email is required')
+    @Email('Invalid email')
+    email!: string;
+
+    @Optional()
+    @Min(18, 'You must be an adult')
+    age?: number;
+
+    @Required('Password is required')
+    @MinLength(8, 'Password must be at least 8 characters')
+    password!: string;
+
+    @Required('Please confirm your password')
+    @EqualsField('password', 'Passwords must match')
+    confirmPassword!: string;
 }
 
-const config = toTanStackForm(ProfileDto, {defaultValues: {name: 'Ada'}});
+const config = toTanStackForm(RegisterUserDto, {
+    defaultValues: {name: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}
+});
 
-console.log(config.validators.onSubmit({name: 'Ada'}));
+console.log('valid payload:', config.validators.onSubmit({name: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}));
+console.log('invalid payload:', config.validators.onSubmit({name: 'A', email: 'not-an-email', age: 12, password: 'short', confirmPassword: 'different'}));

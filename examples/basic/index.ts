@@ -9,4 +9,12 @@ const RegisterUserDto = model('RegisterUserDto', {
 
 const schema = toZod(RegisterUserDto);
 
-console.log(schema.safeParse({name: 'Ada', email: 'ada@example.com', age: 37}).success);
+console.log('valid payload:', schema.safeParse({name: 'Ada', email: 'ada@example.com', age: 37}).success);
+
+const invalid = schema.safeParse({name: 'A', email: 'not-an-email', age: 12});
+console.log('invalid payload:', invalid.success);
+if (!invalid.success) {
+    for (const issue of invalid.error.issues) {
+        console.log(`  ${issue.path.join('.')}: ${issue.message}`);
+    }
+}
