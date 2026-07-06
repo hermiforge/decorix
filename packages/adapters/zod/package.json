@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/zod",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Zod adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -45,7 +45,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.1.0"
+    "@hermiforge-decorix/core": "workspace:0.2.0"
   },
   "peerDependencies": {
     "zod": "^4.4.0"
