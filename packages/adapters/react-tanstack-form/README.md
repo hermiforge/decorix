@@ -60,3 +60,7 @@ const config = useTanStackDecorix(SignupDto, {
 
 `toTanStackForm` and `useTanStackDecorix` perform runtime validation and require a `ValidatorAdapter`. Call `registerZodValidator()` once, or pass an adapter through `options.validator`.
 
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

@@ -109,3 +109,7 @@ const result = hasAsyncConstraints(metadata)
 
 `@decorix/core` only defines the `ValidatorAdapter` contract and global registry. Register a custom adapter with `registerValidatorAdapter`, or use `registerZodValidator()` from `@decorix/zod` before calling adapters that require runtime validation.
 
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

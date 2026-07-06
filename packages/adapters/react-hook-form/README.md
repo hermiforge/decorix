@@ -58,3 +58,7 @@ const config = useReactHookDecorix(SignupDto, {
 
 `toReactHookForm` and `useReactHookDecorix` create a runtime resolver and require a `ValidatorAdapter`. Call `registerZodValidator()` once, or pass an adapter through `options.validator`.
 
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

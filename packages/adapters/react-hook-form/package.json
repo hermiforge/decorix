@@ -3,6 +3,28 @@
   "version": "0.1.0",
   "description": "React Hook Form adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/adapters/react-hook-form"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "react",
+    "react-hook-form",
+    "validation",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -27,8 +49,8 @@
     "@decorix/core": "workspace:0.1.0"
   },
   "peerDependencies": {
-    "react": "19.2.7",
-    "react-hook-form": "7.80.0"
+    "react": "^19.2.0",
+    "react-hook-form": "^7.80.0"
   },
   "peerDependenciesMeta": {
     "react": {

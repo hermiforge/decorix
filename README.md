@@ -1,5 +1,8 @@
 # Decorix
 
+[![CI](https://github.com/hermiforge/decorix/actions/workflows/ci.yml/badge.svg)](https://github.com/hermiforge/decorix/actions/workflows/ci.yml)
+[![License: LGPL-3.0-or-later](https://img.shields.io/badge/License-LGPL--3.0--or--later-blue.svg)](LICENSE)
+
 Decorix describes TypeScript business models once and adapts the same neutral metadata to validation, forms, framework, and documentation targets.
 
 ## Packages
@@ -7,6 +10,7 @@ Decorix describes TypeScript business models once and adapts the same neutral me
 Install only the packages required by your target surface:
 
 - `@decorix/core` provides decorators, the builder API, model metadata, and the generic validator registry.
+- `@decorix/cli` provides the `decorix` command-line tool for generating JSON Schema, Zod, and Angular validator artifacts from Decorix models.
 - `@decorix/zod` converts metadata to Zod schemas and can register a Zod validator adapter.
 - `@decorix/json-schema` converts metadata to JSON Schema draft 2020-12.
 - `@decorix/angular-signal` exposes `toSignalForm` for Angular Signal Forms-oriented facades.
@@ -92,6 +96,10 @@ Run:
 ```sh
 pnpm examples:typecheck
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, quality gate, and changeset workflow. Security issues should be reported per [SECURITY.md](SECURITY.md) rather than as a public issue.
 
 ## License
 

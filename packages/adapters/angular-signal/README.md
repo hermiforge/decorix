@@ -73,3 +73,7 @@ const result = await form.submitAsync();
 
 `toSignalForm` performs runtime validation and requires a `ValidatorAdapter`. Call `registerZodValidator()` once before creating forms, or pass a concrete adapter through `options.validator`.
 
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

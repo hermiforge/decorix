@@ -3,6 +3,28 @@
   "version": "0.1.0",
   "description": "Framework-neutral metadata, decorators, and builder API for Decorix models.",
   "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "validation",
+    "typescript",
+    "decorators",
+    "model"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

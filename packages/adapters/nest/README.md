@@ -55,3 +55,7 @@ const pipe = DecorixPipe(SignupDto, {
 
 `DecorixPipe` performs runtime validation and requires a `ValidatorAdapter`. Call `registerZodValidator()` once, or pass an adapter through `options.validator`. Failed validation throws `DecorixValidationException` with a 400-style response body.
 
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

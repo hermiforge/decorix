@@ -107,3 +107,7 @@ await config.validateAsync?.({name: 'Ada', email: 'ada@example.com'});
 ## Runtime Validation
 
 Angular validators do not require a Decorix `ValidatorAdapter`. `options.validator` and `registerZodValidator()` only control the optional `config.validate`/`config.validateAsync` functions, which perform full model validation through the selected runtime validator adapter.
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

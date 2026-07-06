@@ -70,3 +70,7 @@ registerZodValidator();
 const validator = createZodValidatorAdapter();
 ```
 
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

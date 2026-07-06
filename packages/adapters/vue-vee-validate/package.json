@@ -3,6 +3,28 @@
   "version": "0.1.0",
   "description": "VeeValidate adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/adapters/vue-vee-validate"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "vue",
+    "vee-validate",
+    "validation",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -27,8 +49,8 @@
     "@decorix/core": "workspace:0.1.0"
   },
   "peerDependencies": {
-    "vee-validate": "4.15.1",
-    "vue": "3.5.39"
+    "vee-validate": "^4.15.0",
+    "vue": "^3.5.0"
   },
   "peerDependenciesMeta": {
     "vee-validate": {

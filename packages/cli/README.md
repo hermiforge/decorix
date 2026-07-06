@@ -61,3 +61,7 @@ import {discoverModels, renderJsonSchema, selectModel} from '@decorix/cli';
 const models = discoverModels(await import('./src/dtos.ts'));
 const json = renderJsonSchema(selectModel(models, 'UserDto'));
 ```
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

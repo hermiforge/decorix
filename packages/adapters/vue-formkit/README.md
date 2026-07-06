@@ -63,3 +63,7 @@ const result = config.validate?.({name: 'Ada', email: 'ada@example.com'});
 
 This is a configuration-only adapter. It can emit FormKit schema without a `ValidatorAdapter`. Pass `options.validator` or call `registerZodValidator()` when you also want the returned config to include `validate`.
 
+
+## License
+
+LGPL-3.0-or-later — see the [repository LICENSE](https://github.com/hermiforge/decorix/blob/main/LICENSE).

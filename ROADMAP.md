@@ -14,6 +14,9 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 - Adapters with no explicit validator now use the core validator facade. An explicit missing validator name still throws the previous registry error.
 - Commit after each completed implementation pass so handoffs always have a clean recorded checkpoint.
 - License: LGPL-3.0-or-later (chosen over plain GPL v3 so applications that merely depend on `@decorix/*` are not forced into the same copyleft; modifications to Decorix itself remain copyleft).
+- Hosting: GitLab (`gitlab.com/hermiforge/decorix`) is the private source of truth; GitHub (`github.com/hermiforge/decorix`) is the public mirror/showcase. `package.json` `repository`/`homepage`/`bugs` fields point to GitHub.
+- npm publishing stays manual for v1 (`pnpm changeset` → `pnpm version` → `pnpm release`, run from a maintainer's machine). No CI release automation (`changesets/action` + `NPM_TOKEN`) yet.
+- Internal workspace dependencies use pinned `workspace:0.1.0` (not `workspace:*`/`workspace:^`). This only stays safe if version bumps always go through `pnpm changeset` + `pnpm version` (which rewrites all internal `workspace:` refs together, per `.changeset/config.json`'s `fixed`/`updateInternalDependencies: "patch"`) — never bump a package version by hand.
 
 ## Documentation and Constraint Coverage Standard
 
@@ -39,6 +42,19 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 - No open roadmap items. New work should be appended here before implementation.
 
 ## DONE
+
+### Public v1 Pre-Release Checklist
+
+Audited the repo for gaps before the first public npm publish and closed the ones that were file/doc changes (publication itself and the GitHub push are left to the maintainer):
+
+- **Publishing metadata**: added `publishConfig: {"access": "public"}`, `author`, `repository` (with per-package `directory`), `homepage`, `bugs`, `keywords`, `engines.node: ">=22"`, and `sideEffects: false` to the root `package.json` and all 11 published packages (`core`, `cli`, `adapters/*`). Without `publishConfig.access`, `npm publish`/`pnpm publish` on a scoped `@decorix/*` package fails by default.
+- **Release scripts**: added `changeset`, `version` (`changeset version`), and `release` (`pnpm build && changeset publish`) to the root `package.json`, wiring up the already-installed `@changesets/cli` and existing `.changeset/config.json` (which had no script to invoke it).
+- **PeerDependencies loosened**: the 8 adapters with framework peers (`angular-reactive`, `angular-signal`, `react-hook-form`, `react-tanstack-form`, `vue-formkit`, `vue-vee-validate`, `nest`, `zod`) previously pinned exact versions (e.g. `"react": "19.2.7"`), which triggers peer-dependency warnings/errors for any consumer on a different patch/minor. Changed to caret ranges (`"react": "^19.2.0"`, etc.) on the same major/minor baseline.
+- **License visibility**: each of the 11 package READMEs gained a short License section (none previously mentioned licensing despite `package.json` declaring `LGPL-3.0-or-later`).
+- **Repo hygiene files added**: `CONTRIBUTING.md` (setup, quality gate, changeset workflow), `SECURITY.md` (private vulnerability reporting), `.nvmrc` (`22`, matching CI), `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/{bug_report,feature_request}.md`.
+- **Root README**: added CI and license badges, listed `@decorix/cli` in the "Packages" section (previously only mentioned lower down), added a Contributing section linking `CONTRIBUTING.md`/`SECURITY.md`.
+
+Explicitly out of scope for this pass (see Current Decisions above): CI release automation, the actual first `pnpm changeset`/publish, and pushing/migrating the repo to GitHub — these are maintainer actions, not file changes.
 
 ### License: LGPL-3.0-or-later
 
