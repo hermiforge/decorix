@@ -1,7 +1,6 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
+import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
 import {collectErrors} from './errors';
 import type {DecorixTanStackFormConfig, DecorixTanStackFormModel, DecorixTanStackFormOptions} from './types';
-import type {ModelMetadata} from '@decorix/core';
 
 /**
  * Creates TanStack Form configuration from Decorix metadata.
@@ -15,11 +14,11 @@ export function toTanStackForm(
     options: DecorixTanStackFormOptions = {}
 ): DecorixTanStackFormConfig {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
+    const schema = resolveSchema(metadata, options.validator);
 
     return {
         metadata,
-        defaultValues: defaults(metadata, options.defaultValues),
+        defaultValues: defaultValuesFor(metadata, options.defaultValues),
         validators: {
             onSubmit(value) {
                 const result = schema.validate(value);
@@ -46,10 +45,6 @@ export function useTanStackDecorix(
     options: DecorixTanStackFormOptions = {}
 ): DecorixTanStackFormConfig {
     return toTanStackForm(modelOrMetadata, options);
-}
-
-function defaults(metadata: ModelMetadata, provided: Record<string, unknown> = {}): Record<string, unknown> {
-    return Object.fromEntries(metadata.fields.map((field) => [field.name, provided[field.name]]));
 }
 
 

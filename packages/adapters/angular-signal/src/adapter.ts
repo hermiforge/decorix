@@ -1,4 +1,4 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
+import {getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
 import {collectErrors, fieldErrors, issues} from './errors';
 import type {DecorixAngularSignalFormOptions, DecorixInitialValue, DecorixSignalField, DecorixSignalForm, DecorixSignalFormModel} from './types';
 
@@ -14,7 +14,7 @@ export function toSignalForm(
     options: DecorixAngularSignalFormOptions = {}
 ): DecorixSignalForm {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
+    const schema = resolveSchema(metadata, options.validator);
     const values: DecorixInitialValue = {...options.initialValue};
     const formFields: Record<string, DecorixSignalField> = {};
 

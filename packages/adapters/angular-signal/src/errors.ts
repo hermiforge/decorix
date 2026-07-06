@@ -1,3 +1,4 @@
+import {groupIssuesByField} from '@decorix/core';
 import type {ValidationIssue, ValidationResult} from '@decorix/core';
 
 /**
@@ -8,12 +9,8 @@ export function collectErrors(result: ValidationResult): Record<string, string[]
         return {};
     }
 
-    const errors: Record<string, string[]> = {};
-    for (const issue of result.issues) {
-        const key = String(issue.path[0] ?? '$root');
-        errors[key] = [...(errors[key] ?? []), issue.message];
-    }
-    return errors;
+    const grouped = groupIssuesByField(result.issues);
+    return Object.fromEntries(Object.entries(grouped).map(([key, fieldIssues]) => [key, fieldIssues.map((issue) => issue.message)]));
 }
 
 /**

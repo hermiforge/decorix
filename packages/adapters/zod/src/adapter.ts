@@ -1,16 +1,21 @@
 import type {
-    ConstraintDefinition,
     ConstraintMetadata,
     FieldMetadata,
     ModelMetadata,
     ModelTarget,
-    ValidationContext,
     ValidationIssue,
-    ValidationIssueInput,
     ValidationOptions,
     ValidatorAdapter
 } from '@decorix/core';
-import {getConstraint, getModelMetadata, hasAsyncConstraints, registerValidatorAdapter, setDefaultValidatorAdapter} from '@decorix/core';
+import {
+    buildValidationContext,
+    getModelMetadata,
+    hasAsyncConstraints,
+    normalizeConstraintIssue,
+    registerValidatorAdapter,
+    resolveConstraintDefinition,
+    setDefaultValidatorAdapter
+} from '@decorix/core';
 import {z} from 'zod';
 import type {
     DecorixZodRegistrationOptions,
@@ -200,15 +205,15 @@ function applyConstraint(schema: z.ZodTypeAny, constraint: ConstraintMetadata, p
 
 /** Enforces non-native constraints through Zod superRefine, awaiting async definitions. */
 function applyCustomConstraint(schema: z.ZodTypeAny, constraint: ConstraintMetadata, property: string, optionsRef: OptionsRef): z.ZodTypeAny {
-    const definition = getRequiredDefinition(constraint);
+    const definition = resolveConstraintDefinition(constraint);
     return schema.superRefine((value, ctx) => {
-        const context = contextFor(value, property, optionsRef.current);
+        const context = buildValidationContext({}, value, property, optionsRef.current);
         const result = definition.validate(value, constraint.options, context);
         // Async constraint results are awaited; Zod only reaches this branch during safeParseAsync.
         if (result instanceof Promise) {
-            return result.then((resolved) => reportIssue(ctx, normalizeIssue(resolved, definition, constraint, context, [])));
+            return result.then((resolved) => reportIssue(ctx, normalizeConstraintIssue(resolved, definition, constraint, context, [])));
         }
-        reportIssue(ctx, normalizeIssue(result, definition, constraint, context, []));
+        reportIssue(ctx, normalizeConstraintIssue(result, definition, constraint, context, []));
         return undefined;
     });
 }
@@ -219,13 +224,13 @@ function applyObjectConstraints(schema: z.ZodTypeAny, metadata: ModelMetadata, o
     return schema.superRefine((value, ctx) => {
         const pending: Array<Promise<void>> = [];
         for (const constraint of metadata.objectConstraints ?? []) {
-            const definition = getRequiredDefinition(constraint);
-            const context = contextFor(value, metadata.name, optionsRef.current);
+            const definition = resolveConstraintDefinition(constraint);
+            const context = buildValidationContext({}, value, metadata.name, optionsRef.current);
             const result = definition.validate(value, constraint.options, context);
             if (result instanceof Promise) {
-                pending.push(result.then((resolved) => reportIssue(ctx, normalizeIssue(resolved, definition, constraint, context, []))));
+                pending.push(result.then((resolved) => reportIssue(ctx, normalizeConstraintIssue(resolved, definition, constraint, context, []))));
             } else {
-                reportIssue(ctx, normalizeIssue(result, definition, constraint, context, []));
+                reportIssue(ctx, normalizeConstraintIssue(result, definition, constraint, context, []));
             }
         }
         // A single awaited promise keeps every async object constraint on the async parse path.
@@ -247,44 +252,6 @@ function addDecorixIssue(ctx: z.RefinementCtx, issue: ValidationIssue): void {
         message: issue.message,
         params: {decorixConstraint: issue.constraint, decorixCode: issue.code, decorixParams: issue.params}
     });
-}
-
-/** Resolves a constraint definition or fails loudly instead of dropping validation. */
-function getRequiredDefinition(constraint: ConstraintMetadata): ConstraintDefinition {
-    const definition = getConstraint(constraint.name);
-    if (!definition) throw new Error(`No Decorix constraint registered for "${constraint.name}".`);
-    return definition;
-}
-
-/** Normalizes Decorix constraint output into a stable adapter issue. */
-function normalizeIssue(result: boolean | ValidationIssueInput, definition: ConstraintDefinition, constraint: ConstraintMetadata, context: ValidationContext, path: Array<string | number>): ValidationIssue | undefined {
-    if (result === true) return undefined;
-    const input = result === false ? {} : result;
-    return {
-        path: input.path ?? path,
-        code: input.code ?? `decorix.${constraint.name}`,
-        message: constraint.message ?? input.message ?? messageFor(definition, constraint.options, context),
-        constraint: constraint.name,
-        params: input.params ?? paramsFor(constraint.options)
-    };
-}
-
-function messageFor(definition: ConstraintDefinition, options: unknown, context: ValidationContext): string {
-    if (typeof definition.message === 'function') return definition.message(options, context);
-    return definition.message ?? `Value failed ${definition.name} validation.`;
-}
-
-function paramsFor(options: unknown): Record<string, unknown> | undefined {
-    if (options === undefined) return undefined;
-    if (typeof options === 'object' && options !== null && !Array.isArray(options) && !(options instanceof RegExp) && !(options instanceof Date)) {
-        return {...options as Record<string, unknown>};
-    }
-    return {value: options};
-}
-
-/** Builds the validation context, forwarding runtime group/locale/services to custom constraints. */
-function contextFor(value: unknown, property: string, options?: ValidationOptions): ValidationContext {
-    return {object: {}, property, value, group: options?.group, locale: options?.locale, services: options?.services};
 }
 
 function numberOption(constraint: ConstraintMetadata): number { return Number(constraint.options); }

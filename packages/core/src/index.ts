@@ -106,6 +106,14 @@ export {validate, validateAsync, hasAsyncConstraints} from './validation/engine'
 export {defineConstraint, defineAsyncConstraint, type ReusableConstraint} from './validation/define-constraint';
 export {createCoreValidatorAdapter, runSchemaAsync, type CoreValidatorSchema} from './validation/core-adapter';
 export {
+    buildValidationContext,
+    messageForConstraint,
+    normalizeConstraintIssue,
+    paramsForConstraintOptions,
+    resolveConstraintDefinition
+} from './validation/issue-utils';
+export {defaultValuesFor, groupIssuesByField, resolveSchema} from './validation/adapter-utils';
+export {
     ConstraintRegistry,
     createAsyncConstraint,
     createConstraint,

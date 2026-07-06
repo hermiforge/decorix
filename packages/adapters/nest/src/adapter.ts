@@ -1,4 +1,4 @@
-import {createCoreValidatorAdapter, getModelMetadata, hasAsyncConstraints, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
+import {getModelMetadata, hasAsyncConstraints, resolveSchema, runSchemaAsync} from '@decorix/core';
 import {DecorixValidationException} from './errors';
 import type {DecorixPipeModel, DecorixPipeOptions, DecorixPipeTransform} from './types';
 import type {ValidationResult} from '@decorix/core';
@@ -15,7 +15,7 @@ export function DecorixPipe(
     options: DecorixPipeOptions = {}
 ): DecorixPipeTransform {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
+    const schema = resolveSchema(metadata, options.validator);
     // Models with async constraints validate on the async path Nest can await.
     const isAsync = hasAsyncConstraints(metadata);
 

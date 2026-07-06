@@ -1,7 +1,7 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
+import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
 import {formKitType, formKitValidation} from './validation';
 import type {DecorixFormKitConfig, DecorixFormKitModel, DecorixFormKitOptions} from './types';
-import type {FieldMetadata, ModelMetadata} from '@decorix/core';
+import type {FieldMetadata} from '@decorix/core';
 
 /**
  * Creates FormKit schema configuration from Decorix metadata.
@@ -15,11 +15,11 @@ export function toFormKit(
     options: DecorixFormKitOptions = {}
 ): DecorixFormKitConfig {
     const metadata = getModelMetadata(modelOrMetadata);
-    const validatorSchema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
+    const validatorSchema = resolveSchema(metadata, options.validator);
 
     return {
         metadata,
-        initialValues: defaults(metadata, options.initialValues),
+        initialValues: defaultValuesFor(metadata, options.initialValues),
         schema: metadata.fields.map(toFieldSchema),
         validate: (value: unknown) => validatorSchema.validate(value),
         validateAsync: (value: unknown) => runSchemaAsync(validatorSchema, value)
@@ -51,9 +51,5 @@ function toFieldSchema(field: FieldMetadata) {
         options: field.enumValues?.map((value) => ({label: value, value})),
         metadata: field
     };
-}
-
-function defaults(metadata: ModelMetadata, provided: Record<string, unknown> = {}): Record<string, unknown> {
-    return Object.fromEntries(metadata.fields.map((field) => [field.name, provided[field.name]]));
 }
 

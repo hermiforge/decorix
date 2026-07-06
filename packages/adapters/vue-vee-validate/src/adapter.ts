@@ -1,6 +1,5 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
+import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
 import type {DecorixVeeValidateConfig, DecorixVeeValidateModel, DecorixVeeValidateOptions} from './types';
-import type {ModelMetadata} from '@decorix/core';
 
 /**
  * Creates VeeValidate configuration from Decorix metadata.
@@ -14,11 +13,11 @@ export function toVeeValidate(
     options: DecorixVeeValidateOptions = {}
 ): DecorixVeeValidateConfig {
     const metadata = getModelMetadata(modelOrMetadata);
-    const validationSchema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
+    const validationSchema = resolveSchema(metadata, options.validator);
 
     return {
         metadata,
-        initialValues: defaults(metadata, options.initialValues),
+        initialValues: defaultValuesFor(metadata, options.initialValues),
         validationSchema,
         fields: metadata.fields,
         validate: (value) => validationSchema.validate(value),
@@ -38,10 +37,6 @@ export function useVeeDecorix(
     options: DecorixVeeValidateOptions = {}
 ): DecorixVeeValidateConfig {
     return toVeeValidate(modelOrMetadata, options);
-}
-
-function defaults(metadata: ModelMetadata, provided: Record<string, unknown> = {}): Record<string, unknown> {
-    return Object.fromEntries(metadata.fields.map((field) => [field.name, provided[field.name]]));
 }
 
 

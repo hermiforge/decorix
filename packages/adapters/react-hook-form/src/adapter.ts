@@ -1,11 +1,11 @@
-import {createCoreValidatorAdapter, getModelMetadata, requireValidatorAdapter, runSchemaAsync} from '@decorix/core';
+import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@decorix/core';
 import {hookFormErrors} from './errors';
 import type {
     DecorixReactHookFormConfig,
     DecorixReactHookFormModel,
     DecorixReactHookFormOptions
 } from './types';
-import type {FieldMetadata, ModelMetadata} from '@decorix/core';
+import type {FieldMetadata} from '@decorix/core';
 
 /**
  * Creates React Hook Form configuration from Decorix metadata.
@@ -19,11 +19,11 @@ export function toReactHookForm(
     options: DecorixReactHookFormOptions = {}
 ): DecorixReactHookFormConfig {
     const metadata = getModelMetadata(modelOrMetadata);
-    const schema = (options.validator === undefined ? createCoreValidatorAdapter() : requireValidatorAdapter(options.validator)).createSchema(metadata);
+    const schema = resolveSchema(metadata, options.validator);
 
     return {
         metadata,
-        defaultValues: defaults(metadata, options.defaultValues),
+        defaultValues: defaultValuesFor(metadata, options.defaultValues),
         fields: metadata.fields.map((field) => ({
             name: field.name,
             required: requiredRule(field),
@@ -53,10 +53,6 @@ export function useReactHookDecorix(
     options: DecorixReactHookFormOptions = {}
 ): DecorixReactHookFormConfig {
     return toReactHookForm(modelOrMetadata, options);
-}
-
-function defaults(metadata: ModelMetadata, provided: Record<string, unknown> = {}): Record<string, unknown> {
-    return Object.fromEntries(metadata.fields.map((field) => [field.name, provided[field.name]]));
 }
 
 function requiredRule(field: FieldMetadata): boolean | string {

@@ -1,5 +1,15 @@
-import {createCoreValidatorAdapter, getConstraint, getModelMetadata, hasAsyncConstraints, resolveValidatorAdapter, runSchemaAsync} from '@decorix/core';
-import type {ConstraintDefinition, ConstraintMetadata, FieldMetadata, ValidationContext, ValidationIssue, ValidationIssueInput} from '@decorix/core';
+import {
+    buildValidationContext,
+    createCoreValidatorAdapter,
+    getConstraint,
+    getModelMetadata,
+    hasAsyncConstraints,
+    normalizeConstraintIssue,
+    resolveConstraintDefinition,
+    resolveValidatorAdapter,
+    runSchemaAsync
+} from '@decorix/core';
+import type {ConstraintMetadata, FieldMetadata} from '@decorix/core';
 import type {AbstractControl, AsyncValidatorFn, ValidationErrors, ValidatorFn} from '@angular/forms';
 import type {
     DecorixAngularReactiveFormOptions,
@@ -103,29 +113,29 @@ function toAngularValidator(constraint: ConstraintMetadata, field: FieldMetadata
 
 /** Enforces non-native sync constraints inside Angular's synchronous ValidatorFn contract. */
 function decorixConstraintValidator(constraint: ConstraintMetadata, field: FieldMetadata): ValidatorFn {
-    const definition = getRequiredDefinition(constraint);
+    const definition = resolveConstraintDefinition(constraint);
     if (definition.async) {
         throw new Error(`Decorix constraint "${constraint.name}" is async and cannot be emitted as an Angular ValidatorFn.`);
     }
 
     return (control: AbstractControl): ValidationErrors | null => {
-        const context = contextFor(control.value, field.name);
+        const context = buildValidationContext({}, control.value, field.name);
         const result = definition.validate(control.value, constraint.options, context);
         if (result instanceof Promise) {
             throw new Error(`Decorix constraint "${constraint.name}" returned a Promise and cannot be emitted as an Angular ValidatorFn.`);
         }
-        const issue = normalizeIssue(result, definition, constraint, context);
+        const issue = normalizeConstraintIssue(result, definition, constraint, context);
         return issue ? validationError(issue.constraint, issue.params ?? true, issue.message) : null;
     };
 }
 
 /** Wraps an async Decorix constraint in Angular's AsyncValidatorFn contract. */
 function toAngularAsyncValidator(constraint: ConstraintMetadata, field: FieldMetadata): AsyncValidatorFn {
-    const definition = getRequiredDefinition(constraint);
+    const definition = resolveConstraintDefinition(constraint);
     return (control: AbstractControl): Promise<ValidationErrors | null> => {
-        const context = contextFor(control.value, field.name);
+        const context = buildValidationContext({}, control.value, field.name);
         return Promise.resolve(definition.validate(control.value, constraint.options, context)).then((result) => {
-            const issue = normalizeIssue(result, definition, constraint, context);
+            const issue = normalizeConstraintIssue(result, definition, constraint, context);
             return issue ? validationError(issue.constraint, issue.params ?? true, issue.message) : null;
         });
     };
@@ -183,43 +193,6 @@ function maxValidator(max: number, message?: string): ValidatorFn {
         const value = Number.parseFloat(String(control.value));
         return Number.isNaN(value) || value <= max ? null : validationError('max', {max, actual: control.value}, message);
     };
-}
-
-/** Resolves a constraint definition or fails loudly instead of dropping validation. */
-function getRequiredDefinition(constraint: ConstraintMetadata): ConstraintDefinition {
-    const definition = getConstraint(constraint.name);
-    if (!definition) throw new Error(`No Decorix constraint registered for "${constraint.name}".`);
-    return definition;
-}
-
-/** Normalizes custom constraint output for Angular validation errors. */
-function normalizeIssue(result: boolean | ValidationIssueInput, definition: ConstraintDefinition, constraint: ConstraintMetadata, context: ValidationContext): ValidationIssue | undefined {
-    if (result === true) return undefined;
-    const input = result === false ? {} : result;
-    return {
-        path: input.path ?? [context.property ?? ''],
-        code: input.code ?? `decorix.${constraint.name}`,
-        message: constraint.message ?? input.message ?? messageFor(definition, constraint.options, context),
-        constraint: constraint.name,
-        params: input.params ?? paramsFor(constraint.options)
-    };
-}
-
-function messageFor(definition: ConstraintDefinition, options: unknown, context: ValidationContext): string {
-    if (typeof definition.message === 'function') return definition.message(options, context);
-    return definition.message ?? `Value failed ${definition.name} validation.`;
-}
-
-function paramsFor(options: unknown): Record<string, unknown> | undefined {
-    if (options === undefined) return undefined;
-    if (typeof options === 'object' && options !== null && !Array.isArray(options) && !(options instanceof RegExp) && !(options instanceof Date)) {
-        return {...options as Record<string, unknown>};
-    }
-    return {value: options};
-}
-
-function contextFor(value: unknown, property: string): ValidationContext {
-    return {object: {}, property, value};
 }
 
 /** Shapes a ValidationErrors entry while preserving custom messages. */

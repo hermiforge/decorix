@@ -1,6 +1,7 @@
 import {getModelMetadata} from '../registry/model-registry';
-import type {ConstraintDefinition, ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget, ValidationContext, ValidationIssueInput} from '../metadata/types';
+import type {ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget} from '../metadata/types';
 import {defaultConstraintRegistry, type ConstraintRegistry} from './constraint-registry';
+import {buildValidationContext, normalizeConstraintIssue, resolveConstraintDefinition} from './issue-utils';
 import type {ValidationIssue, ValidationResult} from './types';
 
 /**
@@ -234,60 +235,20 @@ async function validateObjectConstraintsAsync(root: unknown, metadata: ModelMeta
 }
 
 function runConstraintSync(root: unknown, value: unknown, property: string, constraint: ConstraintMetadata, path: Array<string | number>, options: ValidationOptions, registry: ConstraintRegistry): ValidationIssue | undefined {
-    const definition = resolveDefinition(constraint, registry);
-    const context = contextFor(root, value, property, options);
+    const definition = resolveConstraintDefinition(constraint, registry);
+    const context = buildValidationContext(root, value, property, options);
     const result = definition.validate(value, constraint.options, context);
     if (result instanceof Promise) {
         throw new Error(`Decorix constraint "${constraint.name}" returned a Promise. Use validateAsync instead.`);
     }
-    return normalizeIssue(result, definition, constraint, context, path);
+    return normalizeConstraintIssue(result, definition, constraint, context, path);
 }
 
 async function runConstraintAsync(root: unknown, value: unknown, property: string, constraint: ConstraintMetadata, path: Array<string | number>, options: ValidationOptions, registry: ConstraintRegistry): Promise<ValidationIssue | undefined> {
-    const definition = resolveDefinition(constraint, registry);
-    const context = contextFor(root, value, property, options);
+    const definition = resolveConstraintDefinition(constraint, registry);
+    const context = buildValidationContext(root, value, property, options);
     const result = await definition.validate(value, constraint.options, context);
-    return normalizeIssue(result, definition, constraint, context, path);
-}
-
-function normalizeIssue(result: boolean | ValidationIssueInput, definition: ConstraintDefinition, constraint: ConstraintMetadata, context: ValidationContext, path: Array<string | number>): ValidationIssue | undefined {
-    if (result === true) return undefined;
-    const input = result === false ? {} : result;
-    // Every adapter receives the same stable issue shape regardless of how a constraint reports failure internally.
-    return {
-        path: input.path ?? path,
-        code: input.code ?? `decorix.${constraint.name}`,
-        message: constraint.message ?? input.message ?? messageFor(definition, constraint.options, context),
-        constraint: constraint.name,
-        params: input.params ?? paramsFor(constraint.options)
-    };
-}
-
-function resolveDefinition(constraint: ConstraintMetadata, registry: ConstraintRegistry): ConstraintDefinition {
-    const definition = registry.get(constraint.name);
-    if (!definition) {
-        throw new Error(`No Decorix constraint registered for "${constraint.name}".`);
-    }
-    return definition;
-}
-
-function messageFor(definition: ConstraintDefinition, options: unknown, context: ValidationContext): string {
-    if (typeof definition.message === 'function') {
-        return definition.message(options, context);
-    }
-    return definition.message ?? `Value failed ${definition.name} validation.`;
-}
-
-function paramsFor(options: unknown): Record<string, unknown> | undefined {
-    if (options === undefined) return undefined;
-    if (typeof options === 'object' && options !== null && !Array.isArray(options) && !(options instanceof RegExp) && !(options instanceof Date)) {
-        return {...options as Record<string, unknown>};
-    }
-    return {value: options};
-}
-
-function contextFor(root: unknown, value: unknown, property: string, options: ValidationOptions): ValidationContext {
-    return {object: root, property, value, group: options.group, locale: options.locale, services: options.services};
+    return normalizeConstraintIssue(result, definition, constraint, context, path);
 }
 
 function fieldState(field: FieldMetadata): FieldState {
