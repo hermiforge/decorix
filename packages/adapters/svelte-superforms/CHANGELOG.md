@@ -1,5 +1,13 @@
 # @hermiforge-decorix/svelte-superforms
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [3ce2781]
+  - @hermiforge-decorix/core@0.3.2
+  - @hermiforge-decorix/json-schema@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

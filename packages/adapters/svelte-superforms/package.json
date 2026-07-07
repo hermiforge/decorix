@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/svelte-superforms",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Superforms (sveltekit-superforms) validation adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -47,8 +47,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.3.1",
-    "@hermiforge-decorix/json-schema": "workspace:0.3.1"
+    "@hermiforge-decorix/core": "workspace:0.3.2",
+    "@hermiforge-decorix/json-schema": "workspace:0.3.2"
   },
   "devDependencies": {
     "@sveltejs/kit": "2.69.1",

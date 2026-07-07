@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/core",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Framework-neutral metadata, decorators, and builder API for Decorix models.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
