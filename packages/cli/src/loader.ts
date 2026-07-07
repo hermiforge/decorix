@@ -1,7 +1,7 @@
 import {existsSync} from 'node:fs';
 import {dirname, join, resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {tsImport} from 'tsx/esm/api';
+import {register} from 'tsx/esm/api';
 import {getModelMetadata, hasModelMetadata, isModelMetadata} from '@hermiforge-decorix/core';
 import type {ModelMetadata, ModelTarget} from '@hermiforge-decorix/core';
 
@@ -71,19 +71,32 @@ function resolveNearestTsconfig(fromDir: string): string | undefined {
  * so applying its own config is both correct and non-clobbering (its `paths`
  * aliases are preserved).
  *
+ * Registers tsx globally via `register()` rather than using the scoped
+ * `tsImport()` API: `tsImport()` unconditionally tags every resolved module
+ * URL with a `?tsx-namespace=` query so concurrent scoped imports don't
+ * collide. That tagging breaks resolution of some prebuilt package exports
+ * (observed with `@angular/core`'s `fesm2022` bundle under pnpm), where the
+ * query-suffixed specifier fails to resolve even though the equivalent
+ * unsuffixed path exists on disk. The CLI only ever loads one entry module
+ * per process, so the isolation `tsImport()` provides is unnecessary and
+ * `register()` (which skips the namespace tagging when no `namespace` option
+ * is passed) sidesteps the bug.
+ *
  * @param entry - Absolute or relative path to the DTO entry module.
  * @param tsconfigPath - Optional explicit tsconfig path; defaults to the nearest `tsconfig.json` above the entry file, then above the CWD.
  * @returns The module's exports.
  */
 export async function loadEntry(entry: string, tsconfigPath?: string): Promise<Record<string, unknown>> {
     const absolute = resolve('.', entry);
-    // tsx resolves the entry and its imports relative to the current working directory.
-    const parentUrl = pathToFileURL(resolve('.', 'index.js')).href;
     const tsconfig =
         (tsconfigPath && resolve('.', tsconfigPath)) ??
         resolveNearestTsconfig(dirname(absolute)) ??
         resolveNearestTsconfig(resolve('.'));
     // When no tsconfig is found, leave tsx to its default discovery rather than forcing a config that could break resolution.
-    const options = tsconfig ? {parentURL: parentUrl, tsconfig} : {parentURL: parentUrl};
-    return tsImport(pathToFileURL(absolute).href, options) as Promise<Record<string, unknown>>;
+    const unregister = register(tsconfig ? {tsconfig} : {});
+    try {
+        return (await import(pathToFileURL(absolute).href)) as Record<string, unknown>;
+    } finally {
+        await unregister();
+    }
 }
