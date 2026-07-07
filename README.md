@@ -21,6 +21,10 @@ Install only the packages required by your target surface:
 - `@hermiforge-decorix/react-tanstack-form` exposes `toTanStackForm` and `useTanStackDecorix`.
 - `@hermiforge-decorix/vue-vee-validate` exposes `toVeeValidate` and `useVeeDecorix`.
 - `@hermiforge-decorix/vue-formkit` exposes `toFormKit` and `useFormKitDecorix`.
+- `@hermiforge-decorix/svelte-felte` exposes `toFelteForm` and `useFelteDecorix` for Svelte/SvelteKit via Felte.
+- `@hermiforge-decorix/svelte-superforms` exposes `createSuperformsValidatorAdapter` for SvelteKit via Superforms.
+- `@hermiforge-decorix/solid-felte` exposes `toFelteForm` and `useFelteDecorix` for SolidJS via Felte.
+- `@hermiforge-decorix/solid-modular-forms` exposes `toModularForm` and `useModularFormDecorix` for SolidJS via Modular Forms.
 - `@hermiforge-decorix/nest` exposes a Nest-compatible validation pipe.
 
 The former aggregate packages `@hermiforge-decorix/angular`, `@hermiforge-decorix/react`, and `@hermiforge-decorix/vue` are intentionally not used. Choose the one adapter package matching your framework library so peer dependencies stay narrow.
@@ -62,7 +66,7 @@ const RegisterUserDto = model('RegisterUserDto', {
 
 ## Validator Registry
 
-React Hook Form, TanStack Form, VeeValidate, FormKit, and Nest accept an optional `options.validator` shaped as the neutral `ValidatorAdapter` contract from `@hermiforge-decorix/core`. You don't need to install or wire up anything: when `options.validator` is omitted, these adapters fall back to the core validator facade, which fully implements native/custom/cross-field/async constraints on its own.
+React Hook Form, TanStack Form, VeeValidate, FormKit, Felte (Svelte and SolidJS), Modular Forms, and Nest accept an optional `options.validator` shaped as the neutral `ValidatorAdapter` contract from `@hermiforge-decorix/core`. You don't need to install or wire up anything: when `options.validator` is omitted, these adapters fall back to the core validator facade, which fully implements native/custom/cross-field/async constraints on its own.
 
 ```ts
 import {toReactHookForm} from '@hermiforge-decorix/react-hook-form';

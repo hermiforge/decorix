@@ -1,0 +1,67 @@
+{
+  "name": "@hermiforge-decorix/svelte-felte",
+  "version": "0.2.1",
+  "description": "Felte adapter for Decorix metadata (Svelte).",
+  "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/adapters/svelte-felte"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "svelte",
+    "felte",
+    "validation",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --config ../../../tsdown.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@hermiforge-decorix/core": "workspace:0.2.1"
+  },
+  "devDependencies": {
+    "felte": "1.3.0",
+    "svelte": "5.56.4"
+  },
+  "peerDependencies": {
+    "felte": "^1.3.0",
+    "svelte": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "felte": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    }
+  }
+}

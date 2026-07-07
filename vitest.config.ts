@@ -14,6 +14,10 @@ export default defineConfig({
       '@hermiforge-decorix/nest': packageAlias('./packages/adapters/nest/src/index.ts'),
       '@hermiforge-decorix/react-hook-form': packageAlias('./packages/adapters/react-hook-form/src/index.ts'),
       '@hermiforge-decorix/react-tanstack-form': packageAlias('./packages/adapters/react-tanstack-form/src/index.ts'),
+      '@hermiforge-decorix/solid-felte': packageAlias('./packages/adapters/solid-felte/src/index.ts'),
+      '@hermiforge-decorix/solid-modular-forms': packageAlias('./packages/adapters/solid-modular-forms/src/index.ts'),
+      '@hermiforge-decorix/svelte-felte': packageAlias('./packages/adapters/svelte-felte/src/index.ts'),
+      '@hermiforge-decorix/svelte-superforms': packageAlias('./packages/adapters/svelte-superforms/src/index.ts'),
       '@hermiforge-decorix/vue-formkit': packageAlias('./packages/adapters/vue-formkit/src/index.ts'),
       '@hermiforge-decorix/vue-vee-validate': packageAlias('./packages/adapters/vue-vee-validate/src/index.ts'),
       '@hermiforge-decorix/zod': packageAlias('./packages/adapters/zod/src/index.ts')

@@ -28,6 +28,10 @@
       "@hermiforge-decorix/nest": ["packages/adapters/nest/src/index.ts"],
       "@hermiforge-decorix/react-hook-form": ["packages/adapters/react-hook-form/src/index.ts"],
       "@hermiforge-decorix/react-tanstack-form": ["packages/adapters/react-tanstack-form/src/index.ts"],
+      "@hermiforge-decorix/solid-felte": ["packages/adapters/solid-felte/src/index.ts"],
+      "@hermiforge-decorix/solid-modular-forms": ["packages/adapters/solid-modular-forms/src/index.ts"],
+      "@hermiforge-decorix/svelte-felte": ["packages/adapters/svelte-felte/src/index.ts"],
+      "@hermiforge-decorix/svelte-superforms": ["packages/adapters/svelte-superforms/src/index.ts"],
       "@hermiforge-decorix/vue-formkit": ["packages/adapters/vue-formkit/src/index.ts"],
       "@hermiforge-decorix/vue-vee-validate": ["packages/adapters/vue-vee-validate/src/index.ts"],
       "@hermiforge-decorix/zod": ["packages/adapters/zod/src/index.ts"]

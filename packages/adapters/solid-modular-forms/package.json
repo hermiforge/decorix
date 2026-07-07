@@ -1,0 +1,68 @@
+{
+  "name": "@hermiforge-decorix/solid-modular-forms",
+  "version": "0.2.1",
+  "description": "Modular Forms adapter for Decorix metadata (SolidJS).",
+  "license": "LGPL-3.0-or-later",
+  "author": "Hermiforge",
+  "homepage": "https://github.com/hermiforge/decorix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermiforge/decorix.git",
+    "directory": "packages/adapters/solid-modular-forms"
+  },
+  "bugs": "https://github.com/hermiforge/decorix/issues",
+  "keywords": [
+    "decorix",
+    "solid",
+    "solidjs",
+    "modular-forms",
+    "validation",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --config ../../../tsdown.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../../vitest.config.ts --dir . --passWithNoTests",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@hermiforge-decorix/core": "workspace:0.2.1"
+  },
+  "devDependencies": {
+    "@modular-forms/solid": "0.25.1",
+    "solid-js": "1.9.14"
+  },
+  "peerDependencies": {
+    "@modular-forms/solid": "^0.25.0",
+    "solid-js": "^1.3.1"
+  },
+  "peerDependenciesMeta": {
+    "@modular-forms/solid": {
+      "optional": true
+    },
+    "solid-js": {
+      "optional": true
+    }
+  }
+}

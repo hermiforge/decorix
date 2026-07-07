@@ -17,6 +17,10 @@ peer-dependencies étroites.
 | React TanStack Form | `@hermiforge-decorix/react-tanstack-form` | `toTanStackForm`, `useTanStackDecorix` | Facade core par défaut ; `{validator}` pour un autre moteur |
 | Vue VeeValidate | `@hermiforge-decorix/vue-vee-validate` | `toVeeValidate`, `useVeeDecorix` | Facade core par défaut ; `{validator}` pour un autre moteur |
 | Vue FormKit | `@hermiforge-decorix/vue-formkit` | `toFormKit`, `useFormKitDecorix` | Facade core par défaut ; `{validator}` pour un autre moteur |
+| Svelte / SvelteKit Felte | `@hermiforge-decorix/svelte-felte` | `toFelteForm`, `useFelteDecorix` | Facade core par défaut ; `{validator}` pour un autre moteur |
+| SvelteKit Superforms | `@hermiforge-decorix/svelte-superforms` | `createSuperformsValidatorAdapter` | — (c'est lui-même un `ValidationAdapter` Superforms, SvelteKit uniquement) |
+| SolidJS Felte | `@hermiforge-decorix/solid-felte` | `toFelteForm`, `useFelteDecorix` | Facade core par défaut ; `{validator}` pour un autre moteur |
+| SolidJS Modular Forms | `@hermiforge-decorix/solid-modular-forms` | `toModularForm`, `useModularFormDecorix` | Facade core par défaut ; `{validator}` pour un autre moteur |
 | Nest (pipe de validation) | `@hermiforge-decorix/nest` | `DecorixPipe` | Facade core par défaut ; `{validator}` pour un autre moteur |
 | Zod | `@hermiforge-decorix/zod` | `toZod`, `registerZodValidator` | — (c'est lui-même un `ValidatorAdapter`) |
 | JSON Schema | `@hermiforge-decorix/json-schema` | `toJsonSchema`, `fromJsonSchema` | Non |
@@ -46,6 +50,21 @@ Zod (ou un autre moteur) à la place de la facade core — voir
 - **Angular Signal Forms** : `form()` doit s'exécuter dans un contexte
   d'injection Angular réel — les exemples exportent une factory plutôt que
   d'appeler `toSignalForm` au niveau module.
+- **Svelte/Solid Felte** : comme FormKit, Felte n'a pas de vocabulaire de
+  règles natives nommées — chaque contrainte est appliquée via la fonction
+  globale `validate`/`validateAsync`, jamais surfacée comme validation
+  inline par règle.
+- **SolidJS Modular Forms** : les erreurs sont indexées par le chemin
+  complet en pointillés de chaque champ (`address.city`, pas seulement
+  `address`), suivant la convention `FieldPath` propre à Modular Forms —
+  différent du regroupement par premier segment de chemin utilisé par
+  l'adapter React Hook Form.
+- **SvelteKit Superforms** : nécessite SvelteKit, pas Svelte seul
+  (contrairement à `svelte-felte`). Ses champs `constraints`/`shape`/
+  `defaults` sont construits directement depuis la métadonnée de champ
+  Decorix plutôt que via les helpers (non exportés) de dérivation JSON
+  Schema propres à Superforms — voir le README du package pour la
+  justification complète.
 
 Chaque limitation est documentée en détail (et testée) dans le README du
 package concerné — consultez-le avant d'implémenter un cas non couvert ici.

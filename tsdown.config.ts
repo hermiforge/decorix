@@ -25,7 +25,14 @@ export default defineConfig({
       'vue',
       'vee-validate',
       '@formkit/vue',
-      '@nestjs/common'
+      '@nestjs/common',
+      'svelte',
+      'felte',
+      '@felte/solid',
+      'solid-js',
+      '@modular-forms/solid',
+      'sveltekit-superforms',
+      '@sveltejs/kit'
     ]
   }
 });
