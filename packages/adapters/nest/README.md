@@ -1,5 +1,7 @@
 # @hermiforge-decorix/nest
 
+![Decorix](../../../decorix.png)
+
 Nest-compatible validation pipe for Decorix metadata.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

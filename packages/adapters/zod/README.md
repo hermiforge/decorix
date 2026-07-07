@@ -1,5 +1,7 @@
 # @hermiforge-decorix/zod
 
+![Decorix](../../../decorix.png)
+
 Zod adapter for Decorix metadata. It converts models to Zod schemas and provides a Zod-backed `ValidatorAdapter` for runtime validation.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

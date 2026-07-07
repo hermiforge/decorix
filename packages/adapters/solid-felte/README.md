@@ -1,5 +1,7 @@
 # @hermiforge-decorix/solid-felte
 
+![Decorix](../../../decorix.png)
+
 [Felte](https://felte.dev) adapter for Decorix metadata (SolidJS, via `@felte/solid`). It generates an `initialValues`/`validate`/`validateAsync` configuration meant to be spread into `createForm({...})` — this package never calls `createForm` itself.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

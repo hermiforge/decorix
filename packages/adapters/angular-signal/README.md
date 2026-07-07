@@ -1,5 +1,7 @@
 # @hermiforge-decorix/angular-signal
 
+![Decorix](../../../decorix.png)
+
 Angular Signal Forms adapter for Decorix metadata. `toSignalForm` maps Decorix constraints onto
 Angular's own native validators and calls the real `form()` from `@angular/forms/signals` — it
 returns Angular's own `FieldTree`, not a Decorix-specific facade. Bind it with `[formField]`, read

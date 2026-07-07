@@ -1,5 +1,7 @@
 # @hermiforge-decorix/core
 
+![Decorix](../../decorix.png)
+
 Framework-neutral metadata, decorators, builder API, and validator registry for Decorix models.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

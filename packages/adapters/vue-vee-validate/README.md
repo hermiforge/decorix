@@ -1,5 +1,7 @@
 # @hermiforge-decorix/vue-vee-validate
 
+![Decorix](../../../decorix.png)
+
 VeeValidate adapter for Decorix metadata. It generates initial values, fields, and a validation schema backed by a Decorix validator.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

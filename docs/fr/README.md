@@ -1,5 +1,7 @@
 # Documentation Decorix
 
+![Decorix](../../decorix.png)
+
 Ce dossier est le guide d'utilisation narratif de Decorix : comment démarrer, comment
 raisonner sur les concepts, et comment brancher chaque cible (formulaires, JSON
 Schema, CLI). La référence exhaustive d'API reste dans le README de chaque package

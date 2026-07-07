@@ -1,5 +1,7 @@
 # @hermiforge-decorix/svelte-felte
 
+![Decorix](../../../decorix.png)
+
 [Felte](https://felte.dev) adapter for Decorix metadata. It generates a `initialValues`/`validate`/`validateAsync` configuration meant to be spread into Felte's `createForm({...})` — this package never calls `createForm` itself.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

@@ -1,5 +1,7 @@
 # @hermiforge-decorix/solid-modular-forms
 
+![Decorix](../../../decorix.png)
+
 [Modular Forms](https://modularforms.dev) adapter for Decorix metadata (SolidJS). It generates an `initialValues`/`validate`/`validateAsync` configuration meant to be passed straight into `createForm({..., validate})` — this package never calls `createForm` itself.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

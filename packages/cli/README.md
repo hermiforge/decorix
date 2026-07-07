@@ -1,5 +1,7 @@
 # @hermiforge-decorix/cli
 
+![Decorix](../../decorix.png)
+
 Command-line interface for generating artifacts from Decorix models. It loads a
 DTO entry module (TypeScript or JavaScript), discovers `@Model` classes and
 builder metadata, and emits schemas or framework re-export modules.

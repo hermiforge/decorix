@@ -1,5 +1,7 @@
 # @hermiforge-decorix/react-tanstack-form
 
+![Decorix](../../../decorix.png)
+
 TanStack Form adapter for Decorix metadata. It generates default values and submit validators backed by a Decorix validator.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

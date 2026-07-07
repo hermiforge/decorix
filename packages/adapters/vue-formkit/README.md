@@ -1,5 +1,7 @@
 # @hermiforge-decorix/vue-formkit
 
+![Decorix](../../../decorix.png)
+
 FormKit adapter for Decorix metadata. It generates FormKit-oriented schema nodes and optional runtime validation.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

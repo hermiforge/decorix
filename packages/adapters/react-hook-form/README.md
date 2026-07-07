@@ -1,5 +1,7 @@
 # @hermiforge-decorix/react-hook-form
 
+![Decorix](../../../decorix.png)
+
 React Hook Form adapter for Decorix metadata. It generates default values, field rules, and a resolver backed by a Decorix validator.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).

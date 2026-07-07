@@ -1,5 +1,7 @@
 # @hermiforge-decorix/svelte-superforms
 
+![Decorix](../../../decorix.png)
+
 [Superforms](https://superforms.rocks) (`sveltekit-superforms`) validator adapter for Decorix metadata. Unlike the other framework adapters, this implements Superforms' own `ValidationAdapter<Out, In>` contract — the same shape its built-in `zod()`/`valibot()` helpers return — since Superforms requires that exact contract from `superValidate(adapter)`/`superForm`.
 
 > Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
