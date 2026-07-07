@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/react-tanstack-form",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "TanStack Form adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -46,7 +46,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.3.0"
+    "@hermiforge-decorix/core": "workspace:0.3.1"
   },
   "devDependencies": {
     "@tanstack/react-form": "1.33.0",

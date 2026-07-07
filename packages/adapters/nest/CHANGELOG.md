@@ -1,5 +1,11 @@
 # @hermiforge-decorix/nest
 
+## 0.3.1
+
+### Patch Changes
+
+- @hermiforge-decorix/core@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes

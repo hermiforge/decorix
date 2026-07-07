@@ -51,7 +51,7 @@ importers:
   packages/adapters/angular-reactive:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       '@angular/core':
@@ -64,7 +64,7 @@ importers:
   packages/adapters/angular-signal:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       '@angular/core':
@@ -77,13 +77,13 @@ importers:
   packages/adapters/json-schema:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
 
   packages/adapters/nest:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
       '@nestjs/common':
         specifier: ^11.1.0
@@ -92,7 +92,7 @@ importers:
   packages/adapters/react-hook-form:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
       react:
         specifier: ^19.2.0
@@ -104,7 +104,7 @@ importers:
   packages/adapters/react-tanstack-form:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       '@tanstack/react-form':
@@ -117,7 +117,7 @@ importers:
   packages/adapters/solid-felte:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       '@felte/solid':
@@ -130,7 +130,7 @@ importers:
   packages/adapters/solid-modular-forms:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       '@modular-forms/solid':
@@ -143,7 +143,7 @@ importers:
   packages/adapters/svelte-felte:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       felte:
@@ -156,10 +156,10 @@ importers:
   packages/adapters/svelte-superforms:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
       '@hermiforge-decorix/json-schema':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../json-schema
     devDependencies:
       '@sveltejs/kit':
@@ -175,7 +175,7 @@ importers:
   packages/adapters/vue-formkit:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       '@formkit/vue':
@@ -188,7 +188,7 @@ importers:
   packages/adapters/vue-vee-validate:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
     devDependencies:
       vee-validate:
@@ -201,7 +201,7 @@ importers:
   packages/adapters/zod:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../../core
       zod:
         specifier: ^4.4.0
@@ -210,10 +210,10 @@ importers:
   packages/cli:
     dependencies:
       '@hermiforge-decorix/core':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../core
       '@hermiforge-decorix/json-schema':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../adapters/json-schema
       cac:
         specifier: ^7.0.0

@@ -1,5 +1,12 @@
 # @hermiforge-decorix/svelte-superforms
 
+## 0.3.1
+
+### Patch Changes
+
+- @hermiforge-decorix/json-schema@0.3.1
+- @hermiforge-decorix/core@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes
