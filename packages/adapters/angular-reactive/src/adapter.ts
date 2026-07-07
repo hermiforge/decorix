@@ -9,7 +9,7 @@ import {
     resolveValidatorAdapter,
     runSchemaAsync
 } from '@hermiforge-decorix/core';
-import type {ConstraintMetadata, FieldMetadata} from '@hermiforge-decorix/core';
+import type {ConstraintMetadata, FieldMetadata, ValidationResult} from '@hermiforge-decorix/core';
 import type {AbstractControl, AsyncValidatorFn, ValidationErrors, ValidatorFn} from '@angular/forms';
 import type {
     DecorixAngularReactiveFormOptions,
@@ -25,34 +25,44 @@ const EMAIL_REGEXP = /^[^\s@]+@[^\s@.]+\.[^\s@]+$/;
 
 /**
  * Creates an Angular Reactive Forms configuration from Decorix metadata.
+ *
+ * `TModel` is inferred from a decorated class passed directly as
+ * `modelOrMetadata` (e.g. `toReactiveFormConfig(SignupDto)` infers
+ * `TModel = SignupDto`), independently of `TValidationMode`.
  */
-export function toReactiveFormConfig(
-    modelOrMetadata: DecorixReactiveFormModel,
-    options?: DecorixAngularReactiveFormOptions<'angular'>
-): DecorixReactiveFormConfig<'angular'>;
-export function toReactiveFormConfig(
-    modelOrMetadata: DecorixReactiveFormModel,
-    options: DecorixAngularReactiveFormOptions<'descriptors'>
-): DecorixReactiveFormConfig<'descriptors'>;
-export function toReactiveFormConfig(
-    modelOrMetadata: DecorixReactiveFormModel,
-    options: DecorixAngularReactiveFormOptions<'both'>
-): DecorixReactiveFormConfig<'both'>;
-export function toReactiveFormConfig(
-    modelOrMetadata: DecorixReactiveFormModel,
-    options: DecorixAngularReactiveFormOptions<DecorixAngularReactiveValidationMode> = {}
-): DecorixReactiveFormConfig<DecorixAngularReactiveValidationMode> {
+export function toReactiveFormConfig<TModel = Record<string, unknown>>(
+    modelOrMetadata: DecorixReactiveFormModel<TModel>,
+    options?: DecorixAngularReactiveFormOptions<'angular', TModel>
+): DecorixReactiveFormConfig<'angular', TModel>;
+export function toReactiveFormConfig<TModel = Record<string, unknown>>(
+    modelOrMetadata: DecorixReactiveFormModel<TModel>,
+    options: DecorixAngularReactiveFormOptions<'descriptors', TModel>
+): DecorixReactiveFormConfig<'descriptors', TModel>;
+export function toReactiveFormConfig<TModel = Record<string, unknown>>(
+    modelOrMetadata: DecorixReactiveFormModel<TModel>,
+    options: DecorixAngularReactiveFormOptions<'both', TModel>
+): DecorixReactiveFormConfig<'both', TModel>;
+export function toReactiveFormConfig<TModel = Record<string, unknown>>(
+    modelOrMetadata: DecorixReactiveFormModel<TModel>,
+    options: DecorixAngularReactiveFormOptions<DecorixAngularReactiveValidationMode, TModel> = {}
+): DecorixReactiveFormConfig<DecorixAngularReactiveValidationMode, TModel> {
     const metadata = getModelMetadata(modelOrMetadata);
     // A core-backed schema powers form-level validation when cross-field or async constraints are present.
     const needsCoreSchema = hasV2Constraints(metadata) || hasAsyncConstraints(metadata);
     const adapter = options.validator === undefined && needsCoreSchema ? createCoreValidatorAdapter() : resolveValidatorAdapter(options.validator);
     const schema = adapter?.createSchema(metadata);
     const validationMode = options.validationMode ?? 'angular';
+    const initialValue = options.initialValue as Record<string, unknown> | undefined;
 
     return {
         metadata,
-        fields: metadata.fields.map((field) => toFieldConfig(field, options.initialValue?.[field.name], validationMode)),
-        ...(schema ? {validate: (value: unknown) => schema.validate(value), validateAsync: (value: unknown) => runSchemaAsync(schema, value)} : {})
+        fields: metadata.fields.map((field) => toFieldConfig(field, initialValue?.[field.name], validationMode)),
+        ...(schema
+            ? {
+                  validate: (value: unknown) => schema.validate(value) as ValidationResult<TModel>,
+                  validateAsync: (value: unknown) => runSchemaAsync(schema, value) as Promise<ValidationResult<TModel>>
+              }
+            : {})
     };
 }
 

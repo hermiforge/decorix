@@ -3,8 +3,8 @@ import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, Valida
 /**
  * Options used by the VeeValidate adapter.
  */
-export type DecorixVeeValidateOptions = {
-    initialValues?: Record<string, unknown>;
+export type DecorixVeeValidateOptions<T = Record<string, unknown>> = {
+    initialValues?: Partial<T>;
     validator?: ValidatorAdapterRef;
 };
 
@@ -17,18 +17,23 @@ export type DecorixVeeValidateFieldSchema = Record<string, (value: unknown) => P
 
 /**
  * VeeValidate-oriented configuration generated from Decorix metadata.
+ *
+ * `T` is inferred from a decorated class passed to {@link DecorixVeeValidateModel}
+ * (e.g. `toVeeValidate(SignupDto)` infers `T = SignupDto`), so `initialValues`
+ * and `validate`/`validateAsync` are already typed — no separate form-values
+ * type or cast needed.
  */
-export type DecorixVeeValidateConfig = {
+export type DecorixVeeValidateConfig<T = Record<string, unknown>> = {
     metadata: ModelMetadata;
-    initialValues: Record<string, unknown>;
+    initialValues: Partial<T>;
     validationSchema: DecorixVeeValidateFieldSchema;
     fields: FieldMetadata[];
-    validate(value: unknown): ValidationResult;
+    validate(value: unknown): ValidationResult<T>;
     /** Async validation entry resolving async constraints; falls back to the sync result otherwise. */
-    validateAsync(value: unknown): Promise<ValidationResult>;
+    validateAsync(value: unknown): Promise<ValidationResult<T>>;
 };
 
 /**
  * Registered model class or raw Decorix metadata accepted by the adapter.
  */
-export type DecorixVeeValidateModel = ModelTarget | ModelMetadata;
+export type DecorixVeeValidateModel<T = Record<string, unknown>> = ModelTarget<T> | ModelMetadata;

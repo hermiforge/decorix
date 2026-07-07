@@ -30,16 +30,17 @@ class RegisterUserDto {
     confirmPassword!: string;
 }
 
-type RegisterUserModel = {fullName: string; email: string; age?: number; password: string; confirmPassword: string};
-
 /**
  * `toSignalForm` calls Angular's real `form()`, which needs an Angular injection context
  * (a component/service field initializer always is one). This module only exports a factory
  * — it cannot execute standalone via `tsx` the way Decorix's other examples do; call it from
  * inside a bootstrapped Angular application (see this adapter's README for a component example).
+ *
+ * No separate `RegisterUserModel` type or explicit `toSignalForm<RegisterUserModel>(...)` is
+ * needed here: `TModel` is inferred straight from `RegisterUserDto`.
  */
 export function createRegisterForm() {
-    return toSignalForm<RegisterUserModel>(RegisterUserDto, {
+    return toSignalForm(RegisterUserDto, {
         initialValue: {fullName: 'Ada', email: 'ada@example.com', age: 37, password: 'correct-horse', confirmPassword: 'correct-horse'}
     });
 }

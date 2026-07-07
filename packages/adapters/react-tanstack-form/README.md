@@ -39,6 +39,8 @@ const errors = config.validators.onSubmit({value: {name: 'A', email: 'bad'}});
 // => {fields: {name: 'Name is too short', email: 'Invalid email'}}
 ```
 
+`T` is inferred straight from `SignupDto` — `config.defaultValues` and the `onSubmit`/`onSubmitAsync` context/return values are already typed, no separate form-values type or cast needed.
+
 ## Builder Model
 
 ```ts

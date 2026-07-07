@@ -25,10 +25,20 @@ import type {DecorixSuperformsModel, DecorixSuperformsOptions} from './types';
  * defaults (`''` for strings, `0` for numbers, `false` for booleans, ...)
  * this adapter generates otherwise.
  */
-export function createSuperformsValidatorAdapter(
-    modelOrMetadata: DecorixSuperformsModel,
-    options: DecorixSuperformsOptions = {}
-): ValidationAdapter<Record<string, unknown>> {
+/**
+ * `sveltekit-superforms`'s own generic constraints expect a mapped-object
+ * shape (an index-signature-friendly type), which a plain class/interface
+ * type doesn't structurally satisfy — normalize through an identity mapped
+ * type so a decorated class can still be inferred as `T` at the public API
+ * surface without the caller needing a `Pick<T, keyof T>` workaround (same
+ * fix as `@hermiforge-decorix/angular-signal`'s `toSignalForm`).
+ */
+type Normalize<T> = {[K in keyof T]: T[K]};
+
+export function createSuperformsValidatorAdapter<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixSuperformsModel<T>,
+    options: DecorixSuperformsOptions<T> = {}
+): ValidationAdapter<Normalize<T>> {
     const metadata = getModelMetadata(modelOrMetadata);
     const validatorSchema = resolveSchema(metadata, options.validator);
 
@@ -36,15 +46,15 @@ export function createSuperformsValidatorAdapter(
         superFormValidationLibrary: 'custom' as const,
         async validate(data: unknown) {
             const result = await runSchemaAsync(validatorSchema, data);
-            if (result.success) return {success: true as const, data: result.data as Record<string, unknown>};
+            if (result.success) return {success: true as const, data: result.data as Normalize<T>};
             return {success: false as const, issues: result.issues.map((issue) => ({path: issue.path, message: issue.message}))};
         },
         jsonSchema: toJsonSchema(metadata),
-        defaults: defaultsForModel(metadata, options.initialValues),
+        defaults: defaultsForModel(metadata, options.initialValues as Record<string, unknown> | undefined) as Normalize<T>,
         constraints: constraintsForModel(metadata),
         shape: shapeForModel(metadata),
         id: metadata.name
     };
 
-    return adapter as unknown as ValidationAdapter<Record<string, unknown>>;
+    return adapter as unknown as ValidationAdapter<Normalize<T>>;
 }

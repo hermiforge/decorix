@@ -11,13 +11,16 @@ import type {DecorixFelteConfig, DecorixFelteErrors, DecorixFelteModel, DecorixF
  * the FormKit/React Hook Form adapters — pass the returned `initialValues`
  * and `validate`/`validateAsync` straight into `createForm({...})`.
  */
-export function toFelteForm(modelOrMetadata: DecorixFelteModel, options: DecorixFelteOptions = {}): DecorixFelteConfig {
+export function toFelteForm<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixFelteModel<T>,
+    options: DecorixFelteOptions<T> = {}
+): DecorixFelteConfig<T> {
     const metadata = getModelMetadata(modelOrMetadata);
     const validatorSchema = resolveSchema(metadata, options.validator);
 
     return {
         metadata,
-        initialValues: defaultValuesFor(metadata, options.initialValues),
+        initialValues: defaultValuesFor(metadata, options.initialValues as Record<string, unknown> | undefined) as Partial<T>,
         validate: (values: unknown): DecorixFelteErrors => {
             const result = validatorSchema.validate(values);
             return result.success ? {} : felteErrors(result.issues);
@@ -30,6 +33,9 @@ export function toFelteForm(modelOrMetadata: DecorixFelteModel, options: Decorix
 }
 
 /** Alias matching Felte's own `createForm` naming convention. */
-export function useFelteDecorix(modelOrMetadata: DecorixFelteModel, options: DecorixFelteOptions = {}): DecorixFelteConfig {
+export function useFelteDecorix<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixFelteModel<T>,
+    options: DecorixFelteOptions<T> = {}
+): DecorixFelteConfig<T> {
     return toFelteForm(modelOrMetadata, options);
 }

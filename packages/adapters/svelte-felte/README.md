@@ -50,6 +50,8 @@ const {form, errors} = createForm({
 </form>
 ```
 
+`T` is inferred straight from `SignupDto` — `config.initialValues` is already typed, no separate form-values type or cast needed.
+
 ## Builder Model
 
 ```ts

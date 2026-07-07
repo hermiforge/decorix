@@ -161,12 +161,15 @@ export type ModelMetadata = {
 };
 
 /**
- * A constructor or function used as a registry key for decorator-declared models.
+ * A constructor used as a registry key for decorator-declared models, generic
+ * over the instance type so `validate`/adapters can return/accept that type
+ * instead of `unknown` when called with a class reference directly.
  *
- * `Function` is intentional here: the registry accepts any decorated class
- * regardless of its constructor signature and only uses the value as a WeakMap
- * key and to read `.name`, so a narrower callable/constructor type would reject
- * legitimate decorated classes.
+ * `T` defaults to `unknown` so every existing bare `ModelTarget` usage
+ * (registry internals, adapters not yet updated) keeps compiling unchanged —
+ * this is a purely additive change. Accepts any class constructor regardless
+ * of its constructor signature (the registry only uses the value as a WeakMap
+ * key and to read `.name`), hence the permissive `...args: any[]`.
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type -- registry key must accept any class constructor
-export type ModelTarget = Function;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- registry key must accept any class constructor signature
+export type ModelTarget<T = unknown> = abstract new (...args: any[]) => T;

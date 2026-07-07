@@ -64,6 +64,8 @@ export const actions = {
 </form>
 ```
 
+`T` is inferred straight from `SignupDto` — `form.data` above is already typed `SignupDto`, no separate form-values type or cast needed.
+
 ## Builder Model
 
 ```ts

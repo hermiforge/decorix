@@ -37,3 +37,10 @@ console.log('valid payload errors:', valid.errors);
 
 const invalid = await config.resolver({name: 'A', email: 'not-an-email', age: 12, password: 'short', confirmPassword: 'different'});
 console.log('invalid payload errors:', invalid.errors);
+
+// `T` is inferred straight from `RegisterUserDto` — no separate `RegisterUserFormValues`
+// type or `as` cast needed for `defaultValues`/`resolver` (or for `useForm<RegisterUserDto>`
+// in a real React app).
+const typedDefaults: Partial<RegisterUserDto> = config.defaultValues;
+const typedValues: RegisterUserDto = valid.values;
+console.log('typed without a cast:', typedDefaults.name, typedValues.email);

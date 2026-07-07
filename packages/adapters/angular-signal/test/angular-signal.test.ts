@@ -18,6 +18,7 @@ import {
     stringField
 } from '@hermiforge-decorix/core';
 import {registerZodValidator} from '@hermiforge-decorix/zod';
+import type {FieldTree} from '@angular/forms/signals';
 
 /**
  * Exercising the real `form()`/`resource()` runtime requires a fully bootstrapped Angular
@@ -126,6 +127,12 @@ describe('@hermiforge-decorix/angular-signal', () => {
         expect(nativeCalls).toContainEqual({rule: 'minLength', path: 'name', arg: 2, message: 'Name too short'});
         expect(nativeCalls).toContainEqual({rule: 'required', path: 'email', message: undefined});
         expect(nativeCalls).toContainEqual({rule: 'email', path: 'email', message: 'Invalid email'});
+
+        // Type-level proof: `TModel` is inferred straight from the class, with no
+        // explicit `toSignalForm<SignupDto>(...)` and no `Pick<SignupDto, keyof SignupDto>`
+        // workaround — this line would fail to compile otherwise.
+        const typedForm: FieldTree<SignupDto> = toSignalForm(SignupDto, {initialValue: {name: 'Ada', email: 'ada@example.com'}});
+        expect(typedForm).toBeDefined();
     });
 
     it('maps builder constraints onto native validators the same way', () => {

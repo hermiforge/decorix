@@ -3,8 +3,8 @@ import type {ModelMetadata, ModelTarget, ValidatorAdapterRef} from '@hermiforge-
 /**
  * Options used by the Modular Forms adapter.
  */
-export type DecorixModularFormOptions = {
-    initialValues?: Record<string, unknown>;
+export type DecorixModularFormOptions<T = Record<string, unknown>> = {
+    initialValues?: Partial<T>;
     validator?: ValidatorAdapterRef;
 };
 
@@ -22,10 +22,14 @@ export type DecorixModularFormErrors = Record<string, string>;
  * `@modular-forms/solid`'s `createForm` itself, it only produces the
  * `initialValues` and `validate`/`validateAsync` functions a consumer passes
  * into `createForm({...})` as `FormOptions.validate`.
+ *
+ * `T` is inferred from a decorated class passed to {@link DecorixModularFormModel}
+ * (e.g. `toModularForm(SignupDto)` infers `T = SignupDto`), so `initialValues`
+ * is already typed — no separate form-values type or cast needed.
  */
-export type DecorixModularFormConfig = {
+export type DecorixModularFormConfig<T = Record<string, unknown>> = {
     metadata: ModelMetadata;
-    initialValues: Record<string, unknown>;
+    initialValues: Partial<T>;
     validate: (values: unknown) => DecorixModularFormErrors;
     /** Async validation entry resolving async constraints; falls back to the sync result otherwise. */
     validateAsync: (values: unknown) => Promise<DecorixModularFormErrors>;
@@ -34,4 +38,4 @@ export type DecorixModularFormConfig = {
 /**
  * Registered model class or raw Decorix metadata accepted by the adapter.
  */
-export type DecorixModularFormModel = ModelTarget | ModelMetadata;
+export type DecorixModularFormModel<T = Record<string, unknown>> = ModelTarget<T> | ModelMetadata;

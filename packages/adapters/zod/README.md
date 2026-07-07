@@ -17,6 +17,7 @@ Peer dependencies: `zod@4.4.3`.
 ```ts
 import {Email, MinLength, Model, Required} from '@hermiforge-decorix/core';
 import {toZod} from '@hermiforge-decorix/zod';
+import type {z} from 'zod';
 
 @Model('SignupDto')
 class SignupDto {
@@ -31,6 +32,9 @@ class SignupDto {
 
 const schema = toZod(SignupDto);
 const result = schema.safeParse({name: 'Ada', email: 'ada@example.com'});
+
+// `T` is inferred straight from `SignupDto`, so the standard Zod idiom works immediately:
+type Inferred = z.infer<typeof schema>; // = SignupDto
 ```
 
 ## Builder Model

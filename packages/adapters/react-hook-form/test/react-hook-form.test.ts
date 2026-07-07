@@ -57,6 +57,14 @@ describe('@hermiforge-decorix/react-hook-form', () => {
             name: {message: 'Name too short'},
             email: {message: 'Invalid email'}
         });
+
+        // Type-level proof: `T` is inferred from the class, so `defaultValues`/`resolver`
+        // are already typed as `SignupDto` — this line would fail to compile otherwise,
+        // with no cast or separately-declared form-values type needed.
+        const typedDefaults: Partial<SignupDto> = config.defaultValues;
+        const typedValues: SignupDto = result.values;
+        expect(typedDefaults).toBeDefined();
+        expect(typedValues).toBeDefined();
     });
 
     it('creates React Hook Form config from builder metadata', async () => {

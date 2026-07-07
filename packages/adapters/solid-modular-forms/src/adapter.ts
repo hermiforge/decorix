@@ -13,13 +13,16 @@ import type {DecorixModularFormConfig, DecorixModularFormErrors, DecorixModularF
  * `initialValues` and `validate`/`validateAsync` into
  * `createForm({..., validate: ...})`.
  */
-export function toModularForm(modelOrMetadata: DecorixModularFormModel, options: DecorixModularFormOptions = {}): DecorixModularFormConfig {
+export function toModularForm<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixModularFormModel<T>,
+    options: DecorixModularFormOptions<T> = {}
+): DecorixModularFormConfig<T> {
     const metadata = getModelMetadata(modelOrMetadata);
     const validatorSchema = resolveSchema(metadata, options.validator);
 
     return {
         metadata,
-        initialValues: defaultValuesFor(metadata, options.initialValues),
+        initialValues: defaultValuesFor(metadata, options.initialValues as Record<string, unknown> | undefined) as Partial<T>,
         validate: (values: unknown): DecorixModularFormErrors => {
             const result = validatorSchema.validate(values);
             return result.success ? {} : modularFormErrors(result.issues);
@@ -32,6 +35,9 @@ export function toModularForm(modelOrMetadata: DecorixModularFormModel, options:
 }
 
 /** Alias matching Modular Forms' own `createForm` naming convention. */
-export function useModularFormDecorix(modelOrMetadata: DecorixModularFormModel, options: DecorixModularFormOptions = {}): DecorixModularFormConfig {
+export function useModularFormDecorix<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixModularFormModel<T>,
+    options: DecorixModularFormOptions<T> = {}
+): DecorixModularFormConfig<T> {
     return toModularForm(modelOrMetadata, options);
 }

@@ -32,9 +32,18 @@ const STATIC_OPTIONS: OptionsRef = {};
 
 /**
  * Converts Decorix metadata or a registered model class into a Zod object schema.
+ *
+ * `T` is inferred from a decorated class passed directly (e.g. `toZod(SignupDto)`
+ * infers `T = SignupDto`), so `z.infer<ReturnType<typeof toZod<SignupDto>>>`
+ * resolves to `SignupDto` immediately. The actual Zod schema is still built
+ * dynamically from runtime `FieldMetadata` (constraints have no field-by-field
+ * type-level representation to derive `T` from mechanically), so the return
+ * value is cast at this boundary — a trust assertion that the generated
+ * schema's shape matches `T`, the same kind of boundary cast every other
+ * generic Decorix adapter makes.
  */
-export function toZod(modelOrMetadata: ModelTarget | ModelMetadata): DecorixZodSchema {
-    return buildZodSchema(getModelMetadata(modelOrMetadata), STATIC_OPTIONS);
+export function toZod<T = Record<string, unknown>>(modelOrMetadata: ModelTarget<T> | ModelMetadata): z.ZodType<T> {
+    return buildZodSchema(getModelMetadata(modelOrMetadata), STATIC_OPTIONS) as unknown as z.ZodType<T>;
 }
 
 /**

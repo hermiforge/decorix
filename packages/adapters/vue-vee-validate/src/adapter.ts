@@ -1,6 +1,6 @@
 import {defaultValuesFor, getModelMetadata, resolveSchema, runSchemaAsync} from '@hermiforge-decorix/core';
 import type {DecorixVeeValidateConfig, DecorixVeeValidateModel, DecorixVeeValidateOptions} from './types';
-import type {ValidatorSchema} from '@hermiforge-decorix/core';
+import type {ValidationResult, ValidatorSchema} from '@hermiforge-decorix/core';
 
 /**
  * Builds vee-validate's per-field validation function map: `{fieldName: (value) => true | string | Promise<...>}`,
@@ -34,25 +34,25 @@ function buildFieldValidators(
  * @param options - Optional initial values and validator adapter.
  * @returns VeeValidate-oriented configuration with a per-field validation schema.
  */
-export function toVeeValidate(
-    modelOrMetadata: DecorixVeeValidateModel,
-    options: DecorixVeeValidateOptions = {}
-): DecorixVeeValidateConfig {
+export function toVeeValidate<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixVeeValidateModel<T>,
+    options: DecorixVeeValidateOptions<T> = {}
+): DecorixVeeValidateConfig<T> {
     const metadata = getModelMetadata(modelOrMetadata);
     const schema = resolveSchema(metadata, options.validator);
-    const initialValues = defaultValuesFor(metadata, options.initialValues);
+    const initialValues = defaultValuesFor(metadata, options.initialValues as Record<string, unknown> | undefined);
 
     return {
         metadata,
-        initialValues,
+        initialValues: initialValues as Partial<T>,
         validationSchema: buildFieldValidators(
             schema,
             metadata.fields.map((field) => field.name),
             initialValues
         ),
         fields: metadata.fields,
-        validate: (value) => schema.validate(value),
-        validateAsync: (value) => runSchemaAsync(schema, value)
+        validate: (value) => schema.validate(value) as ValidationResult<T>,
+        validateAsync: (value) => runSchemaAsync(schema, value) as Promise<ValidationResult<T>>
     };
 }
 
@@ -63,10 +63,10 @@ export function toVeeValidate(
  * @param options - Optional initial values and validator adapter.
  * @returns VeeValidate-oriented configuration.
  */
-export function useVeeDecorix(
-    modelOrMetadata: DecorixVeeValidateModel,
-    options: DecorixVeeValidateOptions = {}
-): DecorixVeeValidateConfig {
+export function useVeeDecorix<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixVeeValidateModel<T>,
+    options: DecorixVeeValidateOptions<T> = {}
+): DecorixVeeValidateConfig<T> {
     return toVeeValidate(modelOrMetadata, options);
 }
 

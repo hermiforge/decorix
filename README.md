@@ -1,5 +1,7 @@
 # Decorix
 
+![Decorix](./decorix.png)
+
 [![CI](https://github.com/hermiforge/decorix/actions/workflows/ci.yml/badge.svg)](https://github.com/hermiforge/decorix/actions/workflows/ci.yml)
 [![License: LGPL-3.0-or-later](https://img.shields.io/badge/License-LGPL--3.0--or--later-blue.svg)](LICENSE)
 

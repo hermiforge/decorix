@@ -45,6 +45,8 @@ const {values, errors} = useForm({
 const result = config.validate({name: 'Ada', email: 'ada@example.com'});
 ```
 
+`T` is inferred straight from `SignupDto` — `config.initialValues` and `config.validate`/`validateAsync` are already typed, no separate form-values type or cast needed.
+
 ## Builder Model
 
 ```ts

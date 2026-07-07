@@ -10,29 +10,29 @@ import type {ValidationResult} from '@hermiforge-decorix/core';
  * @param options - Optional validator adapter. Falls back to the global default adapter.
  * @returns A pipe transform object that returns parsed data or throws a validation exception.
  */
-export function DecorixPipe(
-    modelOrMetadata: DecorixPipeModel,
+export function DecorixPipe<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixPipeModel<T>,
     options: DecorixPipeOptions = {}
-): DecorixPipeTransform {
+): DecorixPipeTransform<T> {
     const metadata = getModelMetadata(modelOrMetadata);
     const schema = resolveSchema(metadata, options.validator);
     // Models with async constraints validate on the async path Nest can await.
     const isAsync = hasAsyncConstraints(metadata);
 
     return {
-        transform(value: unknown): unknown | Promise<unknown> {
+        transform(value: unknown): T | Promise<T> {
             if (isAsync) {
-                return runSchemaAsync(schema, value).then(unwrap);
+                return runSchemaAsync(schema, value).then(unwrap<T>);
             }
-            return unwrap(schema.validate(value));
+            return unwrap<T>(schema.validate(value));
         }
     };
 }
 
 /** Returns validated data or throws a Nest-friendly validation exception. */
-function unwrap(result: ValidationResult): unknown {
+function unwrap<T>(result: ValidationResult): T {
     if (result.success) {
-        return result.data;
+        return result.data as T;
     }
 
     throw new DecorixValidationException(

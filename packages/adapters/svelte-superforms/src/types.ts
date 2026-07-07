@@ -3,12 +3,12 @@ import type {ModelTarget, ModelMetadata, ValidatorAdapterRef} from '@hermiforge-
 /**
  * Options used by the Superforms validator adapter.
  */
-export type DecorixSuperformsOptions = {
-    initialValues?: Record<string, unknown>;
+export type DecorixSuperformsOptions<T = Record<string, unknown>> = {
+    initialValues?: Partial<T>;
     validator?: ValidatorAdapterRef;
 };
 
 /**
  * Registered model class or raw Decorix metadata accepted by the adapter.
  */
-export type DecorixSuperformsModel = ModelTarget | ModelMetadata;
+export type DecorixSuperformsModel<T = Record<string, unknown>> = ModelTarget<T> | ModelMetadata;

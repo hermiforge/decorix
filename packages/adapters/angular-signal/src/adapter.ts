@@ -32,15 +32,20 @@ type AnyPathTree = Record<string, AnyPath>;
  * @param options - Optional initial value, validator adapter, and injector (required for async
  * constraints when called outside an Angular injection context; see `resource()`'s docs).
  */
-export function toSignalForm<TModel extends Record<string, unknown> = Record<string, unknown>>(
-    modelOrMetadata: DecorixSignalFormModel,
+export function toSignalForm<TModel = Record<string, unknown>>(
+    modelOrMetadata: DecorixSignalFormModel<TModel>,
     options: DecorixAngularSignalFormOptions = {}
 ): FieldTree<TModel> {
     const metadata = getModelMetadata(modelOrMetadata);
-    const initial = defaultValuesFor(metadata, options.initialValue) as TModel;
+    // `SchemaPathTree`/`form()` require a mapped-object shape (an index-signature-friendly
+    // type), which a plain class/interface type doesn't structurally satisfy — normalize
+    // through an identity mapped type so a decorated class can still be inferred as `TModel`
+    // at the public API surface without the caller needing a `Pick<T, keyof T>` workaround.
+    type Normalized = {[K in keyof TModel]: TModel[K]};
+    const initial = defaultValuesFor(metadata, options.initialValue) as Normalized;
     const model = signal(initial);
 
-    return form(model, (rootPath: SchemaPathTree<TModel>) => {
+    return form(model, (rootPath: SchemaPathTree<Normalized>) => {
         const paths = rootPath as unknown as AnyPathTree;
         for (const field of metadata.fields) {
             const fieldPath = paths[field.name];
@@ -48,7 +53,7 @@ export function toSignalForm<TModel extends Record<string, unknown> = Record<str
                 applyConstraint(constraint, field, fieldPath, metadata, paths, options);
             }
         }
-    });
+    }) as unknown as FieldTree<TModel>;
 }
 
 /** Prepends an implicit `required` constraint when the field is required but declares none explicitly. */

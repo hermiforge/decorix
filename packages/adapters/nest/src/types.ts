@@ -23,9 +23,14 @@ export type DecorixHttpValidationError = {
  *
  * `transform` returns a Promise when the validated model declares async
  * constraints; Nest awaits pipe results, so both shapes are supported.
+ *
+ * `T` is inferred from a decorated class passed to {@link DecorixPipeModel}
+ * (e.g. `DecorixPipe(SignupDto)` infers `T = SignupDto`), so a controller
+ * handler parameter typed `@Body(DecorixPipe(SignupDto)) body: SignupDto`
+ * matches `transform`'s real return type — no cast needed.
  */
-export type DecorixPipeTransform = {
-    transform(value: unknown): unknown | Promise<unknown>;
+export type DecorixPipeTransform<T = Record<string, unknown>> = {
+    transform(value: unknown): T | Promise<T>;
 };
 
 /**
@@ -38,4 +43,4 @@ export type DecorixPipeOptions = {
 /**
  * Registered model class or raw Decorix metadata accepted by the pipe.
  */
-export type DecorixPipeModel = ModelTarget | ModelMetadata;
+export type DecorixPipeModel<T = Record<string, unknown>> = ModelTarget<T> | ModelMetadata;

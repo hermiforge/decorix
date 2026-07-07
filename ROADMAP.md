@@ -46,8 +46,34 @@ This file is the durable handoff state for the validation-platform refactor. Kee
 Backlog post-v1 (deliberately deferred, decided during the pre-v1 code/security/completeness audit — not blocking the first public release):
 
 - **Value coercion/transformation.** Decorix is a pure validator (see README "Positioning" section) — no automatic trimming, no string→number coercion, no date parsing. Revisit only if there's real demand; would need a new pipeline stage distinct from validation.
+- **`Infer<T>` for builder-declared models.** The decorated-class path now infers `T` for free (the class itself already has the right shape — see the "Type Inference for Decorated Classes" DONE entry below), but `model()`/`stringField()`/etc. (`packages/core/src/builder/field-builders.ts`) have no generic building blocks today — every `FieldBuilder` is non-generic, so `stringField().optional()` and `stringField().required()` have the same TS type, and `enumField(['a','b'])` isn't `EnumFieldBuilder<'a'|'b'>`. A Zod-style `Infer<typeof someModel>` would need each builder class to carry a phantom output type end-to-end (`StringFieldBuilder<T = string>`, `.optional(): FieldBuilder<T | undefined>`, `objectField<Shape>(fields): FieldBuilder<Infer<Shape>>`, ...) and `model()` to expose that shape — a much larger, distinct rewrite than the decorated-class fix, not attempted here.
 
 ## DONE
+
+### Type Inference for Decorated Classes (`ModelTarget<T>`)
+
+Two concrete pains reported by a user, both traced to the same root cause: `@hermiforge-decorix/react-hook-form` forced writing a separate `type SignupFormValues = {...}` and casting `configForm.defaultValues as SignupFormValues`/`configForm.resolver as Resolver<SignupFormValues>`; `@hermiforge-decorix/angular-signal` forced `type SignupModel = Pick<SignupDto, keyof SignupDto>` plus an explicit `toSignalForm<SignupModel>(SignupDto, ...)`, since `TModel extends Record<string, unknown>` structurally rejects a plain class/interface (no index signature).
+
+Root cause: `ModelTarget` (`packages/core/src/metadata/types.ts`) was `= Function`, with no generic parameter — even though a decorated class (`@Model('X') class X {...}`) already has, natively, exactly the shape needed (`InstanceType<typeof X>`). Nothing connected that already-available type to what adapters returned.
+
+An audit of all 11 model-consuming packages (Explore agent, read-only) found this was systemic, not isolated: 10 of 11 weren't generic on the model type **at all** (worse than `angular-signal`, which at least had an unlinked `TModel`), only `json-schema` was legitimately exempt (its output is a JSON Schema document, not a TS-shaped value).
+
+**Fix** (core + all 12 affected packages, one pass, confirmed with the user after the audit):
+
+- **`packages/core/src/metadata/types.ts`**: `ModelTarget<T = unknown> = abstract new (...args: any[]) => T` (was `= Function`). Purely additive — `T` defaults to `unknown`, so every existing bare `ModelTarget` reference (registry internals, not-yet-updated code) keeps compiling unchanged.
+- **`packages/core/src/validation/engine.ts`**: `validate`/`validateAsync` gained an overload — `validate<T>(value: unknown, model: ModelTarget<T>, options?): ValidationResult<T>` — so `validate(untypedPayload, SignupDto)` infers `ValidationResult<SignupDto>` directly, independent of any adapter.
+- **The mechanical pattern applied to `react-hook-form`, `react-tanstack-form`, `vue-vee-validate`, `vue-formkit`, `svelte-felte`, `solid-felte`, `solid-modular-forms`, `nest`**: `DecorixXxxModel<T = Record<string, unknown>> = ModelTarget<T> | ModelMetadata`; every config field that represented model data (`defaultValues`/`initialValues`/`initialValue`, `resolver`/`validate`/`validateAsync`/`transform`) changed from `Record<string, unknown>`/`unknown` to `T`/`Partial<T>`; runtime bodies unchanged (a boundary cast, since the schema is still built dynamically from runtime `FieldMetadata` — Decorix's type system has no field-by-field mapping back to a static `T` to derive this mechanically, same reasoning as the locale/i18n and Superforms passes).
+- **`angular-signal`**: same pattern, but `toSignalForm<TModel>`'s `extends Record<string, unknown>` constraint (which rejected classes, forcing the `Pick<T, keyof T>` workaround) was removed; internally normalizes through an identity mapped type (`type Normalize<T> = {[K in keyof T]: T[K]}`) right before calling Angular's real `form()`/`SchemaPathTree<T>` (which does require that mapped shape), then casts the result back to `FieldTree<TModel>` at the return boundary — the constraint moved from the public API (where it broke class inference) to an internal implementation detail.
+- **`angular-reactive`**: added a *second*, independent generic (`TModel`) alongside the pre-existing `TValidationMode` (which controls only the shape of the returned validators — `'angular' | 'descriptors' | 'both'`, via 3 existing overloads). Both generics threaded through all 3 overloads without conflating them.
+- **`svelte-superforms`**: hit the exact same class-doesn't-satisfy-`Record<string,unknown>` problem as `angular-signal` (Superforms' own generic constraints require the same mapped shape) — same `Normalize<T>` fix, applied to the returned `ValidationAdapter<Normalize<T>>`.
+- **`zod`**: `toZod<T>(modelOrMetadata): z.ZodType<T>` (was `z.ZodObject<Record<string, z.ZodTypeAny>>`, unparameterized) — the Zod schema is still built dynamically from `FieldMetadata` field-by-field, so there's no static derivation from `T`; the return is cast at the boundary (a documented trust assertion), but this immediately makes `z.infer<ReturnType<typeof toZod<SignupDto>>>` resolve to `SignupDto`, the standard Zod idiom, without reinventing anything.
+- **`json-schema`**: deliberately untouched — see the audit's category (D) reasoning above.
+- Type-level proof tests added (not just runtime behavior) in `core`, `react-hook-form`, `angular-signal`, and `zod` — a typed variable assignment or `z.infer` usage that would fail to compile if inference broke, reproducing the exact two user-reported scenarios end-to-end. `examples/react-hook-form/class-model.ts` and `examples/angular-signal/class-model.ts` rewritten the same way (the latter dropping its `RegisterUserModel`/`Pick<T, keyof T>` type entirely).
+- One shared changeset (`model-target-type-inference.md`, `minor` on all 13 packages) — every generic defaults to `Record<string, unknown>`, so this is non-breaking for every existing call site.
+
+See the TODO section above for why builder-declared models (`model()`/`stringField()`) don't get the same inference in this pass.
+
+Full quality gate green: `pnpm lint`, `pnpm typecheck` (15 packages), `pnpm examples:typecheck`, `pnpm build`, `pnpm verify:dist`, `pnpm test`, `pnpm examples:run`.
 
 ### Fix: Empty Native Constraint Registry in Published `core`
 

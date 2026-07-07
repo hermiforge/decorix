@@ -54,8 +54,9 @@ class SignupDto {
 })
 class SignupComponent {
   // `toSignalForm` must run in an Angular injection context — a component field
-  // initializer (like here) always is one.
-  signupForm = toSignalForm<{fullName: string; email: string}>(SignupDto, {
+  // initializer (like here) always is one. `TModel` is inferred straight from
+  // `SignupDto` — no separate type or explicit `toSignalForm<...>` needed.
+  signupForm = toSignalForm(SignupDto, {
     initialValue: {fullName: 'Ada', email: 'ada@example.com'}
   });
 
@@ -80,6 +81,8 @@ const signupForm = toSignalForm<{fullName: string; email: string}>(SignupDto, {
   initialValue: {fullName: 'Ada'}
 });
 ```
+
+Unlike the decorated-class example above, `TModel` isn't inferred here — a builder-declared model (`model()`) is metadata, not a TypeScript type, so there's no class reference for TypeScript to infer from; pass the shape explicitly when you need it typed.
 
 ## Async Validation
 

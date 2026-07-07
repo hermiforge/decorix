@@ -71,6 +71,27 @@ describe('@hermiforge-decorix/zod', () => {
         ]);
     });
 
+    it('infers T from a decorated class so z.infer resolves to the real shape', () => {
+        @Model('InferDto')
+        class InferDto {
+            @Required()
+            @MinLength(2, 'Name too short')
+            name!: string;
+
+            @Required()
+            @Email('Invalid email')
+            email!: string;
+        }
+
+        const schema = toZod(InferDto);
+
+        // Type-level proof: `T` is inferred from the class, so `z.infer<typeof schema>`
+        // resolves to `InferDto` — this line would fail to compile otherwise, with
+        // no cast or separately-declared type needed.
+        const parsed: InferDto = schema.parse({name: 'Ada', email: 'ada@example.com'});
+        expect(parsed).toEqual({name: 'Ada', email: 'ada@example.com'});
+    });
+
     it('registers the Zod adapter as the default validator', () => {
         const adapter = registerZodValidator({name: 'zod-test-default'});
 

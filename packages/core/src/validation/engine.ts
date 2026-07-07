@@ -29,16 +29,22 @@ type FieldState = {
 /**
  * Validates a value synchronously against Decorix model metadata.
  *
+ * When `modelOrMetadata` is a decorated class reference, the class's own
+ * instance type is inferred as the result type — no separate type or cast
+ * needed even when `value` itself is untyped (`unknown`/parsed JSON/form data).
+ *
  * @param value - Value to validate.
  * @param modelOrMetadata - Registered model target or raw metadata.
  * @param options - Optional group, locale, service, and registry controls.
  * @returns Normalized validation success or issue list.
  */
-export function validate<TValue = unknown>(
-    value: TValue,
+export function validate<T>(value: unknown, model: ModelTarget<T>, options?: ValidationOptions): ValidationResult<T>;
+export function validate<TValue = unknown>(value: TValue, modelOrMetadata: ModelMetadata, options?: ValidationOptions): ValidationResult<TValue>;
+export function validate(
+    value: unknown,
     modelOrMetadata: ModelTarget | ModelMetadata,
     options: ValidationOptions = {}
-): ValidationResult<TValue> {
+): ValidationResult<unknown> {
     // The sync entrypoint rejects async definitions before traversal so callers never receive a partially evaluated result.
     const metadata = getModelMetadata(modelOrMetadata);
     const registry = options.registry ?? defaultConstraintRegistry;
@@ -50,16 +56,22 @@ export function validate<TValue = unknown>(
 /**
  * Validates a value asynchronously against Decorix model metadata.
  *
+ * When `modelOrMetadata` is a decorated class reference, the class's own
+ * instance type is inferred as the result type — no separate type or cast
+ * needed even when `value` itself is untyped (`unknown`/parsed JSON/form data).
+ *
  * @param value - Value to validate.
  * @param modelOrMetadata - Registered model target or raw metadata.
  * @param options - Optional group, locale, service, and registry controls.
  * @returns Promise of normalized validation success or issue list.
  */
-export async function validateAsync<TValue = unknown>(
-    value: TValue,
+export async function validateAsync<T>(value: unknown, model: ModelTarget<T>, options?: ValidationOptions): Promise<ValidationResult<T>>;
+export async function validateAsync<TValue = unknown>(value: TValue, modelOrMetadata: ModelMetadata, options?: ValidationOptions): Promise<ValidationResult<TValue>>;
+export async function validateAsync(
+    value: unknown,
     modelOrMetadata: ModelTarget | ModelMetadata,
     options: ValidationOptions = {}
-): Promise<ValidationResult<TValue>> {
+): Promise<ValidationResult<unknown>> {
     const metadata = getModelMetadata(modelOrMetadata);
     const registry = options.registry ?? defaultConstraintRegistry;
     const issues = await validateModelAsync(value, metadata, options, registry);

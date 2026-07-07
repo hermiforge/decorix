@@ -35,6 +35,17 @@ const config = toReactHookForm(SignupDto, {
 });
 ```
 
+`T` is inferred straight from `SignupDto` — `config.defaultValues`/`config.resolver` are already typed for `useForm<SignupDto>(...)`, no separate form-values type or `as` cast needed:
+
+```ts
+import {useForm} from 'react-hook-form';
+
+const {register, handleSubmit, formState} = useForm<SignupDto>({
+  defaultValues: config.defaultValues,
+  resolver: config.resolver
+});
+```
+
 ## Builder Model
 
 ```ts

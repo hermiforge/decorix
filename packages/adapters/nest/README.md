@@ -33,6 +33,8 @@ const pipe = DecorixPipe(SignupDto);
 const value = pipe.transform({name: 'Ada', email: 'ada@example.com'});
 ```
 
+`T` is inferred straight from `SignupDto` — `transform`'s return type is already `SignupDto`, matching a controller handler typed `@Body(DecorixPipe(SignupDto)) body: SignupDto` with no cast needed.
+
 ## Builder Model
 
 ```ts

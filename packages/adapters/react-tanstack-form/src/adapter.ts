@@ -9,16 +9,16 @@ import type {DecorixTanStackFormConfig, DecorixTanStackFormModel, DecorixTanStac
  * @param options - Optional default values and validator adapter.
  * @returns TanStack Form-oriented defaults and submit validator.
  */
-export function toTanStackForm(
-    modelOrMetadata: DecorixTanStackFormModel,
-    options: DecorixTanStackFormOptions = {}
-): DecorixTanStackFormConfig {
+export function toTanStackForm<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixTanStackFormModel<T>,
+    options: DecorixTanStackFormOptions<T> = {}
+): DecorixTanStackFormConfig<T> {
     const metadata = getModelMetadata(modelOrMetadata);
     const schema = resolveSchema(metadata, options.validator);
 
     return {
         metadata,
-        defaultValues: defaultValuesFor(metadata, options.defaultValues),
+        defaultValues: defaultValuesFor(metadata, options.defaultValues as Record<string, unknown> | undefined) as Partial<T>,
         validators: {
             // TanStack Form calls form-level validators with a context object
             // (`{value, ...}`), not the raw values — destructuring `value` here
@@ -45,10 +45,10 @@ export function toTanStackForm(
  * @param options - Optional default values and validator adapter.
  * @returns TanStack Form-oriented configuration.
  */
-export function useTanStackDecorix(
-    modelOrMetadata: DecorixTanStackFormModel,
-    options: DecorixTanStackFormOptions = {}
-): DecorixTanStackFormConfig {
+export function useTanStackDecorix<T = Record<string, unknown>>(
+    modelOrMetadata: DecorixTanStackFormModel<T>,
+    options: DecorixTanStackFormOptions<T> = {}
+): DecorixTanStackFormConfig<T> {
     return toTanStackForm(modelOrMetadata, options);
 }
 

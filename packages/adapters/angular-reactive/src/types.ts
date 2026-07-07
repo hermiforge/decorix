@@ -15,9 +15,10 @@ export type DecorixAngularReactiveValidationMode = 'angular' | 'descriptors' | '
  * Options for the Angular Reactive Forms adapter.
  */
 export type DecorixAngularReactiveFormOptions<
-    TValidationMode extends DecorixAngularReactiveValidationMode = 'angular'
+    TValidationMode extends DecorixAngularReactiveValidationMode = 'angular',
+    TModel = Record<string, unknown>
 > = {
-    initialValue?: DecorixReactiveInitialValue;
+    initialValue?: Partial<TModel>;
     validator?: ValidatorAdapterRef;
     validationMode?: TValidationMode;
 };
@@ -63,18 +64,24 @@ export type DecorixReactiveFieldConfig<
 
 /**
  * Reactive Forms configuration generated from Decorix metadata.
+ *
+ * `TModel` is inferred from a decorated class passed to {@link DecorixReactiveFormModel}
+ * (e.g. `toReactiveFormConfig(SignupDto)` infers `TModel = SignupDto`), so
+ * `validate`/`validateAsync` are already typed — no separate form-values type
+ * or cast needed.
  */
 export type DecorixReactiveFormConfig<
-    TValidationMode extends DecorixAngularReactiveValidationMode = 'angular'
+    TValidationMode extends DecorixAngularReactiveValidationMode = 'angular',
+    TModel = Record<string, unknown>
 > = {
     metadata: ModelMetadata;
     fields: DecorixReactiveFieldConfig<TValidationMode>[];
-    validate?: (value: unknown) => ValidationResult;
+    validate?: (value: unknown) => ValidationResult<TModel>;
     /** Form-level async validation resolving async and cross-field constraints via core validation. */
-    validateAsync?: (value: unknown) => Promise<ValidationResult>;
+    validateAsync?: (value: unknown) => Promise<ValidationResult<TModel>>;
 };
 
 /**
  * Registered model class or raw Decorix metadata accepted by the adapter.
  */
-export type DecorixReactiveFormModel = ModelTarget | ModelMetadata;
+export type DecorixReactiveFormModel<TModel = Record<string, unknown>> = ModelTarget<TModel> | ModelMetadata;

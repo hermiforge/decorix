@@ -26,4 +26,4 @@ export type DecorixAngularSignalFormOptions = {
 /**
  * Registered model class or raw Decorix metadata accepted by the adapter.
  */
-export type DecorixSignalFormModel = ModelTarget | ModelMetadata;
+export type DecorixSignalFormModel<T = Record<string, unknown>> = ModelTarget<T> | ModelMetadata;

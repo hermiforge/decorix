@@ -3,8 +3,8 @@ import type {FieldMetadata, ModelMetadata, ModelTarget, ValidationResult, Valida
 /**
  * Options used by the FormKit adapter.
  */
-export type DecorixFormKitOptions = {
-    initialValues?: Record<string, unknown>;
+export type DecorixFormKitOptions<T = Record<string, unknown>> = {
+    initialValues?: Partial<T>;
     validator?: ValidatorAdapterRef;
 };
 
@@ -32,17 +32,22 @@ export type DecorixFormKitField = {
 
 /**
  * FormKit-oriented schema generated from Decorix metadata.
+ *
+ * `T` is inferred from a decorated class passed to {@link DecorixFormKitModel}
+ * (e.g. `toFormKit(SignupDto)` infers `T = SignupDto`), so `initialValues`
+ * and `validate`/`validateAsync` are already typed — no separate form-values
+ * type or cast needed.
  */
-export type DecorixFormKitConfig = {
+export type DecorixFormKitConfig<T = Record<string, unknown>> = {
     metadata: ModelMetadata;
-    initialValues: Record<string, unknown>;
+    initialValues: Partial<T>;
     schema: DecorixFormKitField[];
-    validate?: (value: unknown) => ValidationResult;
+    validate?: (value: unknown) => ValidationResult<T>;
     /** Async validation entry resolving async constraints; falls back to the sync result otherwise. */
-    validateAsync?: (value: unknown) => Promise<ValidationResult>;
+    validateAsync?: (value: unknown) => Promise<ValidationResult<T>>;
 };
 
 /**
  * Registered model class or raw Decorix metadata accepted by the adapter.
  */
-export type DecorixFormKitModel = ModelTarget | ModelMetadata;
+export type DecorixFormKitModel<T = Record<string, unknown>> = ModelTarget<T> | ModelMetadata;

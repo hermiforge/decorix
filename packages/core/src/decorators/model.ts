@@ -10,7 +10,7 @@ import type {ModelTarget} from '../metadata/types';
  */
 export function Model(name?: string): ClassDecorator {
     return (target) => {
-        const modelTarget = target as ModelTarget;
+        const modelTarget = target as unknown as ModelTarget;
         const metadata = getOrCreateMutableModelMetadata(modelTarget);
         metadata.name = name ?? modelTarget.name;
         commitModelMetadata(modelTarget, metadata);
@@ -22,7 +22,7 @@ export function Model(name?: string): ClassDecorator {
  */
 export function ObjectConstraint<TObject = unknown>(options: ObjectConstraintMetadataOptions<TObject>): ClassDecorator {
     return (target) => {
-        const modelTarget = target as ModelTarget;
+        const modelTarget = target as unknown as ModelTarget;
         const metadata = getOrCreateMutableModelMetadata(modelTarget);
         metadata.objectConstraints = [...metadata.objectConstraints ?? [], createInlineObjectConstraintMetadata(options)];
         commitModelMetadata(modelTarget, metadata);

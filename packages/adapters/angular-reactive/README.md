@@ -44,6 +44,8 @@ const config = toReactiveFormConfig(SignupDto, {
 const nameValidators = config.fields[0]?.validators;
 ```
 
+`TModel` is inferred straight from `SignupDto`, independently of `TValidationMode` (the `'angular' | 'descriptors' | 'both'` output mode) — `config.validate`/`validateAsync` are already typed `ValidationResult<SignupDto>`, no separate form-values type or cast needed.
+
 ## Builder Model
 
 ```ts
