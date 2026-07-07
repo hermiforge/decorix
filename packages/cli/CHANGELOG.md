@@ -1,5 +1,13 @@
 # @hermiforge-decorix/cli
 
+## 0.4.0
+
+### Patch Changes
+
+- Updated dependencies [8c8056c]
+  - @hermiforge-decorix/core@0.4.0
+  - @hermiforge-decorix/json-schema@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes

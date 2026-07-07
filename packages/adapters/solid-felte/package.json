@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/solid-felte",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Felte adapter for Decorix metadata (SolidJS).",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -47,7 +47,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.3.2"
+    "@hermiforge-decorix/core": "workspace:0.4.0"
   },
   "devDependencies": {
     "@felte/solid": "1.2.14",

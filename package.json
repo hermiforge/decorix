@@ -1,6 +1,6 @@
 {
   "name": "decorix",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Framework-neutral TypeScript model metadata with adapters for validation, forms, and documentation.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",

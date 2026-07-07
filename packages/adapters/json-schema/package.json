@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/json-schema",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "JSON Schema adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -45,6 +45,6 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.3.2"
+    "@hermiforge-decorix/core": "workspace:0.4.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/solid-modular-forms",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Modular Forms adapter for Decorix metadata (SolidJS).",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -47,7 +47,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.3.2"
+    "@hermiforge-decorix/core": "workspace:0.4.0"
   },
   "devDependencies": {
     "@modular-forms/solid": "0.25.1",
