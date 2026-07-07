@@ -30,7 +30,7 @@
     "examples:run": "node examples/run-all.mjs",
     "clean": "pnpm -r clean",
     "changeset": "changeset",
-    "version": "changeset version",
+    "version": "node scripts/aggregate-root-changelog.mjs && changeset version",
     "release": "pnpm build && changeset publish --no-git-tag",
     "tag:release": "node scripts/tag-release.mjs"
   },

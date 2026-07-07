@@ -51,8 +51,9 @@ if (pendingChangesets.length === 0) {
 }
 console.log(`Found ${pendingChangesets.length} pending changeset(s): ${pendingChangesets.join(', ')}`);
 
-// 2. Bump versions, update changelogs, and consume the changesets.
-if (runInherit('pnpm', ['changeset', 'version']) !== 0) fail('pnpm changeset version failed.');
+// 2. Bump versions, update changelogs (per-package and the aggregated root
+// CHANGELOG.md), and consume the changesets.
+if (runInherit('pnpm', ['version']) !== 0) fail('pnpm version failed.');
 
 const version = readPackageVersion();
 const tag = `v${version}`;

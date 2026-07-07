@@ -47,6 +47,15 @@ Backlog post-v1 (deliberately deferred, decided during the pre-v1 code/security/
 
 ## DONE
 
+### Aggregated Root `CHANGELOG.md`
+
+Each `@hermiforge-decorix/*` package already got its own `changeset`-generated `CHANGELOG.md`, but with 15 packages in a single `fixed` version group, there was no one place to read "what changed in this release" without opening every package's file. Added a root `CHANGELOG.md` that aggregates every release's entries in one place.
+
+- **New `scripts/aggregate-root-changelog.mjs`**: reads pending `.changeset/*.md` files directly (not the per-package `CHANGELOG.md` files `changeset version` generates), since the changeset source files are one entry per logical change regardless of how many packages they bump — no dedup logic needed, unlike parsing the generated per-package changelogs where the same entry text is duplicated across every affected package plus "Updated dependencies" noise from the `fixed` group. Computes the next version itself (mirrors changesets' own fixed-group semver-bump logic: highest bump level across all pending changesets, applied to `packages/core/package.json`'s current version) and prepends a `## <version>` section, grouped into `### Major/Minor/Patch Changes`, to `CHANGELOG.md`.
+- Must run **before** `pnpm changeset version` (which deletes the `.changeset/*.md` files it reads) — wired into the root `package.json`'s `version` script (`node scripts/aggregate-root-changelog.mjs && changeset version`) and into `scripts/ci-release.mjs` (now calls `pnpm version` instead of `pnpm changeset version` directly), so both the manual and CI release paths share one source of truth and neither can drift out of sync with the other.
+- Backfilled `CHANGELOG.md` with the 4 releases that already have complete changeset-derived history in the per-package `CHANGELOG.md` files (0.2.0, 0.2.1, 0.3.0, 0.3.1) by hand, deduplicating entries the same way the script does going forward. `0.1.0` predates the changesets tooling entirely — every per-package `CHANGELOG.md` already stops at `0.2.0` with no `0.1.0`/`0.1.1` section to backfill from, so `0.1.0` only gets a one-line pointer to `ROADMAP.md`'s `DONE` history instead of a fabricated entry.
+- Verified with a throwaway test changeset (`.changeset/_test-aggregate.md`, deleted after) before writing the real backfill, confirming the script computes the right next version and section shape without needing a real pending release.
+
 ### Svelte and SolidJS Adapters
 
 Closed the "Svelte and SolidJS adapters" TODO item. Only Angular, React, Vue, and Nest had adapters before this pass; the user chose double coverage for both new frameworks, matching the existing React (Hook Form + TanStack Form) and Vue (VeeValidate + FormKit) pattern — 4 new packages total, all under `packages/adapters/`, all consuming only `@hermiforge-decorix/core` (plus `@hermiforge-decorix/json-schema` for one of them).

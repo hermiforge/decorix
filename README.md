@@ -98,6 +98,10 @@ The [`docs/`](./docs) directory is a narrative usage guide: [getting started](./
 
 Each published package has a short package-level README in `packages/core/README.md`, `packages/cli/README.md`, and `packages/adapters/*/README.md` with installation, peer dependencies, and direct usage examples. `docs/` links out to these rather than duplicating their content.
 
+## Changelog
+
+[`CHANGELOG.md`](./CHANGELOG.md) aggregates every release across all `@hermiforge-decorix/*` packages in one place (they're versioned together as a single group). Each package also keeps its own `CHANGELOG.md` scoped to just that package, if you only care about one.
+
 ## Examples
 
 Every package has minimal typechecked examples in `examples/<package>/class-model.ts` and `examples/<package>/builder-model.ts`. They demonstrate generated configuration and validation without requiring a full Angular, React, or Vue application.
