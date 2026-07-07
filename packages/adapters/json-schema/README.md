@@ -2,6 +2,8 @@
 
 JSON Schema adapter for Decorix metadata. It emits JSON Schema draft 2020-12 objects from decorated classes or builder metadata.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh

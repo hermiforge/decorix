@@ -6,6 +6,8 @@ returns Angular's own `FieldTree`, not a Decorix-specific facade. Bind it with `
 `form.field().errors()`/`.valid()`, and submit with the real `submit()` function, exactly as the
 [Angular Signal Forms docs](https://angular.dev/guide/forms/signals) describe.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh

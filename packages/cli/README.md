@@ -4,6 +4,8 @@ Command-line interface for generating artifacts from Decorix models. It loads a
 DTO entry module (TypeScript or JavaScript), discovers `@Model` classes and
 builder metadata, and emits schemas or framework re-export modules.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh

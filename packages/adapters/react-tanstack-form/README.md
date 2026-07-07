@@ -2,22 +2,21 @@
 
 TanStack Form adapter for Decorix metadata. It generates default values and submit validators backed by a Decorix validator.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh
-pnpm add @hermiforge-decorix/core @hermiforge-decorix/react-tanstack-form @hermiforge-decorix/zod zod react @tanstack/react-form
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/react-tanstack-form react @tanstack/react-form
 ```
 
-Peer dependencies: `react@19.2.7`, `@tanstack/react-form@1.33.0`.
+Peer dependencies: `react@19.2.7`, `@tanstack/react-form@1.33.0`. `@hermiforge-decorix/zod` is only needed if you opt into Zod-backed validation — see Validator Notes below.
 
 ## Decorated Class
 
 ```ts
 import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
-import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toTanStackForm} from '@hermiforge-decorix/react-tanstack-form';
-
-registerZodValidator();
 
 @Model('SignupDto')
 class SignupDto {
@@ -60,7 +59,7 @@ const config = useTanStackDecorix(SignupDto, {
 
 ## Validator Notes
 
-`toTanStackForm` and `useTanStackDecorix` perform runtime validation and require a `ValidatorAdapter`. Call `registerZodValidator()` once, or pass an adapter through `options.validator`.
+`toTanStackForm` and `useTanStackDecorix` perform runtime validation. When `options.validator` is omitted, they fall back to Decorix's core validator facade — no extra install needed. Pass an explicit adapter through `options.validator` (as in the Builder Model example above) only if you want a different engine, such as Zod via `createZodValidatorAdapter()`. `registerZodValidator()`'s global registration is **not** consulted here.
 
 
 ## License

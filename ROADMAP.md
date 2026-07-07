@@ -49,6 +49,52 @@ Backlog post-v1 (deliberately deferred, decided during the pre-v1 code/security/
 
 ## DONE
 
+### `docs/` Usage Guide
+
+Replaced the placeholder `docs/README.md` (a one-paragraph stub pointing back
+to the root README) with a real narrative usage guide, since package READMEs
+only cover installation/API reference per package, not a cross-package
+walkthrough. Decision: plain Markdown under `docs/`, versioned with the code,
+readable directly on GitHub with no build step — a dedicated doc site
+(Docusaurus/Starlight + GitHub Pages) is deliberately deferred to later.
+
+- Added `docs/getting-started.md`, `docs/core-concepts.md` (decorators vs
+  builder, metadata, `ValidatorAdapter`), `docs/validation-guide.md` (native
+  constraints, cross-field/object, custom constraints, async, groups, nested
+  objects/arrays), `docs/adapters.md` (decision table + known per-adapter
+  limitations), `docs/cli.md`, `docs/json-schema.md`, and
+  `docs/troubleshooting.md` — all in English, matching the rest of the repo
+  (root README, package READMEs, CONTRIBUTING.md).
+- Added a French mirror under `docs/fr/` (same 8 files) since the guide was
+  first drafted in French; kept both rather than dropping one, at the cost of
+  needing to update both languages together on future changes. Cross-linked:
+  each English page's index links to `docs/fr/README.md` and vice versa.
+- These guides deliberately link to the exhaustive per-package READMEs
+  (`packages/core/README.md`'s constraint table, each adapter's own
+  limitations section) instead of duplicating them, so the source of truth
+  stays in one place.
+- **Fact-checking pass caught a real, pre-existing inaccuracy**, not just a
+  wording issue: `resolveSchema` (`packages/core/src/validation/adapter-utils.ts:13-15`)
+  falls back to `createCoreValidatorAdapter()` when `options.validator` is
+  omitted — it never consults `getDefaultValidatorAdapter()`. So
+  `registerZodValidator()` has **no effect** on React Hook Form, TanStack
+  Form, VeeValidate, FormKit, or Nest unless you also pass
+  `{validator: createZodValidatorAdapter()}` explicitly; they work out of the
+  box on the core facade with zero Zod install. Angular Signal Forms never
+  accepts a `validator` option at all (`DecorixAngularSignalFormOptions` has
+  no such field) — the root README's old example
+  (`toSignalForm(RegisterUserDto, {validator})`) would not even type-check.
+  Angular Reactive Forms is the one exception that *does* consult the global
+  registry, but only for the branch with no cross-field/async constraints.
+  Corrected: `docs/*.md` + `docs/fr/*.md`, the root `README.md` Validator
+  Registry section, and the "Validator Notes" section (plus install
+  instructions dropping the forced Zod peer dependency) in
+  `packages/adapters/{react-hook-form,react-tanstack-form,vue-vee-validate,
+  vue-formkit,nest,zod}/README.md`.
+- Updated the root `README.md` with a prominent link to `docs/README.md` right
+  after the intro, plus a "Documentation" section replacing the old bare
+  "Package READMEs" pointer.
+
 ### v0.1.1: Fix 4 Adapters Broken Since the v0.1.0 Publish
 
 A user reported `angular-signal` didn't produce what `[formField]` expects, the same day `v0.1.0` was published. That triggered a full audit of all 9 framework adapters against each target library's *real* documentation/API (via Context7), not just what Decorix's own tests assumed. Result: 4 of 9 adapters were genuinely broken — they invented a plausible-looking shape instead of matching the real runtime contract, and none of them exercised the real target library in their tests (no actual devDependency on `@angular/forms`, `@tanstack/react-form`, `vee-validate`, or `@formkit/vue`).

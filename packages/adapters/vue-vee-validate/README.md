@@ -2,22 +2,21 @@
 
 VeeValidate adapter for Decorix metadata. It generates initial values, fields, and a validation schema backed by a Decorix validator.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh
-pnpm add @hermiforge-decorix/core @hermiforge-decorix/vue-vee-validate @hermiforge-decorix/zod zod vue vee-validate
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/vue-vee-validate vue vee-validate
 ```
 
-Peer dependencies: `vue@3.5.39`, `vee-validate@4.15.1`.
+Peer dependencies: `vue@3.5.39`, `vee-validate@4.15.1`. `@hermiforge-decorix/zod` is only needed if you opt into Zod-backed validation — see Validator Notes below.
 
 ## Decorated Class
 
 ```ts
 import {Email, Label, MinLength, Model, Required} from '@hermiforge-decorix/core';
-import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toVeeValidate} from '@hermiforge-decorix/vue-vee-validate';
-
-registerZodValidator();
 
 @Model('SignupDto')
 class SignupDto {
@@ -66,7 +65,7 @@ const config = useVeeDecorix(SignupDto, {
 
 ## Validator Notes
 
-`toVeeValidate` and `useVeeDecorix` create a runtime validation schema and require a `ValidatorAdapter`. Call `registerZodValidator()` once, or pass an adapter through `options.validator`.
+`toVeeValidate` and `useVeeDecorix` create a runtime validation schema. When `options.validator` is omitted, they fall back to Decorix's core validator facade — no extra install needed. Pass an explicit adapter through `options.validator` (as in the Builder Model example above) only if you want a different engine, such as Zod via `createZodValidatorAdapter()`. `registerZodValidator()`'s global registration is **not** consulted here.
 
 **Known limitation**: `validationSchema` validates each field independently by re-running Decorix validation against `initialValues` merged with the field under test. Cross-field constraints (e.g. `EqualsField`) are therefore best-effort at the field level — they see the last known snapshot of sibling fields, not their live values. For a fully accurate cross-field check, call `config.validate(values)` or `config.validateAsync(values)` with the complete current form values (e.g. on submit).
 

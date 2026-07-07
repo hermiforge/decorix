@@ -2,22 +2,21 @@
 
 Nest-compatible validation pipe for Decorix metadata.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh
-pnpm add @hermiforge-decorix/core @hermiforge-decorix/nest @hermiforge-decorix/zod zod @nestjs/common
+pnpm add @hermiforge-decorix/core @hermiforge-decorix/nest @nestjs/common
 ```
 
-Peer dependencies: `@nestjs/common@11.1.27`.
+Peer dependencies: `@nestjs/common@11.1.27`. `@hermiforge-decorix/zod` is only needed if you opt into Zod-backed validation — see Validator Notes below.
 
 ## Decorated Class
 
 ```ts
 import {Email, MinLength, Model, Required} from '@hermiforge-decorix/core';
-import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {DecorixPipe} from '@hermiforge-decorix/nest';
-
-registerZodValidator();
 
 @Model('SignupDto')
 class SignupDto {
@@ -53,7 +52,7 @@ const pipe = DecorixPipe(SignupDto, {
 
 ## Validator Notes
 
-`DecorixPipe` performs runtime validation and requires a `ValidatorAdapter`. Call `registerZodValidator()` once, or pass an adapter through `options.validator`. Failed validation throws `DecorixValidationException` with a 400-style response body.
+`DecorixPipe` performs runtime validation. When `options.validator` is omitted, it falls back to Decorix's core validator facade — no extra install needed. Pass an explicit adapter through `options.validator` (as in the Builder Model example above) only if you want a different engine, such as Zod via `createZodValidatorAdapter()`. `registerZodValidator()`'s global registration is **not** consulted here. Failed validation throws `DecorixValidationException` with a 400-style response body.
 
 
 ## License

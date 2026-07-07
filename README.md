@@ -5,6 +5,8 @@
 
 Decorix describes TypeScript business models once and adapts the same neutral metadata to validation, forms, framework, and documentation targets.
 
+**[Read the full usage guide in `docs/`](./docs/README.md)** for a getting-started walkthrough, core concepts, validation guide, adapter decision table, CLI usage, and JSON Schema import/export. This README stays a quick overview. *Version française : [`docs/fr/`](./docs/fr/README.md).*
+
 ## Packages
 
 Install only the packages required by your target surface:
@@ -60,36 +62,37 @@ const RegisterUserDto = model('RegisterUserDto', {
 
 ## Validator Registry
 
-UI and Nest adapters depend on the neutral `ValidatorAdapter` contract from `@hermiforge-decorix/core`, not on Zod directly. Register a concrete adapter once, or pass one per adapter call.
+React Hook Form, TanStack Form, VeeValidate, FormKit, and Nest accept an optional `options.validator` shaped as the neutral `ValidatorAdapter` contract from `@hermiforge-decorix/core`. You don't need to install or wire up anything: when `options.validator` is omitted, these adapters fall back to the core validator facade, which fully implements native/custom/cross-field/async constraints on its own.
 
 ```ts
-import {registerZodValidator} from '@hermiforge-decorix/zod';
 import {toReactHookForm} from '@hermiforge-decorix/react-hook-form';
-
-registerZodValidator();
 
 const config = toReactHookForm(RegisterUserDto);
 ```
 
-For explicit wiring:
+Pass an explicit adapter only when you want a different underlying engine (typically Zod, to share one validation library across your codebase):
 
 ```ts
 import {createZodValidatorAdapter} from '@hermiforge-decorix/zod';
-import {toSignalForm} from '@hermiforge-decorix/angular-signal';
+import {toReactHookForm} from '@hermiforge-decorix/react-hook-form';
 
 const validator = createZodValidatorAdapter();
-const form = toSignalForm(RegisterUserDto, {validator});
+const config = toReactHookForm(RegisterUserDto, {validator});
 ```
 
-Adapters that perform runtime validation, such as signal forms, React Hook Form, TanStack Form, VeeValidate, and Nest, require a validator adapter. Configuration-only adapters such as Angular Reactive Forms and FormKit can still emit field metadata without one and attach validation when an adapter is available.
+`registerZodValidator()` sets Zod as the global default adapter, but the adapters above don't consult that global default when `options.validator` is omitted — always pass `{validator}` explicitly to use a non-default engine. Angular Reactive Forms builds a core-backed schema automatically only when cross-field/object or async constraints are present. Angular Signal Forms never uses a `ValidatorAdapter` at all — its `options` type has no `validator` field; constraints map directly onto Angular's own native validators. See [`docs/core-concepts.md`](./docs/core-concepts.md#validatoradapter-the-neutral-optional-contract) for the full picture.
 
 ## Positioning: Validation, Not Transformation
 
 Decorix is a pure validator: it checks whether a value satisfies a constraint and reports issues, but it never mutates or coerces the input (no automatic trimming, no string→number coercion, no date parsing). If you need that, pre-process the value yourself (or through your form library) before it reaches Decorix — a Decorix model always validates exactly the value it is given.
 
+## Documentation
+
+The [`docs/`](./docs) directory is a narrative usage guide: [getting started](./docs/getting-started.md), [core concepts](./docs/core-concepts.md), [the validation guide](./docs/validation-guide.md) (native/custom/cross-field/async constraints), [choosing a form adapter](./docs/adapters.md), the [`decorix` CLI](./docs/cli.md), [JSON Schema export/import](./docs/json-schema.md), and [troubleshooting](./docs/troubleshooting.md). It reads directly on GitHub — no build step. A dedicated documentation site is planned for later. A French mirror lives in [`docs/fr/`](./docs/fr).
+
 ## Package READMEs
 
-Each published package has a short package-level README in `packages/core/README.md`, `packages/cli/README.md`, and `packages/adapters/*/README.md` with installation, peer dependencies, and direct usage examples.
+Each published package has a short package-level README in `packages/core/README.md`, `packages/cli/README.md`, and `packages/adapters/*/README.md` with installation, peer dependencies, and direct usage examples. `docs/` links out to these rather than duplicating their content.
 
 ## Examples
 

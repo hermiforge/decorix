@@ -2,6 +2,8 @@
 
 Angular Reactive Forms adapter for Decorix metadata.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh

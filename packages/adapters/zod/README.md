@@ -2,6 +2,8 @@
 
 Zod adapter for Decorix metadata. It converts models to Zod schemas and provides a Zod-backed `ValidatorAdapter` for runtime validation.
 
+> Full usage guide: [`docs/`](https://github.com/hermiforge/decorix/blob/main/docs/README.md) (narrative walkthrough beyond this package's API reference).
+
 ## Install
 
 ```sh
@@ -60,7 +62,7 @@ const result = await schema.validateAsync!({name: 'Ada', email: 'ada@example.com
 
 ## Validator Notes
 
-Call `registerZodValidator()` once to make Zod the default Decorix validator for runtime adapters, or pass `createZodValidatorAdapter()` through `options.validator`.
+`registerZodValidator()` registers Zod in Decorix's global validator registry (`getDefaultValidatorAdapter()`), but the runtime adapters (React Hook Form, TanStack Form, VeeValidate, FormKit, Nest) don't consult that global registry when `options.validator` is omitted — they fall back to the core validator facade instead. To actually use Zod with those adapters, pass `createZodValidatorAdapter()` through `options.validator` explicitly on each call. `registerZodValidator()` is still useful if your own code resolves adapters through `requireValidatorAdapter()`/`resolveValidatorAdapter()` directly.
 
 ```ts
 import {createZodValidatorAdapter, registerZodValidator} from '@hermiforge-decorix/zod';
