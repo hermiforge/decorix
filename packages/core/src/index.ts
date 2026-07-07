@@ -1,4 +1,12 @@
-import './validation/native-constraints';
+import {registerNativeConstraints} from './validation/native-constraints';
+
+// Called directly in this entry module (not as a bare side-effect import of
+// native-constraints.ts) so the call survives bundler tree-shaking: an entry
+// module's own top-level statements are never eliminated, whereas a bare
+// import of an otherwise-unused internal module with no exports was — every
+// published version through 0.3.1 shipped with an empty constraint registry
+// because of exactly that.
+registerNativeConstraints();
 
 export type {
     ConditionalFieldOptions,

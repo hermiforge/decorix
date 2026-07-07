@@ -30,6 +30,7 @@ verify:
     - pnpm lint
     - pnpm typecheck
     - pnpm build
+    - pnpm verify:dist
     - pnpm test
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

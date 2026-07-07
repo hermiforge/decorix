@@ -162,5 +162,3 @@ export function registerNativeConstraints(): void {
     }
 }
 
-registerNativeConstraints();
-
