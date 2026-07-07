@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/svelte-felte",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Felte adapter for Decorix metadata (Svelte).",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -46,7 +46,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.2.1"
+    "@hermiforge-decorix/core": "workspace:0.3.0"
   },
   "devDependencies": {
     "felte": "1.3.0",
