@@ -119,6 +119,35 @@ groupées ne s'appliquent que si `options.group` (passé à `validate`/
 « édition » sur le même modèle. Voir
 `examples/advanced/nested-and-groups.ts`.
 
+## Traduction des messages natifs
+
+Les messages des contraintes natives sont en anglais par défaut. Enregistrez
+un dictionnaire par locale avec `registerLocale` (indexé par nom de
+contrainte, ex. `required`, `minLength`, `email`, `min`) et passez `{locale}`
+à `validate`/`validateAsync` pour obtenir des messages traduits :
+
+```ts
+import {registerLocale, validate} from '@hermiforge-decorix/core';
+
+registerLocale('fr', {
+  required: 'Cette valeur est requise.',
+  minLength: (min: number) => `La valeur doit contenir au moins ${min} caractères.`,
+  email: 'Adresse email invalide.',
+  min: (min: number) => `La valeur doit être au moins ${min}.`
+});
+
+validate(payload, RegisterUserDto, {locale: 'fr'});
+```
+
+Decorix ne fournit que ce mécanisme d'enregistrement, pas une traduction
+complète embarquée pour chaque contrainte native — une paire locale/contrainte
+sans traduction enregistrée retombe silencieusement sur le message anglais par
+défaut, et un message explicite fourni par l'utilisateur
+(`.required('Message')` / `@Required('Message')`) prime toujours sur toute
+traduction. Voir la section « Locale / i18n » de `packages/core/README.md`
+pour l'API complète (`LocaleRegistry`, portée via
+`ValidationOptions.localeRegistry`).
+
 ## Objets imbriqués et tableaux
 
 Un champ peut référencer un autre modèle Decorix (objet imbriqué) ou un

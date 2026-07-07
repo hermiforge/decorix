@@ -123,6 +123,13 @@ export {
     registerConstraint
 } from './validation/constraint-registry';
 export {
+    LocaleRegistry,
+    defaultLocaleRegistry,
+    getLocaleMessage,
+    registerLocale,
+    type LocaleMessage
+} from './validation/locale-registry';
+export {
     getDefaultValidatorAdapter,
     getValidatorAdapter,
     registerValidatorAdapter,

@@ -116,6 +116,33 @@ Ungrouped constraints always apply; grouped constraints only apply when
 "create" vs "edit" scenarios on the same model. See
 `examples/advanced/nested-and-groups.ts`.
 
+## Localizing native messages
+
+Native constraint messages default to English. Register a per-locale
+dictionary with `registerLocale` (keyed by constraint name, e.g. `required`,
+`minLength`, `email`, `min`) and pass `{locale}` to `validate`/`validateAsync`
+to get translated messages:
+
+```ts
+import {registerLocale, validate} from '@hermiforge-decorix/core';
+
+registerLocale('fr', {
+  required: 'Cette valeur est requise.',
+  minLength: (min: number) => `La valeur doit contenir au moins ${min} caractères.`,
+  email: 'Adresse email invalide.',
+  min: (min: number) => `La valeur doit être au moins ${min}.`
+});
+
+validate(payload, RegisterUserDto, {locale: 'fr'});
+```
+
+Decorix ships only this registration mechanism, not a bundled translation for
+every native constraint — a locale/constraint pair with no registered
+translation falls back silently to the English default, and an explicit user
+message (`.required('Message')` / `@Required('Message')`) always wins over
+any translation. See `packages/core/README.md`'s "Locale / i18n" section for
+the full API (`LocaleRegistry`, scoping via `ValidationOptions.localeRegistry`).
+
 ## Nested objects and arrays
 
 A field can reference another Decorix model (nested object) or an array of a

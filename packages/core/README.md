@@ -107,6 +107,42 @@ const result = hasAsyncConstraints(metadata)
   : schema.validate(value);
 ```
 
+## Locale / i18n
+
+Every native constraint's default message is English. `ValidationOptions.locale`
+(and the `ValidationContext.locale` it populates) let a caller request a
+translated message per validation run, but Decorix core ships **no bundled
+translations** — only the registration hook. Register a dictionary once with
+`registerLocale`, keyed by the registered constraint name (same name as
+`issue.constraint`), then pass `{locale}` to `validate`/`validateAsync`:
+
+```ts
+import {registerLocale, validate} from '@hermiforge-decorix/core';
+
+registerLocale('fr', {
+  required: 'Cette valeur est requise.',
+  minLength: (min: number) => `La valeur doit contenir au moins ${min} caractères.`,
+  email: 'Adresse email invalide.',
+  min: (min: number) => `La valeur doit être au moins ${min}.`
+});
+
+validate(payload, RegisterUserDto, {locale: 'fr'});
+```
+
+A locale/constraint pair with no registered translation, or no `locale` at
+all, falls back silently to the English default — this never throws for an
+unknown locale. An explicit user message (`.required('Message')` /
+`@Required('Message')`) always wins over any translation. Locale tags are
+matched verbatim (no `fr-FR` → `fr` normalization); register both tags if you
+need that. Use an isolated `new LocaleRegistry()` plus
+`{locale, localeRegistry}` instead of the process-wide `defaultLocaleRegistry`
+when tests or multi-tenant runtimes need scoped dictionaries.
+
+Decorix deliberately does not maintain a full translated dictionary for every
+native constraint (mirrors the "Value coercion" decision in `ROADMAP.md`:
+ship the mechanism, not content nobody asked for yet) — bring your own
+dictionary, or only translate the constraints your application actually uses.
+
 ## Constraint Reference
 
 Every native constraint follows the same three-name convention: a PascalCase

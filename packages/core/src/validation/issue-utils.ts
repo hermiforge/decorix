@@ -1,5 +1,6 @@
 import type {ConstraintDefinition, ConstraintMetadata, ValidationContext, ValidationIssueInput} from '../metadata/types';
 import {defaultConstraintRegistry, type ConstraintRegistry} from './constraint-registry';
+import {defaultLocaleRegistry, type LocaleRegistry} from './locale-registry';
 import type {ValidationIssue, ValidationOptions} from './types';
 
 /**
@@ -26,8 +27,27 @@ export function buildValidationContext(root: unknown, value: unknown, property: 
 
 /**
  * Resolves a constraint definition's message, invoking a message function when one is configured.
+ *
+ * When `context.locale` is set and a translation is registered for
+ * `(context.locale, definition.name)` in `localeRegistry`, that translation is
+ * used instead of the definition's own default message. Missing locales and
+ * missing per-constraint translations both fall back silently to the
+ * definition's message/message factory — this never throws for an unknown
+ * locale.
+ *
+ * @param localeRegistry - Locale dictionary consulted before the definition's
+ * own default message. Defaults to the process-wide registry.
  */
-export function messageForConstraint(definition: ConstraintDefinition, options: unknown, context: ValidationContext): string {
+export function messageForConstraint(
+    definition: ConstraintDefinition,
+    options: unknown,
+    context: ValidationContext,
+    localeRegistry: LocaleRegistry = defaultLocaleRegistry
+): string {
+    const translated = context.locale ? localeRegistry.get(context.locale, definition.name) : undefined;
+    if (translated !== undefined) {
+        return typeof translated === 'function' ? translated(options, context) : translated;
+    }
     if (typeof definition.message === 'function') {
         return definition.message(options, context);
     }
@@ -62,14 +82,15 @@ export function normalizeConstraintIssue(
     definition: ConstraintDefinition,
     constraint: ConstraintMetadata,
     context: ValidationContext,
-    path: Array<string | number> = context.property !== undefined ? [context.property] : []
+    path: Array<string | number> = context.property !== undefined ? [context.property] : [],
+    localeRegistry: LocaleRegistry = defaultLocaleRegistry
 ): ValidationIssue | undefined {
     if (result === true) return undefined;
     const input = result === false ? {} : result;
     return {
         path: input.path ?? path,
         code: input.code ?? `decorix.${constraint.name}`,
-        message: constraint.message ?? input.message ?? messageForConstraint(definition, constraint.options, context),
+        message: constraint.message ?? input.message ?? messageForConstraint(definition, constraint.options, context, localeRegistry),
         constraint: constraint.name,
         params: input.params ?? paramsForConstraintOptions(constraint.options)
     };

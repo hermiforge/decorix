@@ -2,6 +2,7 @@ import {getModelMetadata} from '../registry/model-registry';
 import type {ConstraintMetadata, FieldMetadata, ModelMetadata, ModelTarget} from '../metadata/types';
 import {defaultConstraintRegistry, type ConstraintRegistry} from './constraint-registry';
 import {buildValidationContext, normalizeConstraintIssue, resolveConstraintDefinition} from './issue-utils';
+import {defaultLocaleRegistry, type LocaleRegistry} from './locale-registry';
 import type {ValidationIssue, ValidationResult} from './types';
 
 /**
@@ -16,6 +17,8 @@ export type ValidationOptions = {
     services?: Record<string, unknown>;
     /** Constraint registry override used for tests or isolated runtimes. */
     registry?: ConstraintRegistry;
+    /** Locale message registry override used for tests or isolated runtimes. */
+    localeRegistry?: LocaleRegistry;
 };
 
 type FieldState = {
@@ -241,14 +244,14 @@ function runConstraintSync(root: unknown, value: unknown, property: string, cons
     if (result instanceof Promise) {
         throw new Error(`Decorix constraint "${constraint.name}" returned a Promise. Use validateAsync instead.`);
     }
-    return normalizeConstraintIssue(result, definition, constraint, context, path);
+    return normalizeConstraintIssue(result, definition, constraint, context, path, options.localeRegistry ?? defaultLocaleRegistry);
 }
 
 async function runConstraintAsync(root: unknown, value: unknown, property: string, constraint: ConstraintMetadata, path: Array<string | number>, options: ValidationOptions, registry: ConstraintRegistry): Promise<ValidationIssue | undefined> {
     const definition = resolveConstraintDefinition(constraint, registry);
     const context = buildValidationContext(root, value, property, options);
     const result = await definition.validate(value, constraint.options, context);
-    return normalizeConstraintIssue(result, definition, constraint, context, path);
+    return normalizeConstraintIssue(result, definition, constraint, context, path, options.localeRegistry ?? defaultLocaleRegistry);
 }
 
 function fieldState(field: FieldMetadata): FieldState {
