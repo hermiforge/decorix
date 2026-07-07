@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/angular-reactive",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Angular Reactive Forms adapter for Decorix metadata.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -46,7 +46,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.2.0"
+    "@hermiforge-decorix/core": "workspace:0.2.1"
   },
   "devDependencies": {
     "@angular/core": "22.0.3",

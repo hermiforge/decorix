@@ -1,6 +1,6 @@
 {
   "name": "@hermiforge-decorix/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Command-line interface for generating artifacts from Decorix models.",
   "license": "LGPL-3.0-or-later",
   "author": "Hermiforge",
@@ -50,8 +50,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@hermiforge-decorix/core": "workspace:0.2.0",
-    "@hermiforge-decorix/json-schema": "workspace:0.2.0",
+    "@hermiforge-decorix/core": "workspace:0.2.1",
+    "@hermiforge-decorix/json-schema": "workspace:0.2.1",
     "cac": "^7.0.0",
     "tsx": "^4.20.0"
   },
