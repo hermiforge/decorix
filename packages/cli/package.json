@@ -53,6 +53,7 @@
     "@hermiforge-decorix/core": "workspace:0.3.0",
     "@hermiforge-decorix/json-schema": "workspace:0.3.0",
     "cac": "^7.0.0",
+    "get-tsconfig": "^4.14.0",
     "tsx": "^4.20.0"
   },
   "devDependencies": {

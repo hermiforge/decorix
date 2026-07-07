@@ -1,7 +1,8 @@
-import {existsSync} from 'node:fs';
-import {dirname, join, resolve} from 'node:path';
+import {dirname, isAbsolute, join, resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {register} from 'tsx/esm/api';
+import {createFilesMatcher, getTsconfig, parseTsconfig} from 'get-tsconfig';
+import type {TsConfigResult} from 'get-tsconfig';
 import {getModelMetadata, hasModelMetadata, isModelMetadata} from '@hermiforge-decorix/core';
 import type {ModelMetadata, ModelTarget} from '@hermiforge-decorix/core';
 
@@ -38,21 +39,34 @@ export function discoverModels(moduleExports: Record<string, unknown>): Discover
 }
 
 /**
- * Walks up from a directory to find the nearest `tsconfig.json`.
+ * Finds the tsconfig that actually covers `entryPath`, following TS project
+ * `references` when the given tsconfig doesn't (e.g. an Angular/Nx-style root
+ * `tsconfig.json` with `"files": []` that only exists to list references to
+ * `tsconfig.app.json`/`tsconfig.spec.json`). Falls back to `found` itself when
+ * no reference matches, preserving prior behavior for that case.
  *
- * @param fromDir - Absolute directory to start searching from.
- * @returns The absolute path to the closest `tsconfig.json`, or `undefined` when none exists up to the filesystem root.
+ * @param entryPath - Absolute path to the file being loaded.
+ * @param found - The tsconfig to start from.
+ * @param visited - Internal recursion guard against reference cycles.
+ * @returns The most specific tsconfig covering `entryPath` that could be found.
  */
-function resolveNearestTsconfig(fromDir: string): string | undefined {
-    let current = fromDir;
-    // Stop when `dirname` no longer changes the path (filesystem root reached).
-    for (;;) {
-        const candidate = join(current, 'tsconfig.json');
-        if (existsSync(candidate)) return candidate;
-        const parent = dirname(current);
-        if (parent === current) return undefined;
-        current = parent;
+function resolveApplicableTsconfig(entryPath: string, found: TsConfigResult, visited: Set<string> = new Set()): TsConfigResult {
+    if (visited.has(found.path) || createFilesMatcher(found)(entryPath) !== undefined) return found;
+    visited.add(found.path);
+    const baseDir = dirname(found.path);
+    for (const reference of found.config.references ?? []) {
+        const referencePath = isAbsolute(reference.path) ? reference.path : resolve(baseDir, reference.path);
+        const configPath = referencePath.endsWith('.json') ? referencePath : join(referencePath, 'tsconfig.json');
+        let referenced: TsConfigResult;
+        try {
+            referenced = {path: configPath, config: parseTsconfig(configPath)};
+        } catch {
+            continue;
+        }
+        const resolved = resolveApplicableTsconfig(entryPath, referenced, visited);
+        if (createFilesMatcher(resolved)(entryPath) !== undefined) return resolved;
     }
+    return found;
 }
 
 /**
@@ -63,13 +77,14 @@ function resolveNearestTsconfig(fromDir: string): string | undefined {
  * separate build, triggering `@Model` decorator registration as a side effect.
  *
  * Decorix decorators are legacy TypeScript decorators (`(target, propertyKey)`),
- * so esbuild must emit with `experimentalDecorators`. tsx does not reliably apply
- * that flag through its default tsconfig discovery (e.g. a root `tsconfig.json`
- * with `files: []` matches no file), which makes esbuild fall back to TC39
- * standard decorators and crashes registration. We therefore pass an explicit
- * tsconfig: a decorator-using project always sets `experimentalDecorators: true`,
- * so applying its own config is both correct and non-clobbering (its `paths`
- * aliases are preserved).
+ * so esbuild must emit with `experimentalDecorators`. tsx only applies a
+ * tsconfig's `compilerOptions` to a file when that tsconfig's `files`/`include`
+ * actually covers it (`get-tsconfig`'s `createFilesMatcher`) — a root
+ * `tsconfig.json` with `"files": []` (the Angular CLI/Nx convention: real
+ * coverage lives in referenced `tsconfig.app.json`/`tsconfig.spec.json`) covers
+ * nothing, so tsx silently falls back to TC39 standard decorators and crashes
+ * registration. `resolveApplicableTsconfig` follows `references` to find the
+ * config that actually covers the entry file before handing it to tsx.
  *
  * Registers tsx globally via `register()` rather than using the scoped
  * `tsImport()` API: `tsImport()` unconditionally tags every resolved module
@@ -88,10 +103,18 @@ function resolveNearestTsconfig(fromDir: string): string | undefined {
  */
 export async function loadEntry(entry: string, tsconfigPath?: string): Promise<Record<string, unknown>> {
     const absolute = resolve('.', entry);
-    const tsconfig =
-        (tsconfigPath && resolve('.', tsconfigPath)) ??
-        resolveNearestTsconfig(dirname(absolute)) ??
-        resolveNearestTsconfig(resolve('.'));
+    let found: TsConfigResult | undefined;
+    try {
+        if (tsconfigPath) {
+            const explicit = resolve('.', tsconfigPath);
+            found = {path: explicit, config: parseTsconfig(explicit)};
+        } else {
+            found = getTsconfig(dirname(absolute)) ?? getTsconfig(resolve('.')) ?? undefined;
+        }
+    } catch {
+        found = undefined;
+    }
+    const tsconfig = found ? resolveApplicableTsconfig(absolute, found).path : tsconfigPath && resolve('.', tsconfigPath);
     // When no tsconfig is found, leave tsx to its default discovery rather than forcing a config that could break resolution.
     const unregister = register(tsconfig ? {tsconfig} : {});
     try {
